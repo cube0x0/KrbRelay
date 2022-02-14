@@ -1,0 +1,36 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "3b47eebc-0d33-4e0b-bab5-782d2d3680af": {
+      "ProjectGuid": "3b47eebc-0d33-4e0b-bab5-782d2d3680af",
+      "DisplayName": "KrbRelay",
+      "ColorIndex": 0
+    },
+    "81f5c6aa-ac60-4f6e-9467-426997bb9d80": {
+      "ProjectGuid": "81f5c6aa-ac60-4f6e-9467-426997bb9d80",
+      "DisplayName": "OleViewDotNet.Main",
+      "ColorIndex": 1
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Miscellaneous Files",
+      "ColorIndex": -1
+    },
+    "dd5001aa-5174-4a5b-a727-7b8c61d8b88b": {
+      "ProjectGuid": "dd5001aa-5174-4a5b-a727-7b8c61d8b88b",
+      "DisplayName": "bug",
+      "ColorIndex": 2
+    },
+    "658c8b7f-3664-4a95-9572-a3e5871dfc06": {
+      "ProjectGuid": "658c8b7f-3664-4a95-9572-a3e5871dfc06",
+      "DisplayName": "Rubeus",
+      "ColorIndex": 3
+    },
+    "ed839154-90d8-49db-8cdd-972d1a6b2cfd": {
+      "ProjectGuid": "ed839154-90d8-49db-8cdd-972d1a6b2cfd",
+      "DisplayName": "CheckPort",
+      "ColorIndex": 4
+    }
+  },
+  "NextColorIndex": 5
+}

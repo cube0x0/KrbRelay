@@ -1,0 +1,917 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\ILMerge.3.0.41\build\ILMerge.props" Condition="Exists('..\packages\ILMerge.3.0.41\build\ILMerge.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3B47EEBC-0D33-4E0B-BAB5-782D2D3680AF}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>KrbRelay</RootNamespace>
+    <AssemblyName>KrbRelay</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>
+    </DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWin32Manifest>true</NoWin32Manifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.9.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
+      <HintPath>..\packages\BouncyCastle.1.8.9\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="MimeKitLite, Version=2.15.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
+      <HintPath>..\packages\MimeKitLite.2.15.1\lib\net45\MimeKitLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Clients\Attacks\Http\ADCS.cs" />
+    <Compile Include="Clients\Attacks\Http\EWS.cs" />
+    <Compile Include="Clients\Attacks\Http\ProxyServer.cs" />
+    <Compile Include="Clients\Attacks\Ldap\addGroupMember.cs" />
+    <Compile Include="Clients\Attacks\Ldap\Generic.cs" />
+    <Compile Include="Clients\Attacks\Ldap\gMSA.cs" />
+    <Compile Include="Clients\Attacks\Ldap\LAPS.cs" />
+    <Compile Include="Clients\Attacks\Ldap\RBCD.cs" />
+    <Compile Include="Clients\Attacks\Ldap\setPassword.cs" />
+    <Compile Include="Clients\Attacks\Ldap\ShadowCredential.cs" />
+    <Compile Include="Clients\Attacks\Smb\LSA.cs" />
+    <Compile Include="Clients\Attacks\Smb\RemoteRegistry.cs" />
+    <Compile Include="Clients\Attacks\Smb\ServiceManager.cs" />
+    <Compile Include="Clients\Attacks\Smb\Shares.cs" />
+    <Compile Include="Clients\Rpc.cs" />
+    <Compile Include="Clients\Smb.cs" />
+    <Compile Include="Clients\Http.cs" />
+    <Compile Include="Com\ComUtils.cs" />
+    <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Data\DNWithBinary.cs" />
+    <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Data\Hello\CustomKeyInformation.cs" />
+    <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Data\Hello\KeyCredential.cs" />
+    <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Data\Hello\KeyCredentialEntryType.cs" />
+    <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Data\Hello\KeyCredentialVersion.cs" />
+    <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Data\Hello\KeyFlags.cs" />
+    <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Data\Hello\KeySource.cs" />
+    <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Data\Hello\KeyStrength.cs" />
+    <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Data\Hello\KeyUsage.cs" />
+    <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Data\Hello\VolumeType.cs" />
+    <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Extensions\ByteArrayExtensions.cs" />
+    <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Extensions\RSAExtensions.cs" />
+    <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Properties\Resources.Designer.cs" />
+    <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Validator.cs" />
+    <Compile Include="Clients\Attacks\Smb\HiveParser\Crypto.cs" />
+    <Compile Include="Clients\Attacks\Smb\HiveParser\LsaSecret.cs" />
+    <Compile Include="Clients\Attacks\Smb\HiveParser\NL_Record.cs" />
+    <Compile Include="Clients\Attacks\Smb\HiveParser\NodeKey.cs" />
+    <Compile Include="Clients\Attacks\Smb\HiveParser\Parse.cs" />
+    <Compile Include="Clients\Attacks\Smb\HiveParser\Registry.cs" />
+    <Compile Include="Clients\Attacks\Smb\HiveParser\RegistryHive.cs" />
+    <Compile Include="Clients\Attacks\Smb\HiveParser\ValueKey.cs" />
+    <Compile Include="Misc\Helpers.cs" />
+    <Compile Include="Misc\Interop.cs" />
+    <Compile Include="IStorage\IEnumSTATSTG.cs" />
+    <Compile Include="IStorage\ILockBytes.cs" />
+    <Compile Include="IStorage\IMarshal.cs" />
+    <Compile Include="IStorage\IStorage.cs" />
+    <Compile Include="IStorage\IStream.cs" />
+    <Compile Include="IStorage\Ole32.cs" />
+    <Compile Include="IStorage\StorageTrigger.cs" />
+    <Compile Include="Clients\Ldap.cs" />
+    <Compile Include="Com\COMInterfaces.cs" />
+    <Compile Include="Com\COMObjRef.cs" />
+    <Compile Include="Com\COMUtilities.cs" />
+    <Compile Include="Misc\Natives.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Misc\SecurityBuffer.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\EFSServiceHelper.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\IRPCRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\RprnServiceHelper.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\RrpServiceHelper.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\ScmrServiceHelper.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\TschServiceHelper.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\SamrServiceHelper.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\LsaServiceHelper.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\NetlogonServiceHelper.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\RPCCallHelperEx.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\ServerServiceHelperEx.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\SIDHelper.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\RPC\NDR\NDRSid.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\EFSService\EfsRpcCloseRawRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\EFSService\EfsRpcCloseRawResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\EFSService\EfsRpcOpenFileRawRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\EFSService\EfsRpcOpenFileRawResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\EFSService\EFSService.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\EFSService\Enums\EFSServiceOpName.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\EFSService\Structures\EXImportContextHandle.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\Enums\LsaRemoteServiceOpName.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\Enums\LsaSIDNameUse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\LsarCloseRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\LsarCloseResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\LsaRemoteService.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\LsarLookupNamesRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\LsarLookupNamesResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\LsarLookupSidsRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\LsarLookupSidsResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\LsarAddAccountRightsRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\LsarOpenPolicyRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\LsarAddAccountRightsResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\LsarOpenPolicyResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\Structures\LsaHandle.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\Structures\LsaObjectAttributes.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\Structures\LsaReferencedDomainList.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\Structures\LsaUnicodeStringArray.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\Structures\LsaSIDArray.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\Structures\LsaSIDEnumBuffer.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\Structures\LsaTranslatedArray.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\Structures\_LSAPR_USER_RIGHT_SET.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\Structures\LsaTranslatedName.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\Structures\LsaTranslatedSid.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\Structures\LsaTrustInformation.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\LsaRemoteService\Structures\LsaUnicodeString.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RprnService\Enums\RprnServiceOpName.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RprnService\rpcEnumPrinterDriversRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RprnService\rpcEnumPrinterDriversResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RprnService\RpcClosePrinterRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RprnService\RpcClosePrinterResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RprnService\RpcAddPrinterDriverExRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RprnService\RpcAddPrinterDriverExResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RprnService\Structures\DRIVER_INFO2.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RprnService\Structures\DRIVER_CONTAINER.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RprnService\Structures\PRINTER_HANDLE.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RprnService\Structures\DEVMODE_CONTAINER.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\baseRegCloseKeyRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\baseRegCloseKeyResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\baseRegCreateKeyRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\baseRegCreateKeyResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\baseRegSaveKeyRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\baseRegSaveKeyResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\baseRegQueryValueRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\baseRegQueryInfoKeyRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\baseRegQueryValueResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\baseRegQueryInfoKeyResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\Enums\ValueType.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\Enums\REGSAM.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\Enums\RrpServiceOpName.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\baseRegOpenKeyRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\OpenLocalMachineRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\baseRegOpenKeyResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\OpenLocalMachineResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\RrpService.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RprnService\RpcOpenPrinterRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RprnService\RpcOpenPrinterResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RprnService\RprnService.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\Structures\LPDWORD.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\Structures\BYTE.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\Structures\GUID.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\Structures\RPC_SECURITY_ATTRIBUTES.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\RrpService\Structures\RPC_HKEY.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\Enums\SamrServiceOpName.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrCloseHandleRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrCloseHandleResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrCreateUserInDomainRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrLookupDomainInSamServerRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrCreateUserInDomainResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrLookupDomainInSamServerResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrOpenGroupRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrOpenGroupResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrAddMemberToGroupRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrEnumerateDomainsInSamServerRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrSetInformationUserRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrOpenUserRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrOpenDomainRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrAddMemberToGroupResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrEnumerateDomainsInSamServerResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrSetInformationUserResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrOpenUserResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\samrOpenDomainResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\Structures\RPC_UNICODE_STRING2.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\Structures\RPC_UNICODE_STRING.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\Structures\SAMPR_RID_ENUMERATION.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\Structures\SAMPR_USER_INFO_BUFFER.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\Structures\SAMPR_ENUMERATION_BUFFER.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\Structures\SAMPR_USER_INTERNAL1_INFORMATION.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\Structures\SamprHandle.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\Enums\ScmrServiceOpName.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\Enums\SERIVCE_STARTUP.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\Enums\SERVICE_ACCESS.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\RCreateServiceWRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rCloseServiceHandleRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rCloseServiceHandleResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rQueryServiceConfigWRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rQueryServiceConfigWResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rControlServiceRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rStartServiceWRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rQueryServiceStatusRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rControlServiceResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rStartServiceWResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rQueryServiceStatusResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rOpenServiceWRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\ROpenSCManagerWRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\RCreateServiceWResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rOpenServiceWResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\ROpenSCManagerWResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\ScmrService.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\Structures\QUERY_SERVICE_CONFIGW.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\Structures\SERVICE_STATUS.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\Structures\LPSC_RPC_HANDLE.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\TschService\Enums\TASK_CREATION.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\TschService\Enums\TASK_LOGON_TYPE.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\TschService\Enums\TschServiceOpName.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\TschService\schRpcDeleteRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\TschService\schRpcGetLastRunInfoRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\TschService\schRpcDeleteResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\TschService\schRpcRunRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\TschService\schRpcRegisterTaskRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\TschService\schRpcGetLastRunInfoResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\TschService\schRpcRunResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\TschService\schRpcRegisterTaskResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\TschService\Structures\TASK_USER_CRED.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\TschService\Structures\TASK_XML_ERROR_INFO.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\TschService\TschService.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\SamrConnectRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\SamrConnectResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\SamrService\SamrService.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\NetlogonService\DsrGetDcNameRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\NetlogonService\DsrGetDcNameResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\NetlogonService\Enums\NetlogonServiceOpName.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\NetlogonService\NetlogonService.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\NetlogonService\Structures\DomainControllerInfo.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\NetlogonService\Structures\NDRDomainControllerInfo.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ServerService\NetrRemoteTODRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ServerService\NetrRemoteTODResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ServerService\NetrServerStatisticsGetRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ServerService\NetrServerStatisticsGetResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ServerService\Structures\NDRStatServer.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ServerService\Structures\NDRTimeOfDayInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\GSSAPI\Enums\GSSAttributeName.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\GSSAPI\GSSProvider.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\GSSAPI\IGSSMechanism.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\GSSAPI\SPNEGO\DerEncodingHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\GSSAPI\SPNEGO\SimpleProtectedNegotiationToken.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\GSSAPI\SPNEGO\SimpleProtectedNegotiationTokenInit.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\GSSAPI\SPNEGO\SimpleProtectedNegotiationTokenInit2.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\GSSAPI\SPNEGO\SimpleProtectedNegotiationTokenResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\LoginCounter.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\Helpers\AuthenticationMessageUtils.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\Helpers\AVPairUtils.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\Helpers\MD4.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\Helpers\NTLMCryptography.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\Helpers\RC4.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\IndependentNTLMAuthenticationProvider.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\NTLMAuthenticationProviderBase.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\Structures\AuthenticateMessage.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\Structures\ChallengeMessage.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\Structures\Enums\AVPairKey.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\Structures\Enums\MessageTypeName.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\Structures\Enums\NegotiateFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\Structures\NegotiateMessage.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\Structures\NTLMv2ClientChallenge.cs" />
+    <Compile Include="Smb\SMBLibrary\Authentication\NTLM\Structures\NTLMVersion.cs" />
+    <Compile Include="Smb\SMBLibrary\Client\ConnectionState.cs" />
+    <Compile Include="Smb\SMBLibrary\Client\Enums\AuthenticationMethod.cs" />
+    <Compile Include="Smb\SMBLibrary\Client\Helpers\NamedPipeHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Client\Helpers\NTLMAuthenticationHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Client\Helpers\ServerServiceHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Client\ISMBClient.cs" />
+    <Compile Include="Smb\SMBLibrary\Client\ISMBFileStore.cs" />
+    <Compile Include="Smb\SMBLibrary\Client\NameServiceClient.cs" />
+    <Compile Include="Smb\SMBLibrary\Client\SMB2Client.cs" />
+    <Compile Include="Smb\SMBLibrary\Client\SMB2FileStore.cs" />
+    <Compile Include="Smb\SMBLibrary\DFS\DfsReferralEntry.cs" />
+    <Compile Include="Smb\SMBLibrary\DFS\RequestGetDfsReferral.cs" />
+    <Compile Include="Smb\SMBLibrary\DFS\ResponseGetDfsReferral.cs" />
+    <Compile Include="Smb\SMBLibrary\Enums\NTStatus.cs" />
+    <Compile Include="Smb\SMBLibrary\Enums\SMBTransportType.cs" />
+    <Compile Include="Smb\SMBLibrary\Enums\Win32Error.cs" />
+    <Compile Include="Smb\SMBLibrary\Exceptions\UnsupportedInformationLevelException.cs" />
+    <Compile Include="Smb\SMBLibrary\Helpers\FileTimeHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Helpers\SP800_1008.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\EnumStructures\NameFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\Enums\NameRecordType.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\Enums\NameServiceOperation.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\Enums\NetBiosSuffix.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\Enums\OperationFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\Enums\QuestionClass.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\Enums\ResourceRecordClass.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\NameQueryRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\NameRegistrationRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\NameServicePacketHeader.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\NodeStatusRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\NodeStatusResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\PositiveNameQueryResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\Structures\NodeStatistics.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\Structures\QuestionSection.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NameServicePackets\Structures\ResourceRecord.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NBTConnectionReceiveBuffer.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\NetBiosUtils.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\SessionPackets\Enums\SessionPacketTypeName.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\SessionPackets\NegativeSessionResponsePacket.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\SessionPackets\PositiveSessionResponsePacket.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\SessionPackets\SessionKeepAlivePacket.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\SessionPackets\SessionMessagePacket.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\SessionPackets\SessionPacket.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\SessionPackets\SessionRequestPacket.cs" />
+    <Compile Include="Smb\SMBLibrary\NetBios\SessionPackets\SessionRetargetResponsePacket.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\AccessMask\AccessMask.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\AccessMask\DirectoryAccessMask.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\AccessMask\FileAccessMask.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\FileInformation\CompressionFormat.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\FileInformation\ExtendedAttributeFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\FileInformation\FileAttributes.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\FileInformation\FileInformationClass.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\FileSystemInformation\DeviceCharacteristics.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\FileSystemInformation\DeviceType.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\FileSystemInformation\FileSystemAttributes.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\FileSystemInformation\FileSystemControlFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\FileSystemInformation\FileSystemInformationClass.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\FileSystemInformation\SectorSizeInformationFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\IoControlCode.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\NotifyChangeFilter.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\NtCreateFile\CreateDisposition.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\NtCreateFile\CreateOptions.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\NtCreateFile\FileStatus.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\NtCreateFile\ShareAccess.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\SecurityInformation\ImpersonationLevel.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Enums\SecurityInformation\SecurityInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\FileHandle.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\INTFileStore.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\NamedPipeStore.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\NTFileStoreHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\FileInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\QueryDirectory\FileBothDirectoryInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\QueryDirectory\FileDirectoryInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\QueryDirectory\FileFullDirectoryInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\QueryDirectory\FileIdBothDirectoryInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\QueryDirectory\FileIdFullDirectoryInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\QueryDirectory\FileNamesInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\QueryDirectory\QueryDirectoryFileInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileAccessInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileAlignmentInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileAllInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileAlternateNameInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileBasicInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileCompressionInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileEaInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileFullEAEntry.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileFullEAInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileInternalInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileModeInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileNameInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileNetworkOpenInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FilePositionInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileStandardInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileStreamEntry.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Query\FileStreamInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Set\FileAllocationInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Set\FileDispositionInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Set\FileEndOfFileInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Set\FileLinkInformationType1.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Set\FileLinkInformationType2.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Set\FileRenameInformationType1.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Set\FileRenameInformationType2.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Set\FileValidDataLengthInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileInformation\Set\SetFileTime.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileNotifyInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileSystemInformation\FileFsAttributeInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileSystemInformation\FileFsControlInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileSystemInformation\FileFsDeviceInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileSystemInformation\FileFsFullSizeInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileSystemInformation\FileFsObjectIdInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileSystemInformation\FileFsSectorSizeInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileSystemInformation\FileFsSizeInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileSystemInformation\FileFsVolumeInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\FileSystemInformation\FileSystemInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\IOCtl\ObjectIDBufferType1.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\IOCtl\PipeWaitRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\SecurityInformation\ACE\AccessAllowedACE.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\SecurityInformation\ACE\ACE.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\SecurityInformation\ACE\AceHeader.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\SecurityInformation\ACE\Enums\AceFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\SecurityInformation\ACE\Enums\AceType.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\SecurityInformation\ACL.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\SecurityInformation\Enums\SecurityDescriptorControl.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\SecurityInformation\SecurityDescriptor.cs" />
+    <Compile Include="Smb\SMBLibrary\NTFileStore\Structures\SecurityInformation\SID.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\EnumStructures\DataRepresentationFormat.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\Enums\FaultStatus.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\Enums\NegotiationResult.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\Enums\PacketFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\Enums\PacketTypeName.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\Enums\RejectionReason.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\NDR\INDRStructure.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\NDR\NDRConformantArray.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\NDR\NDRParser.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\NDR\NDRTypeName.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\NDR\NDRUnicodeString.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\NDR\NDRWriter.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\PDU\BindAckPDU.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\PDU\BindNakPDU.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\PDU\BindPDU.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\PDU\FaultPDU.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\PDU\RequestPDU.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\PDU\ResponsePDU.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\PDU\RPCPDU.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\RPCHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\Structures\ContextElement.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\Structures\ContextList.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\Structures\ResultElement.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\Structures\ResultList.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\Structures\SyntaxID.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\Structures\Version.cs" />
+    <Compile Include="Smb\SMBLibrary\RPC\Structures\VersionsSupported.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\ConnectionManager.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\ConnectionRequestEventArgs.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\ConnectionState\ConnectionState.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\ConnectionState\OpenFileObject.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\ConnectionState\OpenSearch.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\ConnectionState\ProcessStateObject.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\ConnectionState\SecurityContext.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\ConnectionState\SMB1AsyncContext.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\ConnectionState\SMB1ConnectionState.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\ConnectionState\SMB1Session.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\ConnectionState\SMB2AsyncContext.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\ConnectionState\SMB2ConnectionState.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\ConnectionState\SMB2Session.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\Enums\SMBDialect.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\Helpers\ServerPathUtils.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\Information\OpenFileInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\Information\SessionInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\NameServer.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\Shares\AccessRequestArgs.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\Shares\Enums\CachingPolicy.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\Shares\FileSystemShare.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\Shares\ISMBShare.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\Shares\NamedPipeShare.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\Shares\SMBShareCollection.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\CancelHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\CloseHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\EchoHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\FileStoreResponseHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\LockingHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\NegotiateHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\NotifyChangeHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\NTCreateHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\NTTransactHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\OpenAndXHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\ReadWriteResponseHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\SessionSetupHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\SMB1FileStoreHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\SMB1FileStoreHelper.Query.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\SMB1FileStoreHelper.QueryDirectory.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\SMB1FileStoreHelper.QueryFileSystem.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\SMB1FileStoreHelper.Set.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\Transaction2SubcommandHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\TransactionHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\TransactionSubcommandHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB1\TreeConnectHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB2\CancelHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB2\ChangeNotifyHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB2\CloseHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB2\CreateHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB2\EchoHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB2\IOCtlHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB2\LockHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB2\NegotiateHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB2\QueryDirectoryHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB2\QueryInfoHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB2\ReadWriteResponseHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB2\SessionSetupHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB2\SetInfoHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMB2\TreeConnectHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMBServer.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMBServer.SMB1.cs" />
+    <Compile Include="Smb\SMBLibrary\Server\SMBServer.SMB2.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\Enums\PlatformName.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\Exceptions\UnsupportedOpNumException.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\RemoteService.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\RemoteServiceHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\RPCPipeStream.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\EnumStructures\ShareTypeExtended.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Enums\Permissions.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Enums\ServerServiceOpName.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Enums\ServerType.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\NetrServerGetInfoRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\NetrServerGetInfoResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\NetrShareEnumRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\NetrShareEnumResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\NetrShareGetInfoRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\NetrShareGetInfoResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\ServerService.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ServerInfo\ServerInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ServerInfo\ServerInfo100.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ServerInfo\ServerInfo101.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ServerInfo\ServerInfoLevel.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ShareInfo\IShareInfoContainer.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ShareInfo\IShareInfoEntry.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ShareInfo\ShareEnum.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ShareInfo\ShareInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ShareInfo\ShareInfo0Container.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ShareInfo\ShareInfo0Entry.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ShareInfo\ShareInfo2Container.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ShareInfo\ShareInfo1Container.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ShareInfo\ShareInfo1Entry.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ShareInfo\ShareInfo502Entry.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\ServerService\Structures\ShareInfo\ShareInfo2Entry.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\WorkstationService\Enums\WorkstationServiceOpName.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\WorkstationService\NetrWkstaGetInfoRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\WorkstationService\NetrWkstaGetInfoResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\WorkstationService\Structures\WorkstationInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\WorkstationService\Structures\WorkstationInfo100.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\WorkstationService\Structures\WorkstationInfo101.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\WorkstationService\Structures\WorkstationInfoLevel.cs" />
+    <Compile Include="Smb\SMBLibrary\Services\WorkstationService\WorkstationService.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Enums\FindInformationLevel.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Enums\QueryFSInformationLevel.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Enums\QueryInformationLevel.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Enums\SetInformationLevel.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Helpers\FindInformationHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Helpers\QueryFSInformationHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Helpers\QueryInformationHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Helpers\SetInformationHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\ExtendedFileAttributes\ExtendedAttributeName.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\ExtendedFileAttributes\ExtendedAttributeNameList.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\ExtendedFileAttributes\FullExtendedAttribute.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\ExtendedFileAttributes\FullExtendedAttributeList.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\FindInformation\FindFileBothDirectoryInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\FindInformation\FindFileDirectoryInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\FindInformation\FindFileFullDirectoryInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\FindInformation\FindFileIDBothDirectoryInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\FindInformation\FindFileIDFullDirectoryInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\FindInformation\FindFileNamesInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\FindInformation\FindInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\FindInformation\FindInformationList.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\QueryFSInformation\QueryFSAttibuteInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\QueryFSInformation\QueryFSDeviceInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\QueryFSInformation\QueryFSInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\QueryFSInformation\QueryFSSizeInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\QueryFSInformation\QueryFSVolumeInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\QueryInformation\QueryFileAllInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\QueryInformation\QueryFileAltNameInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\QueryInformation\QueryFileBasicInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\QueryInformation\QueryFileCompressionInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\QueryInformation\QueryFileEaInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\QueryInformation\QueryFileNameInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\QueryInformation\QueryFileStandardInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\QueryInformation\QueryFileStreamInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\QueryInformation\QueryInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\SetInformation\SetFileAllocationInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\SetInformation\SetFileBasicInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\SetInformation\SetFileDispositionInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\SetInformation\SetFileEndOfFileInfo.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1FileStore\Structures\SetInformation\SetInformation.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\CheckDirectoryRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\CheckDirectoryResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\CloseRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\CloseResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\CreateDirectoryRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\CreateDirectoryResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\DeleteDirectoryRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\DeleteDirectoryResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\DeleteRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\DeleteResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\EchoRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\EchoResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\ErrorResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\FindClose2Request.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\FindClose2Response.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\FlushRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\FlushResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\LockingAndXRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\LockingAndXResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\LogoffAndXRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\LogoffAndXResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\NegotiateRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\NegotiateResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\NegotiateResponseExtended.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\NegotiateResponseNotSupported.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\NTCancelRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\NTCreateAndXRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\NTCreateAndXResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\NTCreateAndXResponseExtended.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\NTTransactInterimResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\NTTransactRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\NTTransactResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\NTTransactSecondaryRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\OpenAndXRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\OpenAndXResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\OpenAndXResponseExtended.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\QueryInformationRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\QueryInformationResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\ReadAndXRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\ReadAndXResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\ReadRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\ReadResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\RenameRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\RenameResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\SessionSetupAndXRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\SessionSetupAndXRequestExtended.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\SessionSetupAndXResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\SessionSetupAndXResponseExtended.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\SetInformation2Request.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\SetInformation2Response.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\SetInformationRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\SetInformationResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\SMB1Command.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\SMBAndXCommand.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\Transaction2InterimResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\Transaction2Request.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\Transaction2Response.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\Transaction2SecondaryRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\TransactionInterimResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\TransactionRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\TransactionResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\TransactionSecondaryRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\TreeConnectAndXRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\TreeConnectAndXResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\TreeConnectAndXResponseExtended.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\TreeDisconnectRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\TreeDisconnectResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\WriteAndXRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\WriteAndXResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\WriteRawFinalResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\WriteRawInterimResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\WriteRawRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\WriteRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Commands\WriteResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\EnumStructures\NamedPipeStatus.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\EnumStructures\OpenResults.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\CommandName.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\ExtendedFileAttributes.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\HeaderFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\HeaderFlags2.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\Locking\LockType.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\Negotiate\Capabilities.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\Negotiate\SecurityMode.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\NTCreate\FileStatusFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\NTCreate\NTCreateFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\NTCreate\OpLockLevel.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\NTCreate\SecurityFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\Open\AccessRights.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\Open\OpenFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\Open\OpenResult.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\ResourceType.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\SessionSetup\SessionSetupAction.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\SMBFileAttributes.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\Transaction\TransactionFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\TreeConnect\OptionalSupportFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\TreeConnect\ServiceName.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\TreeConnect\TreeConnectFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Enums\Write\WriteMode.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\NTTransactSubcommands\Enums\NTTransactSubcommandName.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\NTTransactSubcommands\NTTransactCreateRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\NTTransactSubcommands\NTTransactIOCTLRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\NTTransactSubcommands\NTTransactIOCTLResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\NTTransactSubcommands\NTTransactNotifyChangeRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\NTTransactSubcommands\NTTransactNotifyChangeResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\NTTransactSubcommands\NTTransactQuerySecurityDescriptorRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\NTTransactSubcommands\NTTransactQuerySecurityDescriptorResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\NTTransactSubcommands\NTTransactSetSecurityDescriptorRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\NTTransactSubcommands\NTTransactSetSecurityDescriptorResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\NTTransactSubcommands\NTTransactSubcommand.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\ServiceNameHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\SMB1Header.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\SMB1Helper.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\SMB1Message.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\EnumStructures\AccessModeOptions.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\EnumStructures\ActionTaken.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\EnumStructures\OpenMode.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Enums\FindFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Enums\Open2Flags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Enums\SearchStorageType.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Enums\Transaction2SubcommandName.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2CreateDirectoryRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2CreateDirectoryResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2FindFirst2Request.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2FindFirst2Response.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2FindNext2Request.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2FindNext2Response.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2GetDfsReferralRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2GetDfsReferralResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2Open2Request.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2Open2Response.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2QueryFileInformationRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2QueryFileInformationResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2QueryFSInformationRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2QueryFSInformationResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2QueryPathInformationRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2QueryPathInformationResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2SetFileInformationRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2SetFileInformationResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2SetFSInformationRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2SetFSInformationResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2SetPathInformationRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2SetPathInformationResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\Transaction2Subcommands\Transaction2Subcommand.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\Enums\NamedPipeState.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\Enums\PipeState.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\Enums\TransactionSubcommandName.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionCallNamedPipeRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionCallNamedPipeResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionPeekNamedPipeRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionPeekNamedPipeResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionQueryNamedPipeInfoRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionQueryNamedPipeInfoResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionQueryNamedPipeStateRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionQueryNamedPipeStateResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionRawReadNamedPipeRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionRawReadNamedPipeResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionRawWriteNamedPipeRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionRawWriteNamedPipeResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionReadNamedPipeRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionReadNamedPipeResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionSetNamedPipeStateRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionSetNamedPipeStateResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionSubcommand.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionTransactNamedPipeRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionTransactNamedPipeResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionWaitNamedPipeRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionWriteNamedPipeRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\TransactionSubcommands\TransactionWriteNamedPipeResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB1\UTimeHelper.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\CancelRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\ChangeNotifyRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\ChangeNotifyResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\CloseRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\CloseResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\CreateRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\CreateResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\EchoRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\EchoResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\ErrorResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\FlushRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\FlushResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\IOCtlRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\IOCtlResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\LockRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\LockResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\LogoffRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\LogoffResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\NegotiateRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\NegotiateResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\QueryDirectoryRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\QueryDirectoryResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\QueryInfoRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\QueryInfoResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\ReadRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\ReadResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\SessionSetupRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\SessionSetupResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\SetInfoRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\SetInfoResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\SMB2Command.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\TreeConnectRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\TreeConnectResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\TreeDisconnectRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\TreeDisconnectResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\WriteRequest.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Commands\WriteResponse.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\ChangeNotify\ChangeNotifyFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\Close\CloseFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\Create\CreateAction.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\Create\CreateResponseFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\Create\OplockLevel.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\InfoType.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\IOCtl\IOCtlRequestFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\Negotiate\Capabilities.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\Negotiate\NegotiateContextType.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\Negotiate\SecurityMode.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\Negotiate\SMB2Dialect.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\QueryDirectory\QueryDirectoryFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\Read\ReadFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\SessionSetup\SessionFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\SessionSetup\SessionSetupFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\SMB2CommandName.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\SMB2PacketHeaderFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\SMB2TransformHeaderFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\TreeConnect\ShareCapabilities.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\TreeConnect\ShareFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\TreeConnect\ShareType.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Enums\Write\WriteFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\SMB2Cryptography.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\SMB2Header.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\SMB2TransformHeader.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Structures\CreateContext.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Structures\Enums\LockFlags.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Structures\FileID.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Structures\LockElement.cs" />
+    <Compile Include="Smb\SMBLibrary\SMB2\Structures\NegotiateContext.cs" />
+    <Compile Include="Smb\SMBLibrary\Utilities\LogEntry.cs" />
+    <Compile Include="Smb\SMBLibrary\Utilities\SocketUtils.cs" />
+    <Compile Include="Smb\Utilities\ByteUtils\BigEndianReader.cs" />
+    <Compile Include="Smb\Utilities\ByteUtils\BigEndianWriter.cs" />
+    <Compile Include="Smb\Utilities\ByteUtils\ByteReader.cs" />
+    <Compile Include="Smb\Utilities\ByteUtils\ByteUtils.cs" />
+    <Compile Include="Smb\Utilities\ByteUtils\ByteWriter.cs" />
+    <Compile Include="Smb\Utilities\ByteUtils\LittleEndianReader.cs" />
+    <Compile Include="Smb\Utilities\ByteUtils\LittleEndianWriter.cs" />
+    <Compile Include="Smb\Utilities\Comparers\ReverseComparer.cs" />
+    <Compile Include="Smb\Utilities\Conversion\BigEndianConverter.cs" />
+    <Compile Include="Smb\Utilities\Conversion\Conversion.SimpleTypes.cs" />
+    <Compile Include="Smb\Utilities\Conversion\LittleEndianConverter.cs" />
+    <Compile Include="Smb\Utilities\Cryptography\AesCcm.cs" />
+    <Compile Include="Smb\Utilities\Cryptography\AesCmac.cs" />
+    <Compile Include="Smb\Utilities\Cryptography\CRC32.cs" />
+    <Compile Include="Smb\Utilities\Generics\BlockingQueue.cs" />
+    <Compile Include="Smb\Utilities\Generics\KeyValuePairList.cs" />
+    <Compile Include="Smb\Utilities\Generics\KeyValuePairList.Sort.cs" />
+    <Compile Include="Smb\Utilities\Generics\Map.cs" />
+    <Compile Include="Smb\Utilities\Generics\Reference.cs" />
+    <Compile Include="Smb\Utilities\Generics\SortedList.cs" />
+    <Compile Include="Smb\Utilities\Strings\QuotedStringUtils.cs" />
+    <Compile Include="Smb\Utilities\Threading\CountdownLatch.cs" />
+    <Compile Include="Smb\Utilities\Threading\Parallel.cs" />
+    <Compile Include="IStorage\StandardActivator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Clients\Attacks\Ldap\DSInternals.Common\Properties\Resources.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="NetFwTypeLib">
+      <Guid>{58FBCF7C-E7A9-467C-80B3-FC65E8FCCA08}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\dnMerge.0.5.15\build\dnMerge.targets" Condition="Exists('..\packages\dnMerge.0.5.15\build\dnMerge.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\dnMerge.0.5.15\build\dnMerge.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\dnMerge.0.5.15\build\dnMerge.targets'))" />
+    <Error Condition="!Exists('..\packages\ILMerge.3.0.41\build\ILMerge.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ILMerge.3.0.41\build\ILMerge.props'))" />
+  </Target>
+</Project>

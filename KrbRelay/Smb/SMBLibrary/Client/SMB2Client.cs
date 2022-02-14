@@ -228,11 +228,14 @@ namespace SMBLibrary.Client
                 throw new InvalidOperationException("A connection must be successfully established before attempting login");
             }
 
+            //send apReq
             SessionSetupRequest request = new SessionSetupRequest();
             request.SecurityMode = SecurityMode.SigningEnabled;
             request.SecurityBuffer = ticket;
             TrySendCommand(request);
             SMB2Command response = WaitForCommand(request.MessageID);
+            
+            //get apRep
             byte[] answer = response.GetBytes();
             int pattern = KrbRelay.Helpers.PatternAt(answer, new byte[] { 0x6f, 0x81 }); //0x6f, 0x81, 0x87
             ticket = answer.Skip(pattern).ToArray();

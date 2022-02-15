@@ -126,7 +126,16 @@ namespace KrbRelay
                 int ticketOffset = Helpers.PatternAt(ticket, new byte[] { 0x6e, 0x82 }); // 0x6e, 0x82, 0x06
                 ticket = ticket.Skip(ticketOffset).ToArray();
                 ticket = Helpers.ConvertApReq(ticket);
-                Console.WriteLine("[*] apReq: {0}", Helpers.ByteArrayToString(ticket));
+                if(ticket[0] != 0x60)
+                {
+                    Console.WriteLine("[-] Recieved invalid apReq, exploit will fail");
+                    Console.WriteLine("{0}", Helpers.ByteArrayToString(ticket));
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    Console.WriteLine("[*] apReq: {0}", Helpers.ByteArrayToString(ticket));
+                }
             }
             else
             {

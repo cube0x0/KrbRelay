@@ -225,7 +225,9 @@ namespace KrbRelay.Clients.Attacks.Smb
                                 break;
                         }
                         if (exit)
+                        {
                             break;
+                        }
                     }
                     catch (Exception e)
                     {

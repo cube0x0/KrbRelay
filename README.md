@@ -157,7 +157,7 @@ System.Runtime.InteropServices.COMException (0x80080004): Bad path to object (Ex
 System.Runtime.InteropServices.COMException (0x800706D3): The authentication service is unknown.
 ```
 
-#### Parsing Error, valid apRep tickets starts with 6f
+#### Parsing Error, valid apRep tickets starts with 0x6f
 
 ```
 [*] apRep1: fe534d4240000100160000c00100010001000000000000000100000000000000000000000000000035000000006c0000000000000000000000000000000000000900000048006000605e06092a864886f71201020203007e4f304da003020105a10302011ea411180f32303232303230373134303935325aa5050203045ad0a603020121a90b1b094854422e4c4f43414caa153013a003020101a10c300a1b0877696e3230313624
@@ -166,6 +166,12 @@ System.Runtime.InteropServices.COMException (0x800706D3): The authentication ser
 System.UnauthorizedAccessException: Access is denied.
 
 Access is denied.
+```
+
+#### A valid apReq starts with 0x60, check your environment and parameters
+
+```
+[*] apReq: 05000b0710000000db003300020<SNIP>
 ```
 
 #### CLSID impersonation level or authentication level too low

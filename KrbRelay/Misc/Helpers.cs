@@ -11,6 +11,8 @@ namespace KrbRelay
 {
     internal class Helpers
     {
+
+
         //https://github.com/rvazarkar/GMSAPasswordReader
         public static string KerberosPasswordHash(Interop.KERB_ETYPE etype, string password, string salt = "", int count = 4096)
         {
@@ -362,6 +364,12 @@ namespace KrbRelay
             }
 
             return result;
+        }
+
+        public static uint TrustAllCertificates(IntPtr ld)
+        {
+            return Natives.ldap_set_option(ld, 0x81, //LDAP_OPT_SERVER_CERTIFICATE
+                Marshal.GetFunctionPointerForDelegate<Natives.VERIFYSERVERCERT>((connection, serverCert) => true));
         }
     }
 }

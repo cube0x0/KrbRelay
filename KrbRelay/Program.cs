@@ -732,6 +732,7 @@ namespace KrbRelay
                 }
 
                 uint LDAP_OPT_ON = 1;
+                uint LDAP_OPT_OFF = 1;
                 uint version = 3;
                 var ldapStatus = ldap_set_option(ld, 0x11, ref version);
 
@@ -748,12 +749,14 @@ namespace KrbRelay
                     ldap_get_option(ld, 0x0096, out lv);  //LDAP_OPT_ENCRYPT
                     if (lv == 0)
                         ldap_set_option(ld, 0x0096, ref LDAP_OPT_ON);
+                    
+                    Helpers.TrustAllCertificates(ld);
                 }
 
                 ldapStatus = ldap_connect(ld, timeout);
                 if (ldapStatus != 0)
                 {
-                    Console.WriteLine("[-] Could not connect to {0}", targetFQDN);
+                    Console.WriteLine("[-] Could not connect to {0}. ldap_connect failed with error code 0x{1}", targetFQDN, ldapStatus.ToString("x2"));
                     return;
                 }
             }

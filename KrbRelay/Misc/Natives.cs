@@ -45,6 +45,9 @@ namespace KrbRelay
         [DllImport("wldap32", EntryPoint = "ldap_set_option", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
         public static extern uint ldap_set_option(IntPtr ld, uint option, ref uint invalue);
 
+        [DllImport("wldap32", EntryPoint = "ldap_set_option", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+        public static extern uint ldap_set_option(IntPtr ld, uint option, IntPtr pointer);
+
         [DllImport("wldap32", EntryPoint = "ldap_connect", CharSet = CharSet.Ansi, SetLastError = true)]
         public static extern uint ldap_connect(IntPtr ld, LDAP_TIMEVAL timeout);
 
@@ -238,6 +241,11 @@ namespace KrbRelay
         );
 
         //deleg
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate bool VERIFYSERVERCERT(
+            IntPtr connection, 
+            IntPtr pServerCert);
+
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate int RPC_IF_CALLBACK_FN(IntPtr InterfaceUuid, IntPtr Context);
 

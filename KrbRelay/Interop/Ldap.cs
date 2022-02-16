@@ -105,6 +105,9 @@ namespace KrbRelay
         ReferralLimitExceeded = -17,
     }
 
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate bool VERIFYSERVERCERT(IntPtr connection, IntPtr pServerCert);
+
     [StructLayout(LayoutKind.Sequential)]
     internal class berval
     {

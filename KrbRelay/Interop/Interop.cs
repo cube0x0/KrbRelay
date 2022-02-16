@@ -15,6 +15,9 @@ namespace KrbRelay
         [DllImport("wldap32", CallingConvention = CallingConvention.Cdecl)]
         internal static extern uint ldap_set_option(IntPtr ld, uint option, ref uint invalue);
 
+        [DllImport("wldap32",CallingConvention = CallingConvention.Cdecl)]
+        internal static extern uint ldap_set_option(IntPtr ld, uint option, IntPtr pointer);
+
         [DllImport("wldap32", CallingConvention = CallingConvention.Cdecl)]
         internal static extern uint ldap_connect(IntPtr ld, LDAP_TIMEVAL timeout);
 

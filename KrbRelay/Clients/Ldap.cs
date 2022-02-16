@@ -130,11 +130,11 @@ namespace KrbRelay.Clients
                             break;
 
                         case "reset-password":
-                            Attacks.Ldap.setPassword.attack(ld, arg1, arg2);
+                            Attacks.Ldap.SetPassword.attack(ld, arg1, arg2);
                             break;
 
                         case "add-groupmember":
-                            Attacks.Ldap.addGroupMember.attack(ld, arg1, arg2);
+                            Attacks.Ldap.AddGroupMember.attack(ld, arg1, arg2);
                             break;
 
                         case "add-acl":

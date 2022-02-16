@@ -626,7 +626,7 @@ namespace KrbRelay
                     if (lv == 0)
                         Interop.ldap_set_option(State.ld, 0x0096, ref LDAP_OPT_ON);
 
-                    Helpers.TrustAllCertificates(ld);
+                    Helpers.TrustAllCertificates(State.ld);
                 }
 
                 ldapStatus = Interop.ldap_connect(State.ld, timeout);

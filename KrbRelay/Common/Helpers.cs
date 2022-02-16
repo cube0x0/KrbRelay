@@ -149,6 +149,12 @@ namespace KrbRelay
                 }
             }
         }
+        public static uint TrustAllCertificates(IntPtr ld)
+        {
+            return Interop.ldap_set_option(ld, 0x81, //LDAP_OPT_SERVER_CERTIFICATE
+                Marshal.GetFunctionPointerForDelegate<VERIFYSERVERCERT>((connection, serverCert) => true)
+            );
+        }
 
         public static bool GetWtsSessionData(int SessionId)
         {

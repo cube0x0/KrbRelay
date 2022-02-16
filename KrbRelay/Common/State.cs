@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+// Manages the shared state accross the project, obviously global vars aren't the best
+// solution, but works pretty well given how many different components share things
+// like kerberos tickets for relays
 
 namespace KrbRelay
 {

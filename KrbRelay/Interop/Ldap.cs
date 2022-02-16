@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Text;
-using SMBLibrary;
+
+// All enums, structs, and helper types related to LDAP
 
 namespace KrbRelay
 {

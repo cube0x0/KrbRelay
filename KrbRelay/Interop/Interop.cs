@@ -2,6 +2,10 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
+// Contains all the DllImport declarations for native functions used throughout
+// the project. Prefer minimal attributes (EntryPoint, CharSet, Convetion, etc.)
+// where possible and defined structures as arguments over basic IntPtrs.
+
 namespace KrbRelay
 {
     public class Interop
@@ -9,20 +13,20 @@ namespace KrbRelay
         // LDAP
 
         [DllImport("wldap32", CallingConvention = CallingConvention.Cdecl)]
-        public static extern uint ldap_set_option(IntPtr ld, uint option, ref uint invalue);
+        internal static extern uint ldap_set_option(IntPtr ld, uint option, ref uint invalue);
 
         [DllImport("wldap32", CallingConvention = CallingConvention.Cdecl)]
-        public static extern uint ldap_connect(IntPtr ld, LDAP_TIMEVAL timeout);
+        internal static extern uint ldap_connect(IntPtr ld, LDAP_TIMEVAL timeout);
 
         [DllImport("wldap32", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr ldap_init(string hostname, uint port);
+        internal static extern IntPtr ldap_init(string hostname, uint port);
 
         [DllImport(
             "wldap32",
             EntryPoint = "ldap_sasl_bind_s",
             CallingConvention = CallingConvention.Cdecl
         )]
-        public static extern int ldap_sasl_bind(
+        internal static extern int ldap_sasl_bind(
             [In] IntPtr ld,
             string dn,
             string mechanism,
@@ -237,14 +241,14 @@ namespace KrbRelay
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [PreserveSig]
-        public static extern uint GetModuleFileName(
+        internal static extern uint GetModuleFileName(
             [In] IntPtr hModule,
             [Out] StringBuilder lpFilename,
             [In] [MarshalAs(UnmanagedType.U4)] int nSize
         );
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool WriteProcessMemory(
+        internal static extern bool WriteProcessMemory(
             IntPtr hProcess,
             IntPtr lpBaseAddress,
             byte[] lpBuffer,
@@ -256,7 +260,7 @@ namespace KrbRelay
         internal static extern int RegOverridePredefKey(IntPtr hKey,IntPtr hNewHKey);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool ReadProcessMemory(
+        internal static extern bool ReadProcessMemory(
             IntPtr hProcess,
             IntPtr lpBaseAddress,
             byte[] lpBuffer,
@@ -266,7 +270,7 @@ namespace KrbRelay
 
         // RPC
         [DllImport("rpcrt4.dll")]
-        public static extern int RpcServerUseProtseqEp(
+        internal static extern int RpcServerUseProtseqEp(
             string Protseq,
             uint MaxCalls,
             string Endpoint,
@@ -280,7 +284,7 @@ namespace KrbRelay
             CharSet = CharSet.Unicode,
             SetLastError = true
         )]
-        public static extern int RpcServerRegisterAuthInfo(
+        internal static extern int RpcServerRegisterAuthInfo(
             String ServerPrincName,
             uint AuthnSvc,
             IntPtr GetKeyFn,

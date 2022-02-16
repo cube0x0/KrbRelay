@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
+// All enums, structs, and helper types not specifically fitting into another file
+
 namespace KrbRelay
 {
     internal enum AuthenticationCapabilities

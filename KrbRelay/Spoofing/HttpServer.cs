@@ -115,12 +115,12 @@ namespace KrbRelay.Spoofing
                 IntPtr.Zero,
                 IntPtr.Zero,
                 out IntPtr servresp);
-            Console.WriteLine("[*] bind: {0}", bind);
+            Console.WriteLine("[*] ldap_sasl_bind: {0}", (LdapStatus)bind);
 
             Interop.ldap_get_option(State.ld, 0x0031, out int value);
             LdapStatus status = (LdapStatus)value;
 
-            Console.WriteLine("[*] Interop.ldap_get_option: {0}", status);
+            Console.WriteLine("[*] ldap_get_option: {0}", status);
 
             if (status == LdapStatus.Success)
             {

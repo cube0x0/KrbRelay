@@ -77,6 +77,7 @@ namespace KrbRelay
             Console.WriteLine("-llmnr                    LLMNR poisoning");
         }
 
+        [STAThread]
         public static void Main(string[] args)
         {
             string clsid = "";
@@ -517,11 +518,13 @@ namespace KrbRelay
                 string[] d = State.spn.Split('.').Skip(1).ToArray();
                 domain = string.Join(".", d);
             }
+
             if (string.IsNullOrEmpty(State.targetFQDN))
             {
                 string[] d = State.spn.Split('/').Skip(1).ToArray();
                 State.targetFQDN = string.Join(".", d);
             }
+
             var domainComponent = domain.Split('.');
             foreach (string dc in domainComponent)
             {
@@ -529,13 +532,17 @@ namespace KrbRelay
             }
             State.domainDN = State.domainDN.TrimStart(',');
 
-            Helpers.LoadLDAPLibrary();
-
             service = State.spn.Split('/').First().ToLower();
             if (!(new List<string> { "ldap", "cifs", "http" }.Contains(service)))
             {
                 Console.WriteLine("'{0}' service not supported", service);
                 Console.WriteLine("choose from CIFS, LDAP and HTTP");
+                return;
+            }
+
+            if (State.attacks.ContainsKey("gmsa") && !State.useSSL)
+            {
+                Console.WriteLine("Getting gMSA passwords requires SSL (-ssl)", service);
                 return;
             }
 
@@ -840,8 +847,6 @@ namespace KrbRelay
             qis[0].pItf = null;
             qis[0].hr = 0;
 
-            Console.WriteLine();
-
             if (sessionID == -123)
             {
                 Console.WriteLine("[*] Forcing SYSTEM authentication");
@@ -907,8 +912,6 @@ namespace KrbRelay
                     Console.WriteLine(e);
                 }
             }
-
-            //Marshal.BindToMoniker(std.ToMoniker());
 
             return;
         }

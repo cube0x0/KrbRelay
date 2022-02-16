@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using KrbRelay.Clients;
+
+// Handles the installation of hooks for SSPI functions (currently only AcceptSecurityContext).
+//
+// It will update both the function table in sspicli and search for existing references in
+// modules that are already loaded - Hook(searchModules). On dispose, it will reset all addresses.
 
 namespace KrbRelay
 {
@@ -53,7 +55,7 @@ namespace KrbRelay
                 installed[originalFunction] = hookFunction;
                 resets[functionPtr] = originalFunction;
 
-                Console.WriteLine(" |- sspicli.dll!SecTableW->{0}", hook.Key);
+                Console.WriteLine(" |- sspicli.dll!SecTableW->{0} [0x{1:X8}]", hook.Key, functionPtr);
             }
 
             foreach (var module in searchModules)

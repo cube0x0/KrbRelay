@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
+﻿
+// All enums, structs, and helper types related to the WTS/Session subsystem
 
 namespace KrbRelay
 {

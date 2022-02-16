@@ -8,7 +8,12 @@ namespace KrbRelay.HiveParser
     // Modified version of https://github.com/G0ldenGunSec/SharpSecDump
     public class Parse
     {
-        public static void ParseSecrets(byte[] samBytes, byte[] securityBytes, byte[] systemBytes, byte[] bootKey)
+        public static void ParseSecrets(
+            byte[] samBytes,
+            byte[] securityBytes,
+            byte[] systemBytes,
+            byte[] bootKey
+        )
         {
             StringBuilder sb = new StringBuilder();
 

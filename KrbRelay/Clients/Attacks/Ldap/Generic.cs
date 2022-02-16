@@ -3,31 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using static KrbRelay.Natives;
 
 namespace KrbRelay.Clients.Attacks.Ldap
 {
     internal class Generic
     {
-        public static Dictionary<string, List<byte[]>> GetLdapAttributes(IntPtr ld, IntPtr entry, ref IntPtr ber)
+        public static Dictionary<string, List<byte[]>> GetLdapAttributes(
+            IntPtr ld,
+            IntPtr entry,
+            ref IntPtr ber
+        )
         {
             Dictionary<string, List<byte[]>> list = new Dictionary<string, List<byte[]>>();
-            for (var attr = ldap_first_attribute(ld, entry, ref ber);
+            for (
+                var attr = Interop.ldap_first_attribute(ld, entry, ref ber);
                 attr != IntPtr.Zero;
-                attr = ldap_next_attribute(ld, entry, ber))
+                attr = Interop.ldap_next_attribute(ld, entry, ber)
+            )
             {
-                var vals = ldap_get_values_len(ld, entry, attr);
+                var vals = Interop.ldap_get_values_len(ld, entry, attr);
                 if (vals != IntPtr.Zero)
                 {
                     var attrName = Marshal.PtrToStringUni(attr);
                     if (attrName != null)
                     {
-                        list.Add(
-                            attrName,
-                            Helpers.BerValArrayToByteArrays(vals)
-                        );
+                        list.Add(attrName, Helpers.BerValArrayToByteArrays(vals));
                     }
-                    ldap_value_free_len(vals);
+                    Interop.ldap_value_free_len(vals);
                 }
             }
             return list;
@@ -35,7 +37,7 @@ namespace KrbRelay.Clients.Attacks.Ldap
 
         public static string GetLdapDn(IntPtr ld, IntPtr entry)
         {
-            var ptr = ldap_get_dn(ld, entry);
+            var ptr = Interop.ldap_get_dn(ld, entry);
             var dn = Marshal.PtrToStringUni(ptr);
             return dn;
         }
@@ -43,19 +45,21 @@ namespace KrbRelay.Clients.Attacks.Ldap
         public static LdapStatus setAttribute(IntPtr ld, string attribute, byte[] value, string dn)
         {
             var modPropPtr = Marshal.StringToHGlobalUni(attribute);
-            var modValue = new List<byte[]> {
-                value
-            };
+            var modValue = new List<byte[]> { value };
             var modValuePtr = Marshal.AllocHGlobal(IntPtr.Size * 2);
-            Helpers.ByteArraysToBerValueArray(modValue.Select(_ => _ ?? new byte[0]).ToArray(), modValuePtr);
-            List<LDAPMod> mod = new List<LDAPMod> {
-                new LDAPMod {
-                    mod_op = (int)LdapModOperation.LDAP_MOD_REPLACE | (int)LdapModOperation.LDAP_MOD_BVALUES,
+            Helpers.ByteArraysToBerValueArray(
+                modValue.Select(_ => _ ?? new byte[0]).ToArray(),
+                modValuePtr
+            );
+            List<LDAPMod> mod = new List<LDAPMod>
+            {
+                new LDAPMod
+                {
+                    mod_op =
+                        (int)LdapModOperation.Replace
+                        | (int)LdapModOperation.BValues,
                     mod_type = modPropPtr,
-                    mod_vals_u = new LDAPMod.mod_vals
-                    {
-                        modv_bvals = modValuePtr
-                    },
+                    mod_vals_u = new LDAPMod.mod_vals { modv_bvals = modValuePtr },
                     mod_next = IntPtr.Zero
                 }
             };
@@ -63,15 +67,17 @@ namespace KrbRelay.Clients.Attacks.Ldap
             Helpers.StructureArrayToPtr(mod, ptr, true);
 
             //int rest = ldap_modify_ext(ld, dn, ptr, IntPtr.Zero, IntPtr.Zero, out int pMessage);
-            int rest = Natives.ldap_modify_s(ld, dn, ptr);
+            int rest = Interop.ldap_modify(ld, dn, ptr);
             Console.WriteLine("[*] ldap_modify: {0}", (LdapStatus)rest);
 
-            mod.ForEach(_ =>
-            {
-                Helpers.BerValuesFree(_.mod_vals_u.modv_bvals);
-                Marshal.FreeHGlobal(_.mod_vals_u.modv_bvals);
-                Marshal.FreeHGlobal(_.mod_type);
-            });
+            mod.ForEach(
+                _ =>
+                {
+                    Helpers.BerValuesFree(_.mod_vals_u.modv_bvals);
+                    Marshal.FreeHGlobal(_.mod_vals_u.modv_bvals);
+                    Marshal.FreeHGlobal(_.mod_type);
+                }
+            );
             Marshal.FreeHGlobal(ptr);
 
             return (LdapStatus)rest;
@@ -80,19 +86,20 @@ namespace KrbRelay.Clients.Attacks.Ldap
         public static LdapStatus addAttribute(IntPtr ld, string attribute, byte[] value, string dn)
         {
             var modPropPtr = Marshal.StringToHGlobalUni(attribute);
-            var modValue = new List<byte[]> {
-                value
-            };
+            var modValue = new List<byte[]> { value };
             var modValuePtr = Marshal.AllocHGlobal(IntPtr.Size * 2);
-            Helpers.ByteArraysToBerValueArray(modValue.Select(_ => _ ?? new byte[0]).ToArray(), modValuePtr);
-            List<LDAPMod> mod = new List<LDAPMod> {
-                new LDAPMod {
-                    mod_op = (int)LdapModOperation.LDAP_MOD_ADD | (int)LdapModOperation.LDAP_MOD_BVALUES,
+            Helpers.ByteArraysToBerValueArray(
+                modValue.Select(_ => _ ?? new byte[0]).ToArray(),
+                modValuePtr
+            );
+            List<LDAPMod> mod = new List<LDAPMod>
+            {
+                new LDAPMod
+                {
+                    mod_op =
+                        (int)LdapModOperation.Add | (int)LdapModOperation.BValues,
                     mod_type = modPropPtr,
-                    mod_vals_u = new LDAPMod.mod_vals
-                    {
-                        modv_bvals = modValuePtr
-                    },
+                    mod_vals_u = new LDAPMod.mod_vals { modv_bvals = modValuePtr },
                     mod_next = IntPtr.Zero
                 }
             };
@@ -100,15 +107,17 @@ namespace KrbRelay.Clients.Attacks.Ldap
             Helpers.StructureArrayToPtr(mod, ptr, true);
 
             //int rest = ldap_modify_ext(ld, dn, ptr, IntPtr.Zero, IntPtr.Zero, out int pMessage);
-            int rest = ldap_modify_s(ld, dn, ptr);
+            int rest = Interop.ldap_modify(ld, dn, ptr);
             Console.WriteLine("[*] ldap_modify: {0}", (LdapStatus)rest);
 
-            mod.ForEach(_ =>
-            {
-                Helpers.BerValuesFree(_.mod_vals_u.modv_bvals);
-                Marshal.FreeHGlobal(_.mod_vals_u.modv_bvals);
-                Marshal.FreeHGlobal(_.mod_type);
-            });
+            mod.ForEach(
+                _ =>
+                {
+                    Helpers.BerValuesFree(_.mod_vals_u.modv_bvals);
+                    Marshal.FreeHGlobal(_.mod_vals_u.modv_bvals);
+                    Marshal.FreeHGlobal(_.mod_type);
+                }
+            );
             Marshal.FreeHGlobal(ptr);
 
             return (LdapStatus)rest;
@@ -131,26 +140,22 @@ namespace KrbRelay.Clients.Attacks.Ldap
             IntPtr pLaps = Helpers.AllocHGlobalIntPtrArray(1 + 1);
             var controlPtr = Marshal.StringToHGlobalUni("DistinguishedName");
             Marshal.WriteIntPtr(pLaps, IntPtr.Size * 0, controlPtr);
-            var search = Natives.ldap_search(
+            var search = Interop.ldap_search(
                 ld,
-                $"{Program.domainDN}",
-                (int)LdapSearchScope.LDAP_SCOPE_SUBTREE,
+                State.domainDN,
+                (int)LdapSearchScope.SubTree,
                 String.Format("(&(objectClass=computer)(sAMAccountName={0}))", computername),
                 pLaps,
-                0);
+                0
+            );
             //Console.WriteLine("[*] msgID: {0}", search);
 
             IntPtr pMessage = IntPtr.Zero;
-            var r = Natives.ldap_result(
-                ld,
-                search,
-                0,
-                timeout,
-                ref pMessage);
-            var entry = ldap_first_entry(ld, pMessage);
+            var r = Interop.ldap_result(ld, search, 0, timeout, ref pMessage);
+            var entry = Interop.ldap_first_entry(ld, pMessage);
             IntPtr ber = IntPtr.Zero;
-            var attr = ldap_first_attribute(ld, entry, ref ber);
-            var vals = ldap_get_values_len(ld, entry, attr);
+            var attr = Interop.ldap_first_attribute(ld, entry, ref ber);
+            var vals = Interop.ldap_get_values_len(ld, entry, attr);
             var attrName = Marshal.PtrToStringUni(attr);
             //Console.WriteLine("ldap_first_attribute: {0}", attr);
             //Console.WriteLine("ldap_get_values_len: {0}", vals);
@@ -159,7 +164,10 @@ namespace KrbRelay.Clients.Attacks.Ldap
             var result = new List<byte[]>();
             foreach (var tempPtr in Helpers.GetPointerArray(vals))
             {
-                Natives.berval bervalue = (Natives.berval)Marshal.PtrToStructure(tempPtr, typeof(Natives.berval));
+                berval bervalue = (berval)Marshal.PtrToStructure(
+                    tempPtr,
+                    typeof(berval)
+                );
                 if (bervalue.bv_len > 0 && bervalue.bv_val != IntPtr.Zero)
                 {
                     var byteArray = new byte[bervalue.bv_len];
@@ -177,33 +185,30 @@ namespace KrbRelay.Clients.Attacks.Ldap
 
         public static string getPropertyValue(IntPtr ld, string adObject, string property)
         {
-            var timeout = new Natives.LDAP_TIMEVAL
+            var timeout = new LDAP_TIMEVAL
             {
                 tv_sec = (int)(new TimeSpan(0, 0, 30).Ticks / TimeSpan.TicksPerSecond)
             };
             IntPtr pLaps = Helpers.AllocHGlobalIntPtrArray(1 + 1);
             var controlPtr = Marshal.StringToHGlobalUni(property);
             Marshal.WriteIntPtr(pLaps, IntPtr.Size * 0, controlPtr);
-            var search = ldap_search(
+
+            var search = Interop.ldap_search(
                 ld,
-                $"{Program.domainDN}",
-                (int)LdapSearchScope.LDAP_SCOPE_SUBTREE,
+                State.domainDN,
+                (int)LdapSearchScope.SubTree,
                 String.Format("(&(objectClass=*)(sAMAccountName={0}))", adObject),
                 pLaps,
-                0);
+                0
+            );
             //Console.WriteLine("[*] msgID: {0}", search);
 
             IntPtr pMessage = IntPtr.Zero;
-            var r = ldap_result(
-                ld,
-                search,
-                0,
-                timeout,
-                ref pMessage);
-            var entry = ldap_first_entry(ld, pMessage);
+            var r = Interop.ldap_result(ld, search, 0, timeout, ref pMessage);
+            var entry = Interop.ldap_first_entry(ld, pMessage);
             IntPtr ber = IntPtr.Zero;
-            var attr = ldap_first_attribute(ld, entry, ref ber);
-            var vals = ldap_get_values_len(ld, entry, attr);
+            var attr = Interop.ldap_first_attribute(ld, entry, ref ber);
+            var vals = Interop.ldap_get_values_len(ld, entry, attr);
             var attrName = Marshal.PtrToStringUni(attr);
             //Console.WriteLine("ldap_first_attribute: {0}", attr);
             //Console.WriteLine("ldap_get_values_len: {0}", vals);
@@ -212,7 +217,7 @@ namespace KrbRelay.Clients.Attacks.Ldap
             var result = new List<byte[]>();
             foreach (var tempPtr in Helpers.GetPointerArray(vals))
             {
-                Natives.berval bervalue = (Natives.berval)Marshal.PtrToStructure(tempPtr, typeof(Natives.berval));
+                berval bervalue = Marshal.PtrToStructure<berval>(tempPtr);
                 if (bervalue.bv_len > 0 && bervalue.bv_val != IntPtr.Zero)
                 {
                     var byteArray = new byte[bervalue.bv_len];

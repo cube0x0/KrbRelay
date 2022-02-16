@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Security.AccessControl;
-using static KrbRelay.Natives;
 
 namespace KrbRelay.Clients.Attacks.Ldap
 {

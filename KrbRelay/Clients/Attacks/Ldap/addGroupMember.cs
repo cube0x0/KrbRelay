@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Text;
-using static KrbRelay.Natives;
 
 namespace KrbRelay.Clients.Attacks.Ldap
 {
-    internal class addGroupMember
+    internal class AddGroupMember
     {
         public static LdapStatus attack(IntPtr ld, string group, string user)
         {

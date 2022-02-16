@@ -42,6 +42,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -84,12 +85,12 @@
     <Compile Include="Clients\Attacks\Http\ADCS.cs" />
     <Compile Include="Clients\Attacks\Http\EWS.cs" />
     <Compile Include="Clients\Attacks\Http\ProxyServer.cs" />
-    <Compile Include="Clients\Attacks\Ldap\addGroupMember.cs" />
+    <Compile Include="Clients\Attacks\Ldap\AddGroupMember.cs" />
     <Compile Include="Clients\Attacks\Ldap\Generic.cs" />
     <Compile Include="Clients\Attacks\Ldap\gMSA.cs" />
     <Compile Include="Clients\Attacks\Ldap\LAPS.cs" />
     <Compile Include="Clients\Attacks\Ldap\RBCD.cs" />
-    <Compile Include="Clients\Attacks\Ldap\setPassword.cs" />
+    <Compile Include="Clients\Attacks\Ldap\SetPassword.cs" />
     <Compile Include="Clients\Attacks\Ldap\ShadowCredential.cs" />
     <Compile Include="Clients\Attacks\Smb\LSA.cs" />
     <Compile Include="Clients\Attacks\Smb\RemoteRegistry.cs" />
@@ -98,6 +99,8 @@
     <Compile Include="Clients\Rpc.cs" />
     <Compile Include="Clients\Smb.cs" />
     <Compile Include="Clients\Http.cs" />
+    <Compile Include="Common\Hooks.cs" />
+    <Compile Include="Common\State.cs" />
     <Compile Include="Com\ComUtils.cs" />
     <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Data\DNWithBinary.cs" />
     <Compile Include="Clients\Attacks\Ldap\DSInternals.Common\Data\Hello\CustomKeyInformation.cs" />
@@ -121,23 +124,28 @@
     <Compile Include="Clients\Attacks\Smb\HiveParser\Registry.cs" />
     <Compile Include="Clients\Attacks\Smb\HiveParser\RegistryHive.cs" />
     <Compile Include="Clients\Attacks\Smb\HiveParser\ValueKey.cs" />
-    <Compile Include="Misc\Helpers.cs" />
-    <Compile Include="Misc\Interop.cs" />
-    <Compile Include="IStorage\IEnumSTATSTG.cs" />
-    <Compile Include="IStorage\ILockBytes.cs" />
-    <Compile Include="IStorage\IMarshal.cs" />
-    <Compile Include="IStorage\IStorage.cs" />
-    <Compile Include="IStorage\IStream.cs" />
-    <Compile Include="IStorage\Ole32.cs" />
-    <Compile Include="IStorage\StorageTrigger.cs" />
+    <Compile Include="Interop\PE.cs" />
+    <Compile Include="Interop\WTS.cs" />
+    <Compile Include="Interop\Misc.cs" />
+    <Compile Include="Interop\Rpc.cs" />
+    <Compile Include="Common\Helpers.cs" />
+    <Compile Include="Interop\Interop.cs" />
+    <Compile Include="Com\IStorage\IEnumSTATSTG.cs" />
+    <Compile Include="Com\IStorage\ILockBytes.cs" />
+    <Compile Include="Com\IStorage\IMarshal.cs" />
+    <Compile Include="Com\IStorage\IStorage.cs" />
+    <Compile Include="Com\IStorage\IStream.cs" />
+    <Compile Include="Com\IStorage\Ole32.cs" />
+    <Compile Include="Com\IStorage\StorageTrigger.cs" />
     <Compile Include="Clients\Ldap.cs" />
     <Compile Include="Com\COMInterfaces.cs" />
     <Compile Include="Com\COMObjRef.cs" />
     <Compile Include="Com\COMUtilities.cs" />
-    <Compile Include="Misc\Natives.cs" />
+    <Compile Include="Interop\Ldap.cs" />
+    <Compile Include="Interop\Kerberos.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Misc\SecurityBuffer.cs" />
+    <Compile Include="Interop\Sspi.cs" />
     <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\EFSServiceHelper.cs" />
     <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\IRPCRequest.cs" />
     <Compile Include="Smb\RPCForSMBLibrary\Client\Helpers\RprnServiceHelper.cs" />
@@ -875,13 +883,14 @@
     <Compile Include="Smb\Utilities\Strings\QuotedStringUtils.cs" />
     <Compile Include="Smb\Utilities\Threading\CountdownLatch.cs" />
     <Compile Include="Smb\Utilities\Threading\Parallel.cs" />
-    <Compile Include="IStorage\StandardActivator.cs" />
+    <Compile Include="Com\IStorage\StandardActivator.cs" />
     <Compile Include="Spoofing\HttpServer.cs" />
     <Compile Include="Spoofing\LLMNR.cs" />
     <Compile Include="Spoofing\UDP.cs" />
     <Compile Include="Spoofing\Util.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".editorconfig" />
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>

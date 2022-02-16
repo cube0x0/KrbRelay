@@ -44,7 +44,11 @@
             byte[] bytes = new byte[length / 2];
 
             // Perform the conversion
-            for (int nibbleIndex = 0, byteIndex = 0; nibbleIndex < length; byteIndex = ++nibbleIndex / 2)
+            for (
+                int nibbleIndex = 0, byteIndex = 0;
+                nibbleIndex < length;
+                byteIndex = ++nibbleIndex / 2
+            )
             {
                 char nibble = hex[startIndex + nibbleIndex];
 
@@ -63,7 +67,10 @@
                 else
                 {
                     // Invalid digit
-                    var exception = new ArgumentException(Resources.NotHexStringMessage, nameof(hex));
+                    var exception = new ArgumentException(
+                        Resources.NotHexStringMessage,
+                        nameof(hex)
+                    );
                     exception.Data.Add("Value", hex);
                     throw exception;
                 }
@@ -185,7 +192,10 @@
             return new Guid(bytes);
         }
 
-        public static SecurityIdentifier ToSecurityIdentifier(this byte[] binarySid, bool bigEndianRid = false)
+        public static SecurityIdentifier ToSecurityIdentifier(
+            this byte[] binarySid,
+            bool bigEndianRid = false
+        )
         {
             if (binarySid == null)
             {

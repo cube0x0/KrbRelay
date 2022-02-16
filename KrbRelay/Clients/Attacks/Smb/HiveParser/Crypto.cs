@@ -15,20 +15,32 @@ namespace KrbRelay.HiveParser
             List<byte> bytes = input.ToList();
             uint bitCount = (uint)(bytes.Count) * 8;
             bytes.Add(128);
-            while (bytes.Count % 64 != 56) bytes.Add(0);
+            while (bytes.Count % 64 != 56)
+                bytes.Add(0);
             var uints = new List<uint>();
             for (int i = 0; i + 3 < bytes.Count; i += 4)
-                uints.Add(bytes[i] | (uint)bytes[i + 1] << 8 | (uint)bytes[i + 2] << 16 | (uint)bytes[i + 3] << 24);
+                uints.Add(
+                    bytes[i]
+                        | (uint)bytes[i + 1] << 8
+                        | (uint)bytes[i + 2] << 16
+                        | (uint)bytes[i + 3] << 24
+                );
             uints.Add(bitCount);
             uints.Add(0);
 
             // run rounds
-            uint a = 0x67452301, b = 0xefcdab89, c = 0x98badcfe, d = 0x10325476;
+            uint a = 0x67452301,
+                b = 0xefcdab89,
+                c = 0x98badcfe,
+                d = 0x10325476;
             Func<uint, uint, uint> rol = (x, y) => x << (int)y | x >> 32 - (int)y;
             for (int q = 0; q + 15 < uints.Count; q += 16)
             {
                 var chunk = uints.GetRange(q, 16);
-                uint aa = a, bb = b, cc = c, dd = d;
+                uint aa = a,
+                    bb = b,
+                    cc = c,
+                    dd = d;
                 Action<Func<uint, uint, uint, uint>, uint[]> round = (f, y) =>
                 {
                     foreach (uint i in new[] { y[0], y[1], y[2], y[3] })
@@ -39,10 +51,22 @@ namespace KrbRelay.HiveParser
                         b = rol(b + f(c, d, a) + chunk[(int)(i + y[7])] + y[12], y[11]);
                     }
                 };
-                round((x, y, z) => (x & y) | (~x & z), new uint[] { 0, 4, 8, 12, 0, 1, 2, 3, 3, 7, 11, 19, 0 });
-                round((x, y, z) => (x & y) | (x & z) | (y & z), new uint[] { 0, 1, 2, 3, 0, 4, 8, 12, 3, 5, 9, 13, 0x5a827999 });
-                round((x, y, z) => x ^ y ^ z, new uint[] { 0, 2, 1, 3, 0, 8, 4, 12, 3, 9, 11, 15, 0x6ed9eba1 });
-                a += aa; b += bb; c += cc; d += dd;
+                round(
+                    (x, y, z) => (x & y) | (~x & z),
+                    new uint[] { 0, 4, 8, 12, 0, 1, 2, 3, 3, 7, 11, 19, 0 }
+                );
+                round(
+                    (x, y, z) => (x & y) | (x & z) | (y & z),
+                    new uint[] { 0, 1, 2, 3, 0, 4, 8, 12, 3, 5, 9, 13, 0x5a827999 }
+                );
+                round(
+                    (x, y, z) => x ^ y ^ z,
+                    new uint[] { 0, 2, 1, 3, 0, 8, 4, 12, 3, 9, 11, 15, 0x6ed9eba1 }
+                );
+                a += aa;
+                b += bb;
+                c += cc;
+                d += dd;
             }
             // return hex encoded string
             byte[] outBytes = new[] { a, b, c, d }.SelectMany(BitConverter.GetBytes).ToArray();
@@ -84,7 +108,13 @@ namespace KrbRelay.HiveParser
                 }
                 byte[] concat = new byte[value.Length + manualPadding.Count];
                 System.Buffer.BlockCopy(value, 0, concat, 0, value.Length);
-                System.Buffer.BlockCopy(manualPadding.ToArray(), 0, concat, value.Length, manualPadding.Count);
+                System.Buffer.BlockCopy(
+                    manualPadding.ToArray(),
+                    0,
+                    concat,
+                    value.Length,
+                    manualPadding.Count
+                );
                 value = concat;
             }
 
@@ -114,8 +144,13 @@ namespace KrbRelay.HiveParser
         //https://stackoverflow.com/questions/7217627/is-there-anything-wrong-with-this-rc4-encryption-code-in-c-sharp
         public static byte[] RC4Encrypt(byte[] pwd, byte[] data)
         {
-            int a, i, j, k, tmp;
-            int[] key, box;
+            int a,
+                i,
+                j,
+                k,
+                tmp;
+            int[] key,
+                box;
             byte[] cipher;
 
             key = new int[256];
@@ -189,12 +224,24 @@ namespace KrbRelay.HiveParser
         {
             List<byte> data = new List<byte>();
             data.Add(Convert.ToByte(((inputData[0] >> 1) & 0x7f) << 1));
-            data.Add(Convert.ToByte(((inputData[0] & 0x01) << 6 | ((inputData[1] >> 2) & 0x3f)) << 1));
-            data.Add(Convert.ToByte(((inputData[1] & 0x03) << 5 | ((inputData[2] >> 3) & 0x1f)) << 1));
-            data.Add(Convert.ToByte(((inputData[2] & 0x07) << 4 | ((inputData[3] >> 4) & 0x0f)) << 1));
-            data.Add(Convert.ToByte(((inputData[3] & 0x0f) << 3 | ((inputData[4] >> 5) & 0x07)) << 1));
-            data.Add(Convert.ToByte(((inputData[4] & 0x1f) << 2 | ((inputData[5] >> 6) & 0x03)) << 1));
-            data.Add(Convert.ToByte(((inputData[5] & 0x3f) << 1 | ((inputData[6] >> 7) & 0x01)) << 1));
+            data.Add(
+                Convert.ToByte(((inputData[0] & 0x01) << 6 | ((inputData[1] >> 2) & 0x3f)) << 1)
+            );
+            data.Add(
+                Convert.ToByte(((inputData[1] & 0x03) << 5 | ((inputData[2] >> 3) & 0x1f)) << 1)
+            );
+            data.Add(
+                Convert.ToByte(((inputData[2] & 0x07) << 4 | ((inputData[3] >> 4) & 0x0f)) << 1)
+            );
+            data.Add(
+                Convert.ToByte(((inputData[3] & 0x0f) << 3 | ((inputData[4] >> 5) & 0x07)) << 1)
+            );
+            data.Add(
+                Convert.ToByte(((inputData[4] & 0x1f) << 2 | ((inputData[5] >> 6) & 0x03)) << 1)
+            );
+            data.Add(
+                Convert.ToByte(((inputData[5] & 0x3f) << 1 | ((inputData[6] >> 7) & 0x01)) << 1)
+            );
             data.Add(Convert.ToByte((inputData[6] & 0x7f) << 1));
             return data;
         }
@@ -205,9 +252,16 @@ namespace KrbRelay.HiveParser
             DESCryptoServiceProvider cryptoProvider = new DESCryptoServiceProvider();
             cryptoProvider.Padding = PaddingMode.None;
             cryptoProvider.Mode = CipherMode.ECB;
-            ICryptoTransform transform = cryptoProvider.CreateDecryptor(key.ToArray(), new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 });
+            ICryptoTransform transform = cryptoProvider.CreateDecryptor(
+                key.ToArray(),
+                new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
+            );
             MemoryStream memoryStream = new MemoryStream(obfuscatedHash);
-            CryptoStream cryptoStream = new CryptoStream(memoryStream, transform, CryptoStreamMode.Read);
+            CryptoStream cryptoStream = new CryptoStream(
+                memoryStream,
+                transform,
+                CryptoStreamMode.Read
+            );
             byte[] plainTextBytes = new byte[obfuscatedHash.Length];
             int decryptedByteCount = cryptoStream.Read(plainTextBytes, 0, plainTextBytes.Length);
             return plainTextBytes;

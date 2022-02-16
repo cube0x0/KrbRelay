@@ -16,7 +16,10 @@ namespace DSInternals.Common
         /// <summary>
         /// OID 1.2.840.113549.1.1.1 - Identifier for RSA encryption for use with Public Key Cryptosystem One defined by RSA Inc.
         /// </summary>
-        private static readonly Oid RsaOid = Oid.FromFriendlyName("RSA", OidGroup.PublicKeyAlgorithm);
+        private static readonly Oid RsaOid = Oid.FromFriendlyName(
+            "RSA",
+            OidGroup.PublicKeyAlgorithm
+        );
 
         /// <summary>
         /// ASN.1 Tag NULL
@@ -26,7 +29,9 @@ namespace DSInternals.Common
         /// <summary>
         /// BCRYPT_PUBLIC_KEY_BLOB Format
         /// </summary>
-        private static readonly CngKeyBlobFormat BCryptRSAPublicKeyFormat = new CngKeyBlobFormat("RSAPUBLICBLOB");
+        private static readonly CngKeyBlobFormat BCryptRSAPublicKeyFormat = new CngKeyBlobFormat(
+            "RSAPUBLICBLOB"
+        );
 
         /// <summary>
         /// Converts a RSA public key to BCRYPT_RSAKEY_BLOB.
@@ -39,7 +44,7 @@ namespace DSInternals.Common
 
             using (var rsa = (RSACng)certificate.GetRSAPublicKey())
             {
-                using(var key = rsa.Key)
+                using (var key = rsa.Key)
                 {
                     //Console.WriteLine(KrbRelay.Helpers.ByteArrayToString(key.Export(BCryptRSAPublicKeyFormat)));
                     return key.Export(BCryptRSAPublicKeyFormat);

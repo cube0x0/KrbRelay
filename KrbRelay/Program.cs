@@ -98,9 +98,17 @@ namespace KrbRelay
                     //
                     case "-CONSOLE":
                     case "/CONSOLE":
-                        throw new ArgumentException(
-                            "Likely shouldn't use console mode in library form"
-                        );
+                        try
+                        {
+                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                                throw new Exception();
+                            State.attacks.Add("console", args[entry.index + 1]);
+                        }
+                        catch
+                        {
+                            State.attacks.Add("console", "");
+                        }
+                        break;
                     // ldap attacks
                     case "-RBCD":
                     case "/RBCD":

@@ -35,10 +35,18 @@ namespace KrbRelay
         {
             apReq = bytes;
             ticket = bytes;
-            Console.WriteLine("[*] Got initial AP_REQ");
+
+            if (bytes[0] != 0x60)
+            {
+                Console.WriteLine("[-] Recieved invalid apReq, exploit will fail");
+                Console.WriteLine(" |- {0}", Helpers.ByteArrayToHex(bytes));
+            } else
+            {
+                Console.WriteLine("[*] Got initial AP_REQ");
 #if DEBUG
-            Console.WriteLine(" |- {0}", Helpers.ByteArrayToHex(bytes));
+                Console.WriteLine(" |- {0}", Helpers.ByteArrayToHex(bytes));
 #endif
+            }
         }
 
         public static void UpdateApRep1(byte[] bytes)

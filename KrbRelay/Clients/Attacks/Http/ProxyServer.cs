@@ -35,9 +35,7 @@ namespace KrbRelay.Clients.Attacks.Http
         private readonly string _targetHost;
 
         public ProxyServer(string targetUrl, params string[] prefixes)
-            : this(new Uri(targetUrl), prefixes)
-        {
-        }
+            : this(new Uri(targetUrl), prefixes) { }
 
         public ProxyServer(Uri targetUrl, params string[] prefixes)
         {
@@ -72,11 +70,21 @@ namespace KrbRelay.Clients.Attacks.Http
         public bool RewriteReferer { get; set; } // this can have performance impact...
         public HttpClient httpClient { get; set; }
 
-        public static async void Start(HttpClient httpClient, string targetUrl, string port = "5000")
+        public static void Start(
+            HttpClient httpClient,
+            string targetUrl,
+            string port = "5000"
+        )
         {
             Console.WriteLine(string.Format("[*] Starting proxy server on :{0}", port));
             Console.WriteLine("[*] Target url: {0}", targetUrl);
-            using (var server = new ProxyServer(targetUrl, string.Format("http://localhost:{0}/", port), string.Format("http://127.0.0.1:{0}/", port)))
+            using (
+                var server = new ProxyServer(
+                    targetUrl,
+                    string.Format("http://localhost:{0}/", port),
+                    string.Format("http://127.0.0.1:{0}/", port)
+                )
+            )
             {
                 server.httpClient = httpClient;
                 server.Start();
@@ -113,7 +121,12 @@ namespace KrbRelay.Clients.Attacks.Http
                 throw new ArgumentNullException(nameof(context));
 
             var url = TargetUrl.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
-            using (var msg = new HttpRequestMessage(new HttpMethod(context.Request.HttpMethod), url + context.Request.RawUrl))
+            using (
+                var msg = new HttpRequestMessage(
+                    new HttpMethod(context.Request.HttpMethod),
+                    url + context.Request.RawUrl
+                )
+            )
             {
                 msg.Version = context.Request.ProtocolVersion;
 
@@ -148,7 +161,10 @@ namespace KrbRelay.Clients.Attacks.Http
                             break;
 
                         case "Referer":
-                            if (RewriteReferer && Uri.TryCreate(headerValue, UriKind.Absolute, out var referer)) // if relative, don't handle
+                            if (
+                                RewriteReferer
+                                && Uri.TryCreate(headerValue, UriKind.Absolute, out var referer)
+                            ) // if relative, don't handle
                             {
                                 var builder = new UriBuilder(referer);
                                 builder.Host = TargetUrl.Host;
@@ -186,7 +202,10 @@ namespace KrbRelay.Clients.Attacks.Http
 
                         foreach (var header in response.Headers)
                         {
-                            context.Response.Headers.Add(header.Key, string.Join(", ", header.Value));
+                            context.Response.Headers.Add(
+                                header.Key,
+                                string.Join(", ", header.Value)
+                            );
                         }
 
                         foreach (var header in response.Content.Headers)
@@ -194,43 +213,74 @@ namespace KrbRelay.Clients.Attacks.Http
                             if (header.Key == "Content-Length") // this will be set automatically at dispose time
                                 continue;
 
-                            context.Response.Headers.Add(header.Key, string.Join(", ", header.Value));
+                            context.Response.Headers.Add(
+                                header.Key,
+                                string.Join(", ", header.Value)
+                            );
                         }
 
                         var ct = context.Response.ContentType;
-                        if (RewriteTargetInText && host != null && ct != null &&
-                            (ct.IndexOf("text/html", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                            ct.IndexOf("application/json", StringComparison.OrdinalIgnoreCase) >= 0))
+                        if (
+                            RewriteTargetInText
+                            && host != null
+                            && ct != null
+                            && (
+                                ct.IndexOf("text/html", StringComparison.OrdinalIgnoreCase) >= 0
+                                || ct.IndexOf(
+                                    "application/json",
+                                    StringComparison.OrdinalIgnoreCase
+                                ) >= 0
+                            )
+                        )
                         {
                             using (var ms = new MemoryStream())
                             {
-                                using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                                using (
+                                    var stream = await response.Content
+                                        .ReadAsStreamAsync()
+                                        .ConfigureAwait(false)
+                                )
                                 {
                                     await stream.CopyToAsync(ms).ConfigureAwait(false);
                                     var enc = context.Response.ContentEncoding ?? Encoding.UTF8;
                                     var html = enc.GetString(ms.ToArray());
-                                    if (TryReplace(html, "//" + _targetHost + ":" + _targetPort + "/", "//" + host + "/", out var replaced))
+                                    if (
+                                        TryReplace(
+                                            html,
+                                            "//" + _targetHost + ":" + _targetPort + "/",
+                                            "//" + host + "/",
+                                            out var replaced
+                                        )
+                                    )
                                     {
                                         var bytes = enc.GetBytes(replaced);
                                         using (var ms2 = new MemoryStream(bytes))
                                         {
                                             ms2.Position = 0;
-                                            await ms2.CopyToAsync(context.Response.OutputStream).ConfigureAwait(false);
+                                            await ms2.CopyToAsync(context.Response.OutputStream)
+                                                .ConfigureAwait(false);
                                         }
                                     }
                                     else
                                     {
                                         ms.Position = 0;
-                                        await ms.CopyToAsync(context.Response.OutputStream).ConfigureAwait(false);
+                                        await ms.CopyToAsync(context.Response.OutputStream)
+                                            .ConfigureAwait(false);
                                     }
                                 }
                             }
                         }
                         else
                         {
-                            using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                            using (
+                                var stream = await response.Content
+                                    .ReadAsStreamAsync()
+                                    .ConfigureAwait(false)
+                            )
                             {
-                                await stream.CopyToAsync(context.Response.OutputStream).ConfigureAwait(false);
+                                await stream
+                                    .CopyToAsync(context.Response.OutputStream)
+                                    .ConfigureAwait(false);
                             }
                         }
                     }
@@ -245,7 +295,12 @@ namespace KrbRelay.Clients.Attacks.Http
         public void Dispose() => ((IDisposable)_listener)?.Dispose();
 
         // out-of-the-box replace doesn't tell if something *was* replaced or not
-        private static bool TryReplace(string input, string oldValue, string newValue, out string result)
+        private static bool TryReplace(
+            string input,
+            string oldValue,
+            string newValue,
+            out string result
+        )
         {
             if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(oldValue))
             {

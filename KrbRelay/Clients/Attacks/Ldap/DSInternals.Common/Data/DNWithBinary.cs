@@ -14,17 +14,9 @@
         private const string StringFormatPrefix = "B:";
         private const char StringFormatSeparator = ':';
 
-        public string DistinguishedName
-        {
-            get;
-            private set;
-        }
+        public string DistinguishedName { get; private set; }
 
-        public byte[] Binary
-        {
-            get;
-            private set;
-        }
+        public byte[] Binary { get; private set; }
 
         public DNWithBinary(string dn, byte[] binary)
         {
@@ -40,9 +32,17 @@
             Validator.AssertNotNullOrEmpty(dnWithBinary, nameof(dnWithBinary));
 
             bool hasCorrectPrefix = dnWithBinary.StartsWith(StringFormatPrefix);
-            int valueLeadingColonIndex = dnWithBinary.IndexOf(StringFormatSeparator, StringFormatPrefix.Length);
-            int valueTrailingColonIndex = dnWithBinary.IndexOf(StringFormatSeparator, valueLeadingColonIndex + 1);
-            bool has4Parts = valueLeadingColonIndex >= 3 && (valueLeadingColonIndex + 1) < valueTrailingColonIndex;
+            int valueLeadingColonIndex = dnWithBinary.IndexOf(
+                StringFormatSeparator,
+                StringFormatPrefix.Length
+            );
+            int valueTrailingColonIndex = dnWithBinary.IndexOf(
+                StringFormatSeparator,
+                valueLeadingColonIndex + 1
+            );
+            bool has4Parts =
+                valueLeadingColonIndex >= 3
+                && (valueLeadingColonIndex + 1) < valueTrailingColonIndex;
 
             if (!hasCorrectPrefix || !has4Parts)
             {
@@ -51,13 +51,21 @@
             }
 
             string dn = dnWithBinary.Substring(valueTrailingColonIndex + 1);
-            byte[] binary = dnWithBinary.HexToBinary(valueLeadingColonIndex + 1, valueTrailingColonIndex - valueLeadingColonIndex - 1);
+            byte[] binary = dnWithBinary.HexToBinary(
+                valueLeadingColonIndex + 1,
+                valueTrailingColonIndex - valueLeadingColonIndex - 1
+            );
             return new DNWithBinary(dn, binary);
         }
 
         public override string ToString()
         {
-            return String.Format(StringFormat, this.Binary.Length * 2, this.Binary.ToHex(true), this.DistinguishedName);
+            return String.Format(
+                StringFormat,
+                this.Binary.Length * 2,
+                this.Binary.ToHex(true),
+                this.DistinguishedName
+            );
         }
     }
 }

@@ -1,3 +1,4 @@
+﻿using KrbRelay;
 using SMBLibrary.Client.Helpers;
 using SMBLibrary.RPC;
 using SMBLibrary.Services;
@@ -108,8 +109,8 @@ namespace SMBLibrary.Client
         public static NTStatus samrSetInformationUser(RPCCallHelper rpc, SamprHandle userHandle, string password, byte[] sessionKey)
         {
             byte[] lm = new byte[16];
-            byte[] pntlm = KrbRelay.Helpers.unhexlify(KrbRelay.Helpers.KerberosPasswordHash(KrbRelay.Interop.KERB_ETYPE.rc4_hmac, password));
-            KrbRelay.Natives.RtlEncryptNtOwfPwdWithNtSesKey(pntlm, sessionKey, out byte[] ntlm);
+            byte[] pntlm = KrbRelay.Helpers.HexToByteArray(KrbRelay.Helpers.KerberosPasswordHash(KERB_ETYPE.rc4_hmac, password));
+            KrbRelay.Interop.RtlEncryptNtOwfPwdWithNtSesKey(pntlm, sessionKey, out byte[] ntlm);
 
             samrSetInformationUserRequest2 samrSetInformationUserRequest = new samrSetInformationUserRequest2();
             samrSetInformationUserRequest.UserHandle = userHandle;

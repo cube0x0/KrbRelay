@@ -22,7 +22,8 @@ namespace KrbRelay.HiveParser
             hive.BaseStream.Position += 4;
 
             buf = hive.ReadBytes(this.NameLength);
-            this.Name = (this.NameLength == 0) ? "Default" : System.Text.Encoding.UTF8.GetString(buf);
+            this.Name =
+                (this.NameLength == 0) ? "Default" : System.Text.Encoding.UTF8.GetString(buf);
 
             if (this.DataLength < 5)
                 this.Data = databuf;

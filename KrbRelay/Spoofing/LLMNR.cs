@@ -37,7 +37,7 @@ namespace KrbRelay.Spoofing
             UdpClient llmnrClient = UDP.UDPListener("LLMNR", IP, 5355, ipVersion);
 
             Console.WriteLine("[*] Starting LLMNR spoofing");
-            while (!Program.stopSpoofing)
+            while (!State.stopSpoofing)
             {
                 try
                 {
@@ -114,7 +114,7 @@ namespace KrbRelay.Spoofing
 
             // spoof here
             llmnrRequest = Encoding.ASCII.GetBytes(spn);
-            llmnrRequestLength[0] = (byte)spn.Length;
+            llmnrRequestLength[0] = (byte)State.spn.Length;
             llmnrMemoryStream.Write(llmnrRequestLength, 0, 1);
             llmnrMemoryStream.Write(llmnrRequest, 0, llmnrRequest.Length);
 

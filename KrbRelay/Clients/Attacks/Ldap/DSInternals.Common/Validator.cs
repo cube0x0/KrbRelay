@@ -11,7 +11,11 @@ namespace DSInternals.Common
         {
             if (!String.Equals(expectedValue, actualValue, StringComparison.InvariantCulture))
             {
-                string message = String.Format(Resources.UnexpectedValueMessage, actualValue, expectedValue);
+                string message = String.Format(
+                    Resources.UnexpectedValueMessage,
+                    actualValue,
+                    expectedValue
+                );
                 throw new ArgumentException(message, paramName);
             }
         }
@@ -20,7 +24,11 @@ namespace DSInternals.Common
         {
             if (expectedValue.CompareTo(actualValue) != 0)
             {
-                string message = String.Format(Resources.UnexpectedValueMessage, actualValue, expectedValue);
+                string message = String.Format(
+                    Resources.UnexpectedValueMessage,
+                    actualValue,
+                    expectedValue
+                );
                 throw new ArgumentException(message, paramName);
             }
         }
@@ -54,7 +62,11 @@ namespace DSInternals.Common
             AssertNotNull(value, paramName);
             if (value.Length != length)
             {
-                throw new ArgumentOutOfRangeException(paramName, value.Length, Resources.UnexpectedLengthMessage);
+                throw new ArgumentOutOfRangeException(
+                    paramName,
+                    value.Length,
+                    Resources.UnexpectedLengthMessage
+                );
             }
         }
 
@@ -63,7 +75,11 @@ namespace DSInternals.Common
             AssertNotNull(password, paramName);
             if (password.Length > maxLength)
             {
-                throw new ArgumentOutOfRangeException(paramName, password.Length, Resources.InputLongerThanMaxMessage);
+                throw new ArgumentOutOfRangeException(
+                    paramName,
+                    password.Length,
+                    Resources.InputLongerThanMaxMessage
+                );
             }
         }
 
@@ -72,7 +88,11 @@ namespace DSInternals.Common
             AssertNotNull(input, paramName);
             if (input.Length > maxLength)
             {
-                throw new ArgumentOutOfRangeException(paramName, input.Length, Resources.InputLongerThanMaxMessage);
+                throw new ArgumentOutOfRangeException(
+                    paramName,
+                    input.Length,
+                    Resources.InputLongerThanMaxMessage
+                );
             }
         }
 
@@ -81,7 +101,11 @@ namespace DSInternals.Common
             AssertNotNull(data, paramName);
             if (data.Length < minLength)
             {
-                var exception = new ArgumentOutOfRangeException(paramName, data.Length, Resources.InputShorterThanMinMessage);
+                var exception = new ArgumentOutOfRangeException(
+                    paramName,
+                    data.Length,
+                    Resources.InputShorterThanMinMessage
+                );
                 // DEBUG: exception.Data.Add("BinaryBlob", data.ToHex());
                 throw exception;
             }
@@ -92,7 +116,11 @@ namespace DSInternals.Common
             AssertNotNull(value, paramName);
             if (value.Length != length)
             {
-                throw new ArgumentOutOfRangeException(paramName, value.Length, Resources.UnexpectedLengthMessage);
+                throw new ArgumentOutOfRangeException(
+                    paramName,
+                    value.Length,
+                    Resources.UnexpectedLengthMessage
+                );
             }
         }
 

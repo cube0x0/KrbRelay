@@ -13,72 +13,38 @@
         private const int ShortRepresentationSize = sizeof(byte) + sizeof(KeyFlags); // Version + KeyFlags
         private const int ReservedSize = 10 * sizeof(byte);
 
-        public byte Version
-        {
-            get;
-            private set;
-        }
+        public byte Version { get; private set; }
 
-        public KeyFlags Flags
-        {
-            get;
-            private set;
-        }
+        public KeyFlags Flags { get; private set; }
 
-        public VolumeType? VolumeType
-        {
-            get;
-            private set;
-        }
+        public VolumeType? VolumeType { get; private set; }
 
         /// <summary>
         /// Specifies whether the device associated with this credential supports notification.
         /// </summary>
-        public bool? SupportsNotification
-        {
-            get;
-            private set;
-        }
+        public bool? SupportsNotification { get; private set; }
 
         /// <summary>
         /// Specifies the version of the File Encryption Key (FEK).
         /// </summary>
-        public byte? FekKeyVersion
-        {
-            get;
-            private set;
-        }
+        public byte? FekKeyVersion { get; private set; }
 
         /// <summary>
         /// Specifies the strength of the NGC key.
         /// </summary>
-        public KeyStrength? Strength
-        {
-            get;
-            private set;
-        }
+        public KeyStrength? Strength { get; private set; }
 
         /// <summary>
         /// Reserved for future use.
         /// </summary>
-        public byte[] Reserved
-        {
-            get;
-            private set;
-        }
+        public byte[] Reserved { get; private set; }
 
         /// <summary>
         /// Extended custom key information.
         /// </summary>
-        public byte[] EncodedExtendedCKI
-        {
-            get;
-            private set;
-        }
+        public byte[] EncodedExtendedCKI { get; private set; }
 
-        public CustomKeyInformation() : this(KeyFlags.None)
-        {
-        }
+        public CustomKeyInformation() : this(KeyFlags.None) { }
 
         public CustomKeyInformation(KeyFlags flags)
         {
@@ -129,7 +95,10 @@
                 {
                     // 10 bytes reserved for future use.
                     // Note: With FIDO, Azure incorrectly puts here 9 bytes instead of 10.
-                    int actualReservedSize = (int)Math.Min(ReservedSize, stream.Length - stream.Position);
+                    int actualReservedSize = (int)Math.Min(
+                        ReservedSize,
+                        stream.Length - stream.Position
+                    );
                     this.Reserved = new byte[actualReservedSize];
                     stream.Read(this.Reserved, 0, actualReservedSize);
                 }

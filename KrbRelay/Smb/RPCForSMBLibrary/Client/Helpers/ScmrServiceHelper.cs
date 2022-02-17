@@ -142,5 +142,33 @@ namespace SMBLibrary.Client
             }
             return rQueryServiceConfigWResponse.lpServiceConfig;
         }
+
+        public static uint rChangeServiceConfig(RPCCallHelper rpc, LPSC_RPC_HANDLE handle, out NTStatus status, SERIVCE_STARTUP startup = SERIVCE_STARTUP.SERVICE_DEMAND_START)
+        {
+            rChangeServiceConfigWRequest rChangeServiceConfigWRequest = new rChangeServiceConfigWRequest();
+            rChangeServiceConfigWRequest.lpScHandle = handle;
+            rChangeServiceConfigWRequest.dwServiceType = 0xffffffff;
+            rChangeServiceConfigWRequest.dwStartType = startup;
+            rChangeServiceConfigWRequest.dwErrorControl = 0xffffffff;
+            rChangeServiceConfigWRequest.lpBinaryPathName = null;
+            rChangeServiceConfigWRequest.lpLoadOrderGroup = null;
+            rChangeServiceConfigWRequest.lpdwTagId = 0;
+            rChangeServiceConfigWRequest.lpDependencies = null;
+            rChangeServiceConfigWRequest.dwDependSize = 0;
+            rChangeServiceConfigWRequest.lpServiceStartName = null;
+            rChangeServiceConfigWRequest.lpPassword = null;
+            rChangeServiceConfigWRequest.dwPwSize = 0;
+            rChangeServiceConfigWRequest.lpDisplayName = null;
+
+            rChangeServiceConfigWResponse rChangeServiceConfigWResponse;
+
+            status = rpc.ExecuteCall((ushort)ScmrServiceOpName.rChangeServiceConfigW, rChangeServiceConfigWRequest, out rChangeServiceConfigWResponse);
+            if (status != NTStatus.STATUS_SUCCESS)
+            {
+                return 1;
+            }
+            return rChangeServiceConfigWResponse.lpdwTagId;
+        }
+
     }
 }

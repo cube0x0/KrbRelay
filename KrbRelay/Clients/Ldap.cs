@@ -52,7 +52,7 @@ namespace KrbRelay.Clients
                             .ToList();
 
                         string arg1 = parts[0].Trim('"');
-                        string arg2 = parts[1];
+                        string arg2 = parts[1].Trim('"');
 
                         Attacks.Ldap.addGroupMember.attack(ld, arg1, arg2);
                     }

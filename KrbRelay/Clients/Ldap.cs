@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using static KrbRelay.Natives;
 using static KrbRelay.Program;
 
@@ -43,8 +45,15 @@ namespace KrbRelay.Clients
                     }
                     if (attacks.Keys.Contains("add-groupmember"))
                     {
-                        string arg1 = attacks["add-groupmember"].Split(new[] { ' ' }, 2)[0];
-                        string arg2 = attacks["add-groupmember"].Split(new[] { ' ' }, 2)[1];
+                        List<string> parts;
+                        parts = Regex.Matches(attacks["add-groupmember"], @"[\""].+?[\""]|[^ ]+")
+                            .Cast<Match>()
+                            .Select(m => m.Value)
+                            .ToList();
+
+                        string arg1 = parts[0].Trim('"');
+                        string arg2 = parts[1];
+
                         Attacks.Ldap.addGroupMember.attack(ld, arg1, arg2);
                     }
                     if (attacks.Keys.Contains("reset-password"))

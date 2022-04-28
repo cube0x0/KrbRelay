@@ -151,7 +151,5 @@ namespace KrbRelay.Spoofing
 
             return llmnrMemoryStream.ToArray();
         }
-
     }
-
 }

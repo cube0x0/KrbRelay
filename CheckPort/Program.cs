@@ -20,6 +20,7 @@ namespace CheckPort
                 return;
             }
         }
+        
         public static int checkPorts(string[] names)
         {
             IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
@@ -39,6 +40,7 @@ namespace CheckPort
             }
             return -1;
         }
+        
         public static bool checkPort(int port, string name = "SYSTEM")
         {
             INetFwMgr mgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));

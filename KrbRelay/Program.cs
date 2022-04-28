@@ -1,4 +1,4 @@
-﻿using KrbRelay.Clients;
+using KrbRelay.Clients;
 using KrbRelay.Com;
 using NetFwTypeLib;
 using SMBLibrary;
@@ -58,7 +58,7 @@ namespace KrbRelay
             {
                 uint bytesReturned;
                 bool worked;
-                IntPtr buffer = IntPtr.Zero;
+                IntPtr buffer;
 
                 try { 
                     worked = WTSQuerySessionInformation(IntPtr.Zero, SessionId, WTS_INFO_CLASS.ConnectState, out buffer, out bytesReturned);
@@ -87,23 +87,22 @@ namespace KrbRelay
         }
 
         
-        public static SECURITY_HANDLE ldap_phCredential = new SECURITY_HANDLE();
+        public static SECURITY_HANDLE ldap_phCredential;
         public static IntPtr ld = IntPtr.Zero;
-        public static byte[] apRep1 = new byte[] { };
-        public static byte[] apRep2 = new byte[] { };
-        public static byte[] ticket = new byte[] { };
+        public static byte[] apRep1 = { };
+        public static byte[] apRep2 = { };
+        public static byte[] ticket = { };
         public static string spn = "";
         public static string relayedUser = "";
         public static string relayedUserDomain = "";
         public static string domainDN = "";
         public static string targetFQDN = "";
-        public static bool useSSL = false;
+        public static bool useSSL;
         public static bool stopSpoofing = false;
         public static Dictionary<string, string> attacks = new Dictionary<string, string>();
         public static SMB2Client smbClient = new SMB2Client();
         public static HttpClientHandler handler = new HttpClientHandler();
         public static HttpClient httpClient = new HttpClient();
-        public static CookieContainer CookieContainer = new CookieContainer();
 
         //hooked function
         [STAThread]
@@ -650,7 +649,6 @@ namespace KrbRelay
                 return;
             }
 
-
             if (string.IsNullOrEmpty(domain))
             {
                 string[] d = spn.Split('.').Skip(1).ToArray();
@@ -704,7 +702,6 @@ namespace KrbRelay
 
             if (service == "ldap")
             {
-                var ldap_ptsExpiry = new SECURITY_INTEGER();
                 var status = AcquireCredentialsHandle(
                     null,
                     "Negotiate",
@@ -798,7 +795,6 @@ namespace KrbRelay
                 httpClient.BaseAddress = new Uri(string.Format("{0}://{1}", transport, targetFQDN));
                 //Console.WriteLine(httpClient.BaseAddress);
             }
-
 
             if (llmnr)
             {

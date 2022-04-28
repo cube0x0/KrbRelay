@@ -94,8 +94,6 @@ namespace KrbRelay.Spoofing
 
     internal class HttpRelayServer
     {
-
-
         public static void start(string Service, string argSpooferIP)
         {
             Console.WriteLine("[*] Listening for connections on http://{0}:80", argSpooferIP);
@@ -207,12 +205,10 @@ namespace KrbRelay.Spoofing
                 //Program.stopSpoofing = true;
 
                 //Kerberos auth may not require set-cookies
-                IEnumerable<string> cookies = null;
                 foreach (var h in result.Headers)
                 {
                     if (h.Key == "Set-Cookie")
                     {
-                        cookies = h.Value;
                         Console.WriteLine("[*] Authentication Cookie;\n" + string.Join(";", h.Value));
                     }
                 }

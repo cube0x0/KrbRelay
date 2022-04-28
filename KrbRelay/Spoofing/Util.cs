@@ -13,7 +13,6 @@ namespace KrbRelay.Spoofing
     {
         public static string GetLocalIPAddress(string ipVersion)
         {
-
             List<string> ipAddressList = new List<string>();
             AddressFamily addressFamily;
 
@@ -28,10 +27,8 @@ namespace KrbRelay.Spoofing
 
             foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
             {
-
                 if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet && networkInterface.OperationalStatus == OperationalStatus.Up)
                 {
-
                     foreach (UnicastIPAddressInformation ip in networkInterface.GetIPProperties().UnicastAddresses)
                     {
 
@@ -39,11 +36,8 @@ namespace KrbRelay.Spoofing
                         {
                             ipAddressList.Add(ip.Address.ToString());
                         }
-
                     }
-
                 }
-
             }
 
             return ipAddressList.FirstOrDefault();
@@ -319,7 +313,5 @@ namespace KrbRelay.Spoofing
 
             return hostname;
         }
-
     }
-
 }

@@ -39,7 +39,6 @@ namespace KrbRelay.Spoofing
                 {
                     udpClient.JoinMulticastGroup(IPAddress.Parse("ff02::1:2"));
                 }
-
             }
             catch
             {
@@ -81,6 +80,5 @@ namespace KrbRelay.Spoofing
             udpSendSocket.SendTo(udpResponse, destinationEndpoint);
             udpSendSocket.Close();
         }
-
     }
 }

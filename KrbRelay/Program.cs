@@ -903,7 +903,7 @@ namespace KrbRelay
             //COM object
             Console.WriteLine("[*] Register com server");
             byte[] ba = ComUtils.GetMarshalledObject(new object());
-            COMObjRefStandard std = (COMObjRefStandard)COMObjRefStandard.FromArray(ba);
+            COMObjRefStandard std = (COMObjRefStandard)COMObjRef.FromArray(ba);
             //Console.WriteLine("[*] IPID: {0}", std.Ipid);
             //Console.WriteLine("[*] OXID: {0:X08}", std.Oxid);
             //Console.WriteLine("[*] OID : {0:X08}", std.Oid);

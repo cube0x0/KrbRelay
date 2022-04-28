@@ -15,13 +15,13 @@ namespace SMBLibrary.Authentication.NTLM
         public static string ReadAnsiStringBufferPointer(byte[] buffer, int offset)
         {
             byte[] bytes = ReadBufferPointer(buffer, offset);
-            return ASCIIEncoding.Default.GetString(bytes);
+            return Encoding.Default.GetString(bytes);
         }
 
         public static string ReadUnicodeStringBufferPointer(byte[] buffer, int offset)
         {
             byte[] bytes = ReadBufferPointer(buffer, offset);
-            return UnicodeEncoding.Unicode.GetString(bytes);
+            return Encoding.Unicode.GetString(bytes);
         }
 
         public static byte[] ReadBufferPointer(byte[] buffer, int offset)

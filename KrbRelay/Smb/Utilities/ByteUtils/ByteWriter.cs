@@ -58,7 +58,7 @@ namespace Utilities
 
         public static void WriteAnsiString(byte[] buffer, int offset, string value, int maximumLength)
         {
-            byte[] bytes = ASCIIEncoding.GetEncoding(28591).GetBytes(value);
+            byte[] bytes = Encoding.GetEncoding(28591).GetBytes(value);
             Array.Copy(bytes, 0, buffer, offset, Math.Min(value.Length, maximumLength));
         }
 
@@ -80,7 +80,7 @@ namespace Utilities
 
         public static void WriteUTF16String(byte[] buffer, int offset, string value, int maximumNumberOfCharacters)
         {
-            byte[] bytes = UnicodeEncoding.Unicode.GetBytes(value);
+            byte[] bytes = Encoding.Unicode.GetBytes(value);
             int maximumNumberOfBytes = Math.Min(value.Length, maximumNumberOfCharacters) * 2;
             Array.Copy(bytes, 0, buffer, offset, maximumNumberOfBytes);
         }
@@ -132,7 +132,7 @@ namespace Utilities
 
         public static void WriteAnsiString(Stream stream, string value, int fieldLength)
         {
-            byte[] bytes = ASCIIEncoding.GetEncoding(28591).GetBytes(value);
+            byte[] bytes = Encoding.GetEncoding(28591).GetBytes(value);
             stream.Write(bytes, 0, Math.Min(bytes.Length, fieldLength));
             if (bytes.Length < fieldLength)
             {
@@ -143,19 +143,19 @@ namespace Utilities
 
         public static void WriteUTF8String(Stream stream, string value)
         {
-            byte[] bytes = UnicodeEncoding.UTF8.GetBytes(value);
+            byte[] bytes = Encoding.UTF8.GetBytes(value);
             stream.Write(bytes, 0, bytes.Length);
         }
 
         public static void WriteUTF16String(Stream stream, string value)
         {
-            byte[] bytes = UnicodeEncoding.Unicode.GetBytes(value);
+            byte[] bytes = Encoding.Unicode.GetBytes(value);
             stream.Write(bytes, 0, bytes.Length);
         }
 
         public static void WriteUTF16BEString(Stream stream, string value)
         {
-            byte[] bytes = UnicodeEncoding.BigEndianUnicode.GetBytes(value);
+            byte[] bytes = Encoding.BigEndianUnicode.GetBytes(value);
             stream.Write(bytes, 0, bytes.Length);
         }
     }

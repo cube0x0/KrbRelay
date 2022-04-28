@@ -1,5 +1,4 @@
 ﻿using SMBLibrary.RPC;
-using SMBLibrary.Services;
 
 /// <summary>
 /// rChangeServiceConfigW   Response (opnum 11)

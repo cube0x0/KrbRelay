@@ -1,6 +1,4 @@
-﻿using Org.BouncyCastle.X509;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;

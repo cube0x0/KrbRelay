@@ -1,4 +1,4 @@
-﻿using NetFwTypeLib;
+using NetFwTypeLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;

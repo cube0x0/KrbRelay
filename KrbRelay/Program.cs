@@ -856,7 +856,7 @@ namespace KrbRelay
             //Console.WriteLine();
             Console.WriteLine("[*] Rewriting PEB");
             //Init RPC server
-            var svcs = new SOLE_AUTHENTICATION_SERVICE[] {
+            var svcs = new[] {
                 new SOLE_AUTHENTICATION_SERVICE() {
                     dwAuthnSvc = 16, // HKLM\SOFTWARE\Microsoft\Rpc\SecurityService sspicli.dll
                     pPrincipalName = spn
@@ -890,7 +890,7 @@ namespace KrbRelay
             if (!checkPort(int.Parse(port)))
             {
                 Console.WriteLine("[*] Looking for available ports..");
-                port = checkPorts(new string[] { "SYSTEM" }).ToString();
+                port = checkPorts(new[] { "SYSTEM" }).ToString();
                 if (port == "-1")
                 {
                     Console.WriteLine("[-] No available ports found");

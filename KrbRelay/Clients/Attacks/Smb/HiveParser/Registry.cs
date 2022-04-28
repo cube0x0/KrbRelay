@@ -22,7 +22,7 @@ namespace KrbRelay.HiveParser
             int cs = BitConverter.ToInt32(controlSet.Data, 0);
 
             StringBuilder scrambledKey = new StringBuilder();
-            foreach (string key in new string[] { "JD", "Skew1", "GBG", "Data" })
+            foreach (string key in new[] { "JD", "Skew1", "GBG", "Data" })
             {
                 NodeKey nk = GetNodeKey(systemHive, "ControlSet00" + cs + "\\Control\\Lsa\\" + key);
 

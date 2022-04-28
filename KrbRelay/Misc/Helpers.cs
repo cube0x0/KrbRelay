@@ -150,7 +150,7 @@ namespace KrbRelay
         {
             if (length < 0x80)
 
-                return new byte[] { (byte)length };
+                return new[] { (byte)length };
 
             if (length < 0x100)
 

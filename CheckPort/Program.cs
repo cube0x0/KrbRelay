@@ -12,7 +12,7 @@ namespace CheckPort
         static void Main(string[] args)
         {
             Console.WriteLine("[*] Looking for available ports..");
-            string port = checkPorts(new string[] { "SYSTEM", "ANY" }).ToString();
+            string port = checkPorts(new[] { "SYSTEM", "ANY" }).ToString();
             if (port == "-1")
             {
                 Console.WriteLine("[-] No available ports found");

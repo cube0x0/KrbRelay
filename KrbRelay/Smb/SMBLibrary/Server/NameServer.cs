@@ -33,7 +33,7 @@ namespace SMBLibrary.Server
                 throw new ArgumentException("NetBIOS name service can only supply IPv4 addresses");
             }
 
-            if (IPAddress.Equals(serverAddress, IPAddress.Any))
+            if (Equals(serverAddress, IPAddress.Any))
             {
                 // When registering a NetBIOS name, we must supply the client with a usable IPAddress.
                 throw new ArgumentException("NetBIOS name service requires an IPAddress that is associated with a specific network interface");
@@ -187,7 +187,7 @@ namespace SMBLibrary.Server
 
                 if (index < 3)
                 {
-                    System.Threading.Thread.Sleep(250);
+                    Thread.Sleep(250);
                 }
             }
         }

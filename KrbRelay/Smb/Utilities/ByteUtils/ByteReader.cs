@@ -44,7 +44,7 @@ namespace Utilities
         {
             // ASCIIEncoding.ASCII.GetString will convert some values to '?' (byte value of 63)
             // Any codepage will do, but the only one that Mono supports is 28591.
-            return ASCIIEncoding.GetEncoding(28591).GetString(buffer, offset, count);
+            return Encoding.GetEncoding(28591).GetString(buffer, offset, count);
         }
 
         public static string ReadAnsiString(byte[] buffer, ref int offset, int count)
@@ -69,12 +69,12 @@ namespace Utilities
         public static string ReadNullTerminatedAnsiString(byte[] buffer, int offset)
         {
             StringBuilder builder = new StringBuilder();
-            char c = (char)ByteReader.ReadByte(buffer, offset);
+            char c = (char)ReadByte(buffer, offset);
             while (c != '\0')
             {
                 builder.Append(c);
                 offset++;
-                c = (char)ByteReader.ReadByte(buffer, offset);
+                c = (char)ReadByte(buffer, offset);
             }
             return builder.ToString();
         }
@@ -126,7 +126,7 @@ namespace Utilities
         public static string ReadAnsiString(Stream stream, int length)
         {
             byte[] buffer = ReadBytes(stream, length);
-            return ASCIIEncoding.GetEncoding(28591).GetString(buffer);
+            return Encoding.GetEncoding(28591).GetString(buffer);
         }
 
         public static string ReadNullTerminatedAnsiString(Stream stream)

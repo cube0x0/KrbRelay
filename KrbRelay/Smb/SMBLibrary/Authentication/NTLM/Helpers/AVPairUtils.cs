@@ -16,8 +16,8 @@ namespace SMBLibrary.Authentication.NTLM
         public static KeyValuePairList<AVPairKey, byte[]> GetAVPairSequence(string domainName, string computerName)
         {
             KeyValuePairList<AVPairKey, byte[]> pairs = new KeyValuePairList<AVPairKey, byte[]>();
-            pairs.Add(AVPairKey.NbDomainName, UnicodeEncoding.Unicode.GetBytes(domainName));
-            pairs.Add(AVPairKey.NbComputerName, UnicodeEncoding.Unicode.GetBytes(computerName));
+            pairs.Add(AVPairKey.NbDomainName, Encoding.Unicode.GetBytes(domainName));
+            pairs.Add(AVPairKey.NbComputerName, Encoding.Unicode.GetBytes(computerName));
             return pairs;
         }
 

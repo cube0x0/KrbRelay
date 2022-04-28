@@ -14,7 +14,7 @@ namespace SMBLibrary.NetBios
     {
         public SessionKeepAlivePacket()
         {
-            this.Type = SessionPacketTypeName.SessionKeepAlive;
+            Type = SessionPacketTypeName.SessionKeepAlive;
         }
 
         public SessionKeepAlivePacket(byte[] buffer, int offset) : base(buffer, offset)
@@ -23,7 +23,7 @@ namespace SMBLibrary.NetBios
 
         public override byte[] GetBytes()
         {
-            this.Trailer = new byte[0];
+            Trailer = new byte[0];
             return base.GetBytes();
         }
 

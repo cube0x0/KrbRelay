@@ -40,30 +40,30 @@ namespace SMBLibrary.SMB1
         public OpenAndXResponse(byte[] buffer, int offset) : base(buffer, offset, false)
         {
             int parametersOffset = 4;
-            FID = LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
-            FileAttrs = (SMBFileAttributes)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
-            LastWriteTime = UTimeHelper.ReadNullableUTime(this.SMBParameters, ref parametersOffset);
-            FileDataSize = LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);
-            AccessRights = (AccessRights)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
-            ResourceType = (ResourceType)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
-            NMPipeStatus = NamedPipeStatus.Read(this.SMBParameters, ref parametersOffset);
-            OpenResults = OpenResults.Read(this.SMBParameters, ref parametersOffset);
-            Reserved = ByteReader.ReadBytes(this.SMBParameters, ref parametersOffset, 6);
+            FID = LittleEndianReader.ReadUInt16(SMBParameters, ref parametersOffset);
+            FileAttrs = (SMBFileAttributes)LittleEndianReader.ReadUInt16(SMBParameters, ref parametersOffset);
+            LastWriteTime = UTimeHelper.ReadNullableUTime(SMBParameters, ref parametersOffset);
+            FileDataSize = LittleEndianReader.ReadUInt32(SMBParameters, ref parametersOffset);
+            AccessRights = (AccessRights)LittleEndianReader.ReadUInt16(SMBParameters, ref parametersOffset);
+            ResourceType = (ResourceType)LittleEndianReader.ReadUInt16(SMBParameters, ref parametersOffset);
+            NMPipeStatus = NamedPipeStatus.Read(SMBParameters, ref parametersOffset);
+            OpenResults = OpenResults.Read(SMBParameters, ref parametersOffset);
+            Reserved = ByteReader.ReadBytes(SMBParameters, ref parametersOffset, 6);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            this.SMBParameters = new byte[ParametersLength];
+            SMBParameters = new byte[ParametersLength];
             int parametersOffset = 4;
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, FID);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)FileAttrs);
-            UTimeHelper.WriteUTime(this.SMBParameters, ref parametersOffset, LastWriteTime);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, FileDataSize);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)AccessRights);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)ResourceType);
-            NMPipeStatus.WriteBytes(this.SMBParameters, ref parametersOffset);
-            OpenResults.WriteBytes(this.SMBParameters, ref parametersOffset);
-            ByteWriter.WriteBytes(this.SMBParameters, ref parametersOffset, Reserved, 6);
+            LittleEndianWriter.WriteUInt16(SMBParameters, ref parametersOffset, FID);
+            LittleEndianWriter.WriteUInt16(SMBParameters, ref parametersOffset, (ushort)FileAttrs);
+            UTimeHelper.WriteUTime(SMBParameters, ref parametersOffset, LastWriteTime);
+            LittleEndianWriter.WriteUInt32(SMBParameters, ref parametersOffset, FileDataSize);
+            LittleEndianWriter.WriteUInt16(SMBParameters, ref parametersOffset, (ushort)AccessRights);
+            LittleEndianWriter.WriteUInt16(SMBParameters, ref parametersOffset, (ushort)ResourceType);
+            NMPipeStatus.WriteBytes(SMBParameters, ref parametersOffset);
+            OpenResults.WriteBytes(SMBParameters, ref parametersOffset);
+            ByteWriter.WriteBytes(SMBParameters, ref parametersOffset, Reserved, 6);
             return base.GetBytes(isUnicode);
         }
 

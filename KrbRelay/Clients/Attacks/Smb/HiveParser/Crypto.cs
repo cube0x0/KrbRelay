@@ -83,8 +83,8 @@ namespace KrbRelay.HiveParser
                     manualPadding.Add(0x00);
                 }
                 byte[] concat = new byte[value.Length + manualPadding.Count];
-                System.Buffer.BlockCopy(value, 0, concat, 0, value.Length);
-                System.Buffer.BlockCopy(manualPadding.ToArray(), 0, concat, value.Length, manualPadding.Count);
+                Buffer.BlockCopy(value, 0, concat, 0, value.Length);
+                Buffer.BlockCopy(manualPadding.ToArray(), 0, concat, value.Length, manualPadding.Count);
                 value = concat;
             }
 

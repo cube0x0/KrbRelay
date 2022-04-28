@@ -1,6 +1,4 @@
-﻿using Org.BouncyCastle.X509;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -34,12 +32,10 @@ namespace KrbRelay.Clients
                 Console.WriteLine("[+] HTTP session established");
 
                 //Kerberos auth may not require set-cookies
-                IEnumerable<string> cookies = null;
                 foreach (var h in result.Headers)
                 {
                     if (h.Key == "Set-Cookie")
                     {
-                        cookies = h.Value;
                         Console.WriteLine("[*] Authentication Cookie;\n" + string.Join(";", h.Value));
                     }
                 }
@@ -85,23 +81,6 @@ namespace KrbRelay.Clients
                     }
                 }
             }
-        }
-    }
-
-    internal class TrustAll : ICertificatePolicy
-    {
-        public TrustAll()
-        {
-        }
-
-        public bool CheckValidationResult(ServicePoint srvPoint, X509Certificate certificate, WebRequest request, int certificateProblem)
-        {
-            return true;
-        }
-
-        public bool CheckValidationResult(ServicePoint srvPoint, System.Security.Cryptography.X509Certificates.X509Certificate certificate, WebRequest request, int certificateProblem)
-        {
-            return true;
         }
     }
 }

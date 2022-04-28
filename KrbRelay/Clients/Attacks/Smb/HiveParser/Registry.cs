@@ -22,7 +22,7 @@ namespace KrbRelay.HiveParser
             int cs = BitConverter.ToInt32(controlSet.Data, 0);
 
             StringBuilder scrambledKey = new StringBuilder();
-            foreach (string key in new string[] { "JD", "Skew1", "GBG", "Data" })
+            foreach (string key in new[] { "JD", "Skew1", "GBG", "Data" })
             {
                 NodeKey nk = GetNodeKey(systemHive, "ControlSet00" + cs + "\\Control\\Lsa\\" + key);
 
@@ -93,7 +93,7 @@ namespace KrbRelay.HiveParser
                 byte[] almpassword = Encoding.ASCII.GetBytes("LMPASSWORD\0");
                 foreach (NodeKey user in targetNode.ChildNodes.Where(x => x.Name.Contains("00000")))
                 {
-                    byte[] rid = BitConverter.GetBytes(System.Int32.Parse(user.Name, System.Globalization.NumberStyles.HexNumber));
+                    byte[] rid = BitConverter.GetBytes(Int32.Parse(user.Name, System.Globalization.NumberStyles.HexNumber));
                     byte[] v = user.getChildValues("V");
                     int offset = BitConverter.ToInt32(v, 12) + 204;
                     int length = BitConverter.ToInt32(v, 16);
@@ -153,7 +153,7 @@ namespace KrbRelay.HiveParser
                             ntHash = Crypto.DecryptSingleHash(desEncryptedHash, user.Name).Replace("-", "");
                         }
                     }
-                    string ridStr = System.Int32.Parse(user.Name, System.Globalization.NumberStyles.HexNumber).ToString();
+                    string ridStr = Int32.Parse(user.Name, System.Globalization.NumberStyles.HexNumber).ToString();
                     string hashes = (lmHash + ":" + ntHash);
                     retVal.Add(string.Format("{0}:{1}:{2}", username, ridStr, hashes.ToLower()));
                 }
@@ -289,12 +289,12 @@ namespace KrbRelay.HiveParser
             }
             else if (keyName.ToUpper().StartsWith("ASPNET_WP_PASSWORD"))
             {
-                secretOutput += ("ASPNET:" + System.Text.Encoding.Unicode.GetString(secretBlob.secret));
+                secretOutput += ("ASPNET:" + Encoding.Unicode.GetString(secretBlob.secret));
             }
             else
             {
                 secretOutput += ("[!] Secret type not supported yet - outputing raw secret as unicode:\r\n");
-                secretOutput += (System.Text.Encoding.Unicode.GetString(secretBlob.secret));
+                secretOutput += (Encoding.Unicode.GetString(secretBlob.secret));
             }
             return secretOutput;
         }

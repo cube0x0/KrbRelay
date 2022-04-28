@@ -84,13 +84,13 @@ namespace SMBLibrary.Authentication.GSSAPI
         public static byte[] EncodeGeneralString(string value)
         {
             // We do not support character-set designation escape sequences
-            return ASCIIEncoding.ASCII.GetBytes(value);
+            return Encoding.ASCII.GetBytes(value);
         }
 
         public static string DecodeGeneralString(byte[] bytes)
         {
             // We do not support character-set designation escape sequences
-            return ASCIIEncoding.ASCII.GetString(bytes);
+            return Encoding.ASCII.GetString(bytes);
         }
     }
 }

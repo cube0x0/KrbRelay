@@ -25,13 +25,13 @@ namespace SMBLibrary.SMB1
 
         public FlushRequest(byte[] buffer, int offset) : base(buffer, offset, false)
         {
-            FID = LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
+            FID = LittleEndianConverter.ToUInt16(SMBParameters, 0);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            this.SMBParameters = new byte[ParametersLength];
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, FID);
+            SMBParameters = new byte[ParametersLength];
+            LittleEndianWriter.WriteUInt16(SMBParameters, 0, FID);
 
             return base.GetBytes(isUnicode);
         }

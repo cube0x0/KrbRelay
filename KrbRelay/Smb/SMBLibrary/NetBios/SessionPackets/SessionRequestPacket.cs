@@ -20,22 +20,22 @@ namespace SMBLibrary.NetBios
 
         public SessionRequestPacket()
         {
-            this.Type = SessionPacketTypeName.SessionRequest;
+            Type = SessionPacketTypeName.SessionRequest;
         }
 
         public SessionRequestPacket(byte[] buffer, int offset) : base(buffer, offset)
         {
-            CalledName = NetBiosUtils.DecodeName(this.Trailer, ref offset);
-            CallingName = NetBiosUtils.DecodeName(this.Trailer, ref offset);
+            CalledName = NetBiosUtils.DecodeName(Trailer, ref offset);
+            CallingName = NetBiosUtils.DecodeName(Trailer, ref offset);
         }
 
         public override byte[] GetBytes()
         {
             byte[] part1 = NetBiosUtils.EncodeName(CalledName, String.Empty);
             byte[] part2 = NetBiosUtils.EncodeName(CallingName, String.Empty);
-            this.Trailer = new byte[part1.Length + part2.Length];
-            ByteWriter.WriteBytes(this.Trailer, 0, part1);
-            ByteWriter.WriteBytes(this.Trailer, part1.Length, part2);
+            Trailer = new byte[part1.Length + part2.Length];
+            ByteWriter.WriteBytes(Trailer, 0, part1);
+            ByteWriter.WriteBytes(Trailer, part1.Length, part2);
             return base.GetBytes();
         }
 

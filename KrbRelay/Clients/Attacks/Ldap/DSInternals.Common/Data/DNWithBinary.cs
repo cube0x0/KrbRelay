@@ -1,6 +1,6 @@
 ﻿namespace DSInternals.Common.Data
 {
-    using DSInternals.Common.Properties;
+    using Properties;
     using System;
 
     /// <summary>
@@ -31,8 +31,8 @@
             Validator.AssertNotNullOrEmpty(dn, nameof(dn));
             Validator.AssertNotNull(binary, nameof(binary));
 
-            this.DistinguishedName = dn;
-            this.Binary = binary;
+            DistinguishedName = dn;
+            Binary = binary;
         }
 
         public static DNWithBinary Parse(string dnWithBinary)
@@ -57,7 +57,7 @@
 
         public override string ToString()
         {
-            return String.Format(StringFormat, this.Binary.Length * 2, this.Binary.ToHex(true), this.DistinguishedName);
+            return String.Format(StringFormat, Binary.Length * 2, Binary.ToHex(true), DistinguishedName);
         }
     }
 }

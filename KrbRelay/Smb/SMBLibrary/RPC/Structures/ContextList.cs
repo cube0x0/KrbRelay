@@ -34,14 +34,14 @@ namespace SMBLibrary.RPC
             for (int index = 0; index < numberOfContextElements; index++)
             {
                 ContextElement element = new ContextElement(buffer, offset);
-                this.Add(element);
+                Add(element);
                 offset += element.Length;
             }
         }
 
         public void WriteBytes(byte[] buffer, int offset)
         {
-            byte numberOfContextElements = (byte)this.Count;
+            byte numberOfContextElements = (byte)Count;
 
             ByteWriter.WriteByte(buffer, offset + 0, numberOfContextElements);
             ByteWriter.WriteByte(buffer, offset + 1, Reserved1);
@@ -57,7 +57,7 @@ namespace SMBLibrary.RPC
         public void WriteBytes(byte[] buffer, ref int offset)
         {
             WriteBytes(buffer, offset);
-            offset += this.Length;
+            offset += Length;
         }
 
         public int Length
@@ -65,7 +65,7 @@ namespace SMBLibrary.RPC
             get
             {
                 int length = 4;
-                for (int index = 0; index < this.Count; index++)
+                for (int index = 0; index < Count; index++)
                 {
                     length += this[index].Length;
                 }

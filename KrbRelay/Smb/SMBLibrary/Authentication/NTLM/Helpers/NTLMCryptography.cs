@@ -131,7 +131,7 @@ namespace SMBLibrary.Authentication.NTLM
         /// </summary>
         public static byte[] LMOWFv1(string password)
         {
-            byte[] plainText = ASCIIEncoding.ASCII.GetBytes("KGS!@#$%");
+            byte[] plainText = Encoding.ASCII.GetBytes("KGS!@#$%");
             byte[] passwordBytes = GetOEMEncoding().GetBytes(password.ToUpper());
             byte[] key = new byte[14];
             Array.Copy(passwordBytes, key, Math.Min(passwordBytes.Length, 14));
@@ -152,7 +152,7 @@ namespace SMBLibrary.Authentication.NTLM
         /// </summary>
         public static byte[] NTOWFv1(string password)
         {
-            byte[] passwordBytes = UnicodeEncoding.Unicode.GetBytes(password);
+            byte[] passwordBytes = Encoding.Unicode.GetBytes(password);
             return new MD4().GetByteHashFromBytes(passwordBytes);
         }
 
@@ -166,10 +166,10 @@ namespace SMBLibrary.Authentication.NTLM
 
         public static byte[] NTOWFv2(string password, string user, string domain)
         {
-            byte[] passwordBytes = UnicodeEncoding.Unicode.GetBytes(password);
+            byte[] passwordBytes = Encoding.Unicode.GetBytes(password);
             byte[] key = new MD4().GetByteHashFromBytes(passwordBytes);
             string text = user.ToUpper() + domain;
-            byte[] bytes = UnicodeEncoding.Unicode.GetBytes(text);
+            byte[] bytes = Encoding.Unicode.GetBytes(text);
             HMACMD5 hmac = new HMACMD5(key);
             return hmac.ComputeHash(bytes, 0, bytes.Length);
         }

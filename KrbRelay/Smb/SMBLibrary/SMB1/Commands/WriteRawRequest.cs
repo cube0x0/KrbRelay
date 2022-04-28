@@ -41,18 +41,18 @@ namespace SMBLibrary.SMB1
 
         public WriteRawRequest(byte[] buffer, int offset) : base(buffer, offset, false)
         {
-            FID = LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
-            CountOfBytes = LittleEndianConverter.ToUInt16(this.SMBParameters, 2);
-            Reserved1 = LittleEndianConverter.ToUInt16(this.SMBParameters, 4);
-            Offset = LittleEndianConverter.ToUInt32(this.SMBParameters, 6);
-            Timeout = LittleEndianConverter.ToUInt32(this.SMBParameters, 10);
-            WriteMode = (WriteMode)LittleEndianConverter.ToUInt16(this.SMBParameters, 14);
-            Reserved2 = LittleEndianConverter.ToUInt32(this.SMBParameters, 16);
-            ushort dataLength = LittleEndianConverter.ToUInt16(this.SMBParameters, 20);
-            ushort dataOffset = LittleEndianConverter.ToUInt16(this.SMBParameters, 22);
+            FID = LittleEndianConverter.ToUInt16(SMBParameters, 0);
+            CountOfBytes = LittleEndianConverter.ToUInt16(SMBParameters, 2);
+            Reserved1 = LittleEndianConverter.ToUInt16(SMBParameters, 4);
+            Offset = LittleEndianConverter.ToUInt32(SMBParameters, 6);
+            Timeout = LittleEndianConverter.ToUInt32(SMBParameters, 10);
+            WriteMode = (WriteMode)LittleEndianConverter.ToUInt16(SMBParameters, 14);
+            Reserved2 = LittleEndianConverter.ToUInt32(SMBParameters, 16);
+            ushort dataLength = LittleEndianConverter.ToUInt16(SMBParameters, 20);
+            ushort dataOffset = LittleEndianConverter.ToUInt16(SMBParameters, 22);
             if (SMBParameters.Length == ParametersFixedLength + 4)
             {
-                OffsetHigh = LittleEndianConverter.ToUInt32(this.SMBParameters, 24);
+                OffsetHigh = LittleEndianConverter.ToUInt32(SMBParameters, 24);
             }
 
             Data = ByteReader.ReadBytes(buffer, dataOffset, dataLength);

@@ -2,9 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Net;
-using System.Threading.Tasks;
 using System.Net.Http;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Net.Sockets;
@@ -23,17 +21,17 @@ namespace KrbRelay.Spoofing
 
         public HttpServer(string ip, int port, string service)
         {
-            this.listener = new TcpListener(IPAddress.Parse(ip), port);
+            listener = new TcpListener(IPAddress.Parse(ip), port);
             this.service = service;
         }
 
         public void Start()
         {
-            this.listener.Start();
+            listener.Start();
             var result = "Access denied";
             while (true)
             {
-                var client = this.listener.AcceptTcpClient();
+                var client = listener.AcceptTcpClient();
                 NetworkStream stream = client.GetStream();
                 var buffer = new byte[10240];
                 //var length = stream.Read(buffer, 0, buffer.Length);
@@ -94,8 +92,6 @@ namespace KrbRelay.Spoofing
 
     internal class HttpRelayServer
     {
-
-
         public static void start(string Service, string argSpooferIP)
         {
             Console.WriteLine("[*] Listening for connections on http://{0}:80", argSpooferIP);
@@ -207,12 +203,10 @@ namespace KrbRelay.Spoofing
                 //Program.stopSpoofing = true;
 
                 //Kerberos auth may not require set-cookies
-                IEnumerable<string> cookies = null;
                 foreach (var h in result.Headers)
                 {
                     if (h.Key == "Set-Cookie")
                     {
-                        cookies = h.Value;
                         Console.WriteLine("[*] Authentication Cookie;\n" + string.Join(";", h.Value));
                     }
                 }

@@ -69,7 +69,7 @@ namespace SMBLibrary.SMB2
         {
             get
             {
-                return ((this.Flags & QueryDirectoryFlags.SMB2_RESTART_SCANS) > 0);
+                return ((Flags & QueryDirectoryFlags.SMB2_RESTART_SCANS) > 0);
             }
             set
             {
@@ -88,7 +88,7 @@ namespace SMBLibrary.SMB2
         {
             get
             {
-                return ((this.Flags & QueryDirectoryFlags.SMB2_RETURN_SINGLE_ENTRY) > 0);
+                return ((Flags & QueryDirectoryFlags.SMB2_RETURN_SINGLE_ENTRY) > 0);
             }
             set
             {
@@ -107,7 +107,7 @@ namespace SMBLibrary.SMB2
         {
             get
             {
-                return ((this.Flags & QueryDirectoryFlags.SMB2_REOPEN) > 0);
+                return ((Flags & QueryDirectoryFlags.SMB2_REOPEN) > 0);
             }
             set
             {

@@ -44,7 +44,7 @@ namespace Utilities
         protected override byte[] HashFinal()
         {
             byte[] hashBuffer = UInt32ToBigEndianBytes(~hash);
-            this.HashValue = hashBuffer;
+            HashValue = hashBuffer;
             return hashBuffer;
         }
 
@@ -104,7 +104,7 @@ namespace Utilities
 
         private byte[] UInt32ToBigEndianBytes(UInt32 x)
         {
-            return new byte[] {
+            return new[] {
                 (byte)((x >> 24) & 0xff),
                 (byte)((x >> 16) & 0xff),
                 (byte)((x >> 8) & 0xff),

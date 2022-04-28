@@ -29,10 +29,10 @@ namespace SMBLibrary.SMB1
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            this.SMBParameters = new byte[ParametersLength];
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, DialectsNotSupported);
+            SMBParameters = new byte[ParametersLength];
+            LittleEndianWriter.WriteUInt16(SMBParameters, 0, DialectsNotSupported);
 
-            this.SMBData = new byte[0];
+            SMBData = new byte[0];
 
             return base.GetBytes(isUnicode);
         }

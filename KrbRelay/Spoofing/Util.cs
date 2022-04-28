@@ -5,7 +5,6 @@ using System.Net;
 using System.Collections.Generic;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.IO;
 
 namespace KrbRelay.Spoofing
 {
@@ -13,7 +12,6 @@ namespace KrbRelay.Spoofing
     {
         public static string GetLocalIPAddress(string ipVersion)
         {
-
             List<string> ipAddressList = new List<string>();
             AddressFamily addressFamily;
 
@@ -28,10 +26,8 @@ namespace KrbRelay.Spoofing
 
             foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
             {
-
                 if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet && networkInterface.OperationalStatus == OperationalStatus.Up)
                 {
-
                     foreach (UnicastIPAddressInformation ip in networkInterface.GetIPProperties().UnicastAddresses)
                     {
 
@@ -39,11 +35,8 @@ namespace KrbRelay.Spoofing
                         {
                             ipAddressList.Add(ip.Address.ToString());
                         }
-
                     }
-
                 }
-
             }
 
             return ipAddressList.FirstOrDefault();
@@ -295,7 +288,7 @@ namespace KrbRelay.Spoofing
         {
             string hostname = "";
             byte[] queryLength = new byte[1];
-            System.Buffer.BlockCopy(nameQuery, index, queryLength, 0, 1);
+            Buffer.BlockCopy(nameQuery, index, queryLength, 0, 1);
             int hostnameLength = queryLength[0];
             int i = 0;
 
@@ -303,7 +296,7 @@ namespace KrbRelay.Spoofing
             {
                 int hostnameSegmentLength = hostnameLength;
                 byte[] hostnameSegment = new byte[hostnameSegmentLength];
-                System.Buffer.BlockCopy(nameQuery, (index + 1), hostnameSegment, 0, hostnameSegmentLength);
+                Buffer.BlockCopy(nameQuery, (index + 1), hostnameSegment, 0, hostnameSegmentLength);
                 hostname += Encoding.UTF8.GetString(hostnameSegment);
                 index += hostnameLength + 1;
                 hostnameLength = nameQuery[index];
@@ -319,7 +312,5 @@ namespace KrbRelay.Spoofing
 
             return hostname;
         }
-
     }
-
 }

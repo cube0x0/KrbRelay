@@ -38,24 +38,24 @@ namespace SMBLibrary.SMB1
 
         public SetInformationRequest(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
         {
-            FileAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
-            LastWriteTime = UTimeHelper.ReadNullableUTime(this.SMBParameters, 2);
-            Reserved = ByteReader.ReadBytes(this.SMBParameters, 6, 10);
+            FileAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(SMBParameters, 0);
+            LastWriteTime = UTimeHelper.ReadNullableUTime(SMBParameters, 2);
+            Reserved = ByteReader.ReadBytes(SMBParameters, 6, 10);
 
-            BufferFormat = ByteReader.ReadByte(this.SMBData, 0);
+            BufferFormat = ByteReader.ReadByte(SMBData, 0);
             if (BufferFormat != SupportedBufferFormat)
             {
                 throw new InvalidDataException("Unsupported Buffer Format");
             }
-            FileName = SMB1Helper.ReadSMBString(this.SMBData, 1, isUnicode);
+            FileName = SMB1Helper.ReadSMBString(SMBData, 1, isUnicode);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            this.SMBParameters = new byte[ParametersLength];
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, (ushort)FileAttributes);
-            UTimeHelper.WriteUTime(this.SMBParameters, 2, LastWriteTime);
-            ByteWriter.WriteBytes(this.SMBParameters, 6, Reserved, 10);
+            SMBParameters = new byte[ParametersLength];
+            LittleEndianWriter.WriteUInt16(SMBParameters, 0, (ushort)FileAttributes);
+            UTimeHelper.WriteUTime(SMBParameters, 2, LastWriteTime);
+            ByteWriter.WriteBytes(SMBParameters, 6, Reserved, 10);
 
             int length = 1;
             if (isUnicode)
@@ -66,9 +66,9 @@ namespace SMBLibrary.SMB1
             {
                 length += FileName.Length + 1;
             }
-            this.SMBData = new byte[length];
-            ByteWriter.WriteByte(this.SMBData, 0, BufferFormat);
-            SMB1Helper.WriteSMBString(this.SMBData, 1, isUnicode, FileName);
+            SMBData = new byte[length];
+            ByteWriter.WriteByte(SMBData, 0, BufferFormat);
+            SMB1Helper.WriteSMBString(SMBData, 1, isUnicode, FileName);
 
             return base.GetBytes(isUnicode);
         }

@@ -36,7 +36,7 @@ namespace SMBLibrary.SMB2
 
         public byte[] GetBytes()
         {
-            byte[] buffer = new byte[this.Length];
+            byte[] buffer = new byte[Length];
             WriteBytes(buffer, 0);
             return buffer;
         }

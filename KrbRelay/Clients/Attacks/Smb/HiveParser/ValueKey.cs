@@ -13,23 +13,23 @@ namespace KrbRelay.HiveParser
             if (buf[0] != 0x76 && buf[1] != 0x6b)
                 throw new NotSupportedException("Bad vk header");
 
-            this.NameLength = hive.ReadInt16();
-            this.DataLength = hive.ReadInt32();
+            NameLength = hive.ReadInt16();
+            DataLength = hive.ReadInt32();
 
             byte[] databuf = hive.ReadBytes(4);
 
-            this.ValueType = hive.ReadInt32();
+            ValueType = hive.ReadInt32();
             hive.BaseStream.Position += 4;
 
-            buf = hive.ReadBytes(this.NameLength);
-            this.Name = (this.NameLength == 0) ? "Default" : System.Text.Encoding.UTF8.GetString(buf);
+            buf = hive.ReadBytes(NameLength);
+            Name = (NameLength == 0) ? "Default" : System.Text.Encoding.UTF8.GetString(buf);
 
-            if (this.DataLength < 5)
-                this.Data = databuf;
+            if (DataLength < 5)
+                Data = databuf;
             else
             {
                 hive.BaseStream.Position = 4096 + BitConverter.ToInt32(databuf, 0) + 4;
-                this.Data = hive.ReadBytes(this.DataLength);
+                Data = hive.ReadBytes(DataLength);
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using NetFwTypeLib;
+using NetFwTypeLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace CheckPort
         static void Main(string[] args)
         {
             Console.WriteLine("[*] Looking for available ports..");
-            string port = checkPorts(new string[] { "SYSTEM", "ANY" }).ToString();
+            string port = checkPorts(new[] { "SYSTEM", "ANY" }).ToString();
             if (port == "-1")
             {
                 Console.WriteLine("[-] No available ports found");
@@ -20,6 +20,7 @@ namespace CheckPort
                 return;
             }
         }
+        
         public static int checkPorts(string[] names)
         {
             IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
@@ -39,6 +40,7 @@ namespace CheckPort
             }
             return -1;
         }
+        
         public static bool checkPort(int port, string name = "SYSTEM")
         {
             INetFwMgr mgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));

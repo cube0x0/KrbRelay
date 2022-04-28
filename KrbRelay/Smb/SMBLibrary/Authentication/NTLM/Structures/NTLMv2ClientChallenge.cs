@@ -40,8 +40,8 @@ namespace SMBLibrary.Authentication.NTLM
             TimeStamp = timeStamp;
             ClientChallenge = clientChallenge;
             AVPairs = new KeyValuePairList<AVPairKey, byte[]>();
-            AVPairs.Add(AVPairKey.NbDomainName, UnicodeEncoding.Unicode.GetBytes(domainName));
-            AVPairs.Add(AVPairKey.NbComputerName, UnicodeEncoding.Unicode.GetBytes(computerName));
+            AVPairs.Add(AVPairKey.NbDomainName, Encoding.Unicode.GetBytes(domainName));
+            AVPairs.Add(AVPairKey.NbComputerName, Encoding.Unicode.GetBytes(computerName));
         }
 
         public NTLMv2ClientChallenge(DateTime timeStamp, byte[] clientChallenge, KeyValuePairList<AVPairKey, byte[]> targetInfo)

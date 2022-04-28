@@ -19,20 +19,20 @@ namespace SMBLibrary.NetBios
 
         public SessionRetargetResponsePacket() : base()
         {
-            this.Type = SessionPacketTypeName.RetargetSessionResponse;
+            Type = SessionPacketTypeName.RetargetSessionResponse;
         }
 
         public SessionRetargetResponsePacket(byte[] buffer, int offset) : base(buffer, offset)
         {
-            IPAddress = BigEndianConverter.ToUInt32(this.Trailer, offset + 0);
-            Port = BigEndianConverter.ToUInt16(this.Trailer, offset + 4);
+            IPAddress = BigEndianConverter.ToUInt32(Trailer, offset + 0);
+            Port = BigEndianConverter.ToUInt16(Trailer, offset + 4);
         }
 
         public override byte[] GetBytes()
         {
-            this.Trailer = new byte[6];
-            BigEndianWriter.WriteUInt32(this.Trailer, 0, IPAddress);
-            BigEndianWriter.WriteUInt16(this.Trailer, 4, Port);
+            Trailer = new byte[6];
+            BigEndianWriter.WriteUInt32(Trailer, 0, IPAddress);
+            BigEndianWriter.WriteUInt16(Trailer, 4, Port);
             return base.GetBytes();
         }
 

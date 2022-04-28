@@ -14,7 +14,7 @@ namespace SMBLibrary.NetBios
     {
         public PositiveSessionResponsePacket() : base()
         {
-            this.Type = SessionPacketTypeName.PositiveSessionResponse;
+            Type = SessionPacketTypeName.PositiveSessionResponse;
         }
 
         public PositiveSessionResponsePacket(byte[] buffer, int offset) : base(buffer, offset)
@@ -23,7 +23,7 @@ namespace SMBLibrary.NetBios
 
         public override byte[] GetBytes()
         {
-            this.Trailer = new byte[0];
+            Trailer = new byte[0];
             return base.GetBytes();
         }
 

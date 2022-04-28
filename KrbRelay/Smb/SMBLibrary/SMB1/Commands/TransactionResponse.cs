@@ -52,18 +52,18 @@ namespace SMBLibrary.SMB1
 
         public TransactionResponse(byte[] buffer, int offset) : base(buffer, offset, false)
         {
-            TotalParameterCount = LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
-            TotalDataCount = LittleEndianConverter.ToUInt16(this.SMBParameters, 2);
-            Reserved1 = LittleEndianConverter.ToUInt16(this.SMBParameters, 4);
-            ushort parameterCount = LittleEndianConverter.ToUInt16(this.SMBParameters, 6);
-            ushort parameterOffset = LittleEndianConverter.ToUInt16(this.SMBParameters, 8);
-            ParameterDisplacement = LittleEndianConverter.ToUInt16(this.SMBParameters, 10);
-            ushort dataCount = LittleEndianConverter.ToUInt16(this.SMBParameters, 12);
-            ushort dataOffset = LittleEndianConverter.ToUInt16(this.SMBParameters, 14);
-            DataDisplacement = LittleEndianConverter.ToUInt16(this.SMBParameters, 16);
-            byte setupCount = ByteReader.ReadByte(this.SMBParameters, 18);
-            Reserved2 = ByteReader.ReadByte(this.SMBParameters, 19);
-            Setup = ByteReader.ReadBytes(this.SMBParameters, 20, setupCount * 2);
+            TotalParameterCount = LittleEndianConverter.ToUInt16(SMBParameters, 0);
+            TotalDataCount = LittleEndianConverter.ToUInt16(SMBParameters, 2);
+            Reserved1 = LittleEndianConverter.ToUInt16(SMBParameters, 4);
+            ushort parameterCount = LittleEndianConverter.ToUInt16(SMBParameters, 6);
+            ushort parameterOffset = LittleEndianConverter.ToUInt16(SMBParameters, 8);
+            ParameterDisplacement = LittleEndianConverter.ToUInt16(SMBParameters, 10);
+            ushort dataCount = LittleEndianConverter.ToUInt16(SMBParameters, 12);
+            ushort dataOffset = LittleEndianConverter.ToUInt16(SMBParameters, 14);
+            DataDisplacement = LittleEndianConverter.ToUInt16(SMBParameters, 16);
+            byte setupCount = ByteReader.ReadByte(SMBParameters, 18);
+            Reserved2 = ByteReader.ReadByte(SMBParameters, 19);
+            Setup = ByteReader.ReadBytes(SMBParameters, 20, setupCount * 2);
 
             TransParameters = ByteReader.ReadBytes(buffer, parameterOffset, parameterCount);
             TransData = ByteReader.ReadBytes(buffer, dataOffset, dataCount);
@@ -87,23 +87,23 @@ namespace SMBLibrary.SMB1
             int padding2 = (4 - (dataOffset % 4)) % 4;
             dataOffset += (ushort)padding2;
 
-            this.SMBParameters = new byte[FixedSMBParametersLength + Setup.Length];
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, TotalParameterCount);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 2, TotalDataCount);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 4, Reserved1);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 6, parameterCount);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 8, parameterOffset);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 10, ParameterDisplacement);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 12, dataCount);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 14, dataOffset);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 16, DataDisplacement);
-            ByteWriter.WriteByte(this.SMBParameters, 18, setupCount);
-            ByteWriter.WriteByte(this.SMBParameters, 19, Reserved2);
-            ByteWriter.WriteBytes(this.SMBParameters, 20, Setup);
+            SMBParameters = new byte[FixedSMBParametersLength + Setup.Length];
+            LittleEndianWriter.WriteUInt16(SMBParameters, 0, TotalParameterCount);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 2, TotalDataCount);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 4, Reserved1);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 6, parameterCount);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 8, parameterOffset);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 10, ParameterDisplacement);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 12, dataCount);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 14, dataOffset);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 16, DataDisplacement);
+            ByteWriter.WriteByte(SMBParameters, 18, setupCount);
+            ByteWriter.WriteByte(SMBParameters, 19, Reserved2);
+            ByteWriter.WriteBytes(SMBParameters, 20, Setup);
 
-            this.SMBData = new byte[parameterCount + dataCount + padding1 + padding2];
-            ByteWriter.WriteBytes(this.SMBData, padding1, TransParameters);
-            ByteWriter.WriteBytes(this.SMBData, padding1 + parameterCount + padding2, TransData);
+            SMBData = new byte[parameterCount + dataCount + padding1 + padding2];
+            ByteWriter.WriteBytes(SMBData, padding1, TransParameters);
+            ByteWriter.WriteBytes(SMBData, padding1 + parameterCount + padding2, TransData);
 
             return base.GetBytes(isUnicode);
         }

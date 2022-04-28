@@ -25,13 +25,13 @@ namespace SMBLibrary.SMB1
 
         public EchoRequest(byte[] buffer, int offset) : base(buffer, offset, false)
         {
-            EchoCount = LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
+            EchoCount = LittleEndianConverter.ToUInt16(SMBParameters, 0);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            this.SMBParameters = new byte[ParametersLength];
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, EchoCount);
+            SMBParameters = new byte[ParametersLength];
+            LittleEndianWriter.WriteUInt16(SMBParameters, 0, EchoCount);
 
             return base.GetBytes(isUnicode);
         }
@@ -40,11 +40,11 @@ namespace SMBLibrary.SMB1
         {
             get
             {
-                return this.SMBData;
+                return SMBData;
             }
             set
             {
-                this.SMBData = value;
+                SMBData = value;
             }
         }
 

@@ -77,7 +77,7 @@ namespace SMBLibrary.Server
                 if (command is NegotiateRequest)
                 {
                     NegotiateRequest request = (NegotiateRequest)command;
-                    if (request.Dialects.Contains(SMBServer.NTLanManagerDialect))
+                    if (request.Dialects.Contains(NTLanManagerDialect))
                     {
                         state = new SMB1ConnectionState(state);
                         state.Dialect = SMBDialect.NTLM012;

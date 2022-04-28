@@ -39,14 +39,14 @@ namespace SMBLibrary.SMB1
             while (position < eof)
             {
                 FullExtendedAttribute attribute = new FullExtendedAttribute(buffer, position);
-                this.Add(attribute);
+                Add(attribute);
                 position += attribute.Length;
             }
         }
 
         public byte[] GetBytes()
         {
-            byte[] buffer = new byte[this.Length];
+            byte[] buffer = new byte[Length];
             WriteBytes(buffer, 0);
             return buffer;
         }
@@ -54,7 +54,7 @@ namespace SMBLibrary.SMB1
         public void WriteBytes(byte[] buffer, ref int offset)
         {
             WriteBytes(buffer, offset);
-            offset += this.Length;
+            offset += Length;
         }
 
         public void WriteBytes(byte[] buffer, int offset)

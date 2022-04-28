@@ -304,7 +304,7 @@ namespace SMBLibrary.Client
                 return null;
             }
 
-            List<ShareInfo2Entry> shares = ServerServiceHelper.ListShares(namedPipeShare, m_serverName, SMBLibrary.Services.ShareType.DiskDrive, out status);
+            List<ShareInfo2Entry> shares = ServerServiceHelper.ListShares(namedPipeShare, m_serverName, Services.ShareType.DiskDrive, out status);
             namedPipeShare.Disconnect();
             return shares;
         }
@@ -543,7 +543,7 @@ namespace SMBLibrary.Client
 
         private void Log(string message)
         {
-            System.Diagnostics.Debug.Print(message);
+            Debug.Print(message);
         }
 
         internal void TrySendCommand(SMB2Command request)

@@ -90,17 +90,17 @@ namespace SMBLibrary.SMB1
         {
             get
             {
-                return ((this.Flags & FindFlags.SMB_FIND_CLOSE_AFTER_REQUEST) > 0);
+                return ((Flags & FindFlags.SMB_FIND_CLOSE_AFTER_REQUEST) > 0);
             }
             set
             {
                 if (value)
                 {
-                    this.Flags |= FindFlags.SMB_FIND_CLOSE_AFTER_REQUEST;
+                    Flags |= FindFlags.SMB_FIND_CLOSE_AFTER_REQUEST;
                 }
                 else
                 {
-                    this.Flags &= ~FindFlags.SMB_FIND_CLOSE_AFTER_REQUEST;
+                    Flags &= ~FindFlags.SMB_FIND_CLOSE_AFTER_REQUEST;
                 }
             }
         }
@@ -109,17 +109,17 @@ namespace SMBLibrary.SMB1
         {
             get
             {
-                return ((this.Flags & FindFlags.SMB_FIND_CLOSE_AT_EOS) > 0);
+                return ((Flags & FindFlags.SMB_FIND_CLOSE_AT_EOS) > 0);
             }
             set
             {
                 if (value)
                 {
-                    this.Flags |= FindFlags.SMB_FIND_CLOSE_AT_EOS;
+                    Flags |= FindFlags.SMB_FIND_CLOSE_AT_EOS;
                 }
                 else
                 {
-                    this.Flags &= ~FindFlags.SMB_FIND_CLOSE_AT_EOS;
+                    Flags &= ~FindFlags.SMB_FIND_CLOSE_AT_EOS;
                 }
             }
         }

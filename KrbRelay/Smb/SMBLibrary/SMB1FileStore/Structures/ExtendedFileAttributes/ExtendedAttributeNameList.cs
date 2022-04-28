@@ -28,14 +28,14 @@ namespace SMBLibrary.SMB1
             while (position < eof)
             {
                 ExtendedAttributeName attribute = new ExtendedAttributeName(buffer, position);
-                this.Add(attribute);
+                Add(attribute);
                 position += attribute.Length;
             }
         }
 
         public byte[] GetBytes()
         {
-            byte[] buffer = new byte[this.Length];
+            byte[] buffer = new byte[Length];
             WriteBytes(buffer, 0);
             return buffer;
         }

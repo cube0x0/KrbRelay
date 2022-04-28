@@ -24,13 +24,13 @@ namespace SMBLibrary.SMB1
 
         public WriteRawFinalResponse(byte[] buffer, int offset) : base(buffer, offset, false)
         {
-            Count = LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
+            Count = LittleEndianConverter.ToUInt16(SMBParameters, 0);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            this.SMBParameters = new byte[ParametersLength];
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, Count);
+            SMBParameters = new byte[ParametersLength];
+            LittleEndianWriter.WriteUInt16(SMBParameters, 0, Count);
 
             return base.GetBytes(isUnicode);
         }

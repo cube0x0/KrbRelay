@@ -33,19 +33,19 @@ namespace SMBLibrary.SMB1
 
         public QueryInformationResponse(byte[] buffer, int offset) : base(buffer, offset, false)
         {
-            FileAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
-            LastWriteTime = UTimeHelper.ReadNullableUTime(this.SMBParameters, 2);
-            FileSize = LittleEndianConverter.ToUInt32(this.SMBParameters, 6);
-            Reserved = ByteReader.ReadBytes(this.SMBParameters, 10, 10);
+            FileAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(SMBParameters, 0);
+            LastWriteTime = UTimeHelper.ReadNullableUTime(SMBParameters, 2);
+            FileSize = LittleEndianConverter.ToUInt32(SMBParameters, 6);
+            Reserved = ByteReader.ReadBytes(SMBParameters, 10, 10);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            this.SMBParameters = new byte[ParameterLength];
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, (ushort)FileAttributes);
-            UTimeHelper.WriteUTime(this.SMBParameters, 2, LastWriteTime);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, 6, FileSize);
-            ByteWriter.WriteBytes(this.SMBParameters, 10, Reserved, 10);
+            SMBParameters = new byte[ParameterLength];
+            LittleEndianWriter.WriteUInt16(SMBParameters, 0, (ushort)FileAttributes);
+            UTimeHelper.WriteUTime(SMBParameters, 2, LastWriteTime);
+            LittleEndianWriter.WriteUInt32(SMBParameters, 6, FileSize);
+            ByteWriter.WriteBytes(SMBParameters, 10, Reserved, 10);
 
             return base.GetBytes(isUnicode);
         }

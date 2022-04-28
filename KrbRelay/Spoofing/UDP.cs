@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 
 namespace KrbRelay.Spoofing
 {
@@ -39,7 +36,6 @@ namespace KrbRelay.Spoofing
                 {
                     udpClient.JoinMulticastGroup(IPAddress.Parse("ff02::1:2"));
                 }
-
             }
             catch
             {
@@ -81,6 +77,5 @@ namespace KrbRelay.Spoofing
             udpSendSocket.SendTo(udpResponse, destinationEndpoint);
             udpSendSocket.Close();
         }
-
     }
 }

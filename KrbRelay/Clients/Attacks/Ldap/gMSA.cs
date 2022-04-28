@@ -43,7 +43,7 @@ namespace KrbRelay.Clients.Attacks.Ldap
             //Console.WriteLine("[*] msgID: {0}", search);
 
             IntPtr pMessage = IntPtr.Zero;
-            var r = Natives.ldap_result(
+            var r = ldap_result(
                 ld,
                 search,
                 1,
@@ -52,7 +52,7 @@ namespace KrbRelay.Clients.Attacks.Ldap
             Console.WriteLine("[*] ldap_result: {0}", (LdapResultType)r);
             Dictionary<string, Dictionary<string, List<byte[]>>> result = new Dictionary<string, Dictionary<string, List<byte[]>>>();
             var ber = Marshal.AllocHGlobal(IntPtr.Size);
-            for (var entry = ldap_first_entry(ld, pMessage); entry != IntPtr.Zero; entry = Natives.ldap_next_entry(ld, entry))
+            for (var entry = ldap_first_entry(ld, pMessage); entry != IntPtr.Zero; entry = ldap_next_entry(ld, entry))
             {
                 string dn = Generic.GetLdapDn(ld, entry);
                 Dictionary<string, List<byte[]>> aa = Generic.GetLdapAttributes(ld, entry, ref ber);

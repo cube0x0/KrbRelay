@@ -65,7 +65,7 @@ namespace KrbRelay.Clients.Attacks.Http
             if (string.IsNullOrEmpty(template))
                 CertificateTemplates = templateHunter();
             else
-                CertificateTemplates = new string[] { template };
+                CertificateTemplates = new[] { template };
 
             string pattern = @"location=""certnew.cer\?ReqID=(.*?)&";
             Regex rgx = new Regex(pattern, RegexOptions.IgnoreCase);

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace KrbRelay
 {
@@ -21,6 +20,6 @@ namespace KrbRelay
 
         void UnlockRegion(long libOffset, long cb, int dwLockType);
 
-        void Stat(out System.Runtime.InteropServices.STATSTG pstatstg, int grfStatFlag);
+        void Stat(out STATSTG pstatstg, int grfStatFlag);
     }
 }

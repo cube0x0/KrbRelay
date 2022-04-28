@@ -43,15 +43,15 @@ namespace SMBLibrary.SMB1
 
         public ReadAndXRequest(byte[] buffer, int offset) : base(buffer, offset, false)
         {
-            FID = LittleEndianConverter.ToUInt16(this.SMBParameters, 4);
-            Offset = LittleEndianConverter.ToUInt32(this.SMBParameters, 6);
-            MaxCountOfBytesToReturn = LittleEndianConverter.ToUInt16(this.SMBParameters, 10);
-            MinCountOfBytesToReturn = LittleEndianConverter.ToUInt16(this.SMBParameters, 12);
-            Timeout_or_MaxCountHigh = LittleEndianConverter.ToUInt32(this.SMBParameters, 14);
-            Remaining = LittleEndianConverter.ToUInt16(this.SMBParameters, 18);
+            FID = LittleEndianConverter.ToUInt16(SMBParameters, 4);
+            Offset = LittleEndianConverter.ToUInt32(SMBParameters, 6);
+            MaxCountOfBytesToReturn = LittleEndianConverter.ToUInt16(SMBParameters, 10);
+            MinCountOfBytesToReturn = LittleEndianConverter.ToUInt16(SMBParameters, 12);
+            Timeout_or_MaxCountHigh = LittleEndianConverter.ToUInt32(SMBParameters, 14);
+            Remaining = LittleEndianConverter.ToUInt16(SMBParameters, 18);
             if (SMBParameters.Length == ParametersFixedLength + 4)
             {
-                uint offsetHigh = LittleEndianConverter.ToUInt32(this.SMBParameters, 20);
+                uint offsetHigh = LittleEndianConverter.ToUInt32(SMBParameters, 20);
                 Offset |= ((ulong)offsetHigh << 32);
             }
         }
@@ -64,17 +64,17 @@ namespace SMBLibrary.SMB1
                 parametersLength += 4;
             }
 
-            this.SMBParameters = new byte[parametersLength];
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 4, FID);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, 6, (uint)(Offset & 0xFFFFFFFF));
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 10, (ushort)(MaxCountOfBytesToReturn & 0xFFFF));
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 12, MinCountOfBytesToReturn);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, 14, Timeout_or_MaxCountHigh);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 18, Remaining);
+            SMBParameters = new byte[parametersLength];
+            LittleEndianWriter.WriteUInt16(SMBParameters, 4, FID);
+            LittleEndianWriter.WriteUInt32(SMBParameters, 6, (uint)(Offset & 0xFFFFFFFF));
+            LittleEndianWriter.WriteUInt16(SMBParameters, 10, (ushort)(MaxCountOfBytesToReturn & 0xFFFF));
+            LittleEndianWriter.WriteUInt16(SMBParameters, 12, MinCountOfBytesToReturn);
+            LittleEndianWriter.WriteUInt32(SMBParameters, 14, Timeout_or_MaxCountHigh);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 18, Remaining);
             if (Offset > UInt32.MaxValue)
             {
                 uint offsetHigh = (uint)(Offset >> 32);
-                LittleEndianWriter.WriteUInt32(this.SMBParameters, 20, offsetHigh);
+                LittleEndianWriter.WriteUInt32(SMBParameters, 20, offsetHigh);
             }
 
             return base.GetBytes(isUnicode);

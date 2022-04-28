@@ -54,7 +54,7 @@ namespace KrbRelay.Clients.Attacks.Smb
             var status = fileStore.CreateFile(out fileHandle, out fileStatus, path, AccessMask.GENERIC_READ | AccessMask.SYNCHRONIZE, SMBLibrary.FileAttributes.Normal, ShareAccess.Read, CreateDisposition.FILE_OPEN, CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT, null);
             if (status == NTStatus.STATUS_SUCCESS)
             {
-                using (System.IO.MemoryStream stream = new System.IO.MemoryStream())
+                using (MemoryStream stream = new MemoryStream())
                 {
                     byte[] data;
                     long bytesRead = 0;
@@ -107,7 +107,7 @@ namespace KrbRelay.Clients.Attacks.Smb
             if (status == NTStatus.STATUS_SUCCESS)
             {
                 int writeOffset = 0;
-                using (System.IO.MemoryStream stream = new System.IO.MemoryStream(content))
+                using (MemoryStream stream = new MemoryStream(content))
                 {
                     while (stream.Position < stream.Length)
                     {

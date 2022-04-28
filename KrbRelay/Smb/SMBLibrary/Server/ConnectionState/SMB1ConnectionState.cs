@@ -116,7 +116,7 @@ namespace SMBLibrary.Server
             {
                 foreach (SMB1Session session in m_sessions.Values)
                 {
-                    result.Add(new SessionInformation(this.ClientEndPoint, this.Dialect, session.UserName, session.MachineName, session.GetOpenFilesInformation(), session.CreationDT));
+                    result.Add(new SessionInformation(ClientEndPoint, Dialect, session.UserName, session.MachineName, session.GetOpenFilesInformation(), session.CreationDT));
                 }
             }
             return result;

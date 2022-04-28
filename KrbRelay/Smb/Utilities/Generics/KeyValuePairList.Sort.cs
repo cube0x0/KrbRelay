@@ -14,7 +14,7 @@ namespace Utilities
     {
         public new void Sort()
         {
-            this.Sort(Comparer<TKey>.Default);
+            Sort(Comparer<TKey>.Default);
         }
 
         public void Sort(ListSortDirection sortDirection)
@@ -36,7 +36,7 @@ namespace Utilities
 
         public void Sort(IComparer<TKey> comparer)
         {
-            this.Sort(delegate (KeyValuePair<TKey, TValue> a, KeyValuePair<TKey, TValue> b)
+            Sort(delegate (KeyValuePair<TKey, TValue> a, KeyValuePair<TKey, TValue> b)
             {
                 return comparer.Compare(a.Key, b.Key);
             });

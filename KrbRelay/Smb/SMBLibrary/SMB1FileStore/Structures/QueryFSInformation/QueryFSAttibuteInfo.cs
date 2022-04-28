@@ -37,7 +37,7 @@ namespace SMBLibrary.SMB1
         public override byte[] GetBytes(bool isUnicode)
         {
             uint lengthOfFileSystemName = (uint)(FileSystemName.Length * 2);
-            byte[] buffer = new byte[this.Length];
+            byte[] buffer = new byte[Length];
             LittleEndianWriter.WriteUInt32(buffer, 0, (uint)FileSystemAttributes);
             LittleEndianWriter.WriteUInt32(buffer, 4, MaxFileNameLengthInBytes);
             LittleEndianWriter.WriteUInt32(buffer, 8, lengthOfFileSystemName);

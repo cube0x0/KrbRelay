@@ -38,7 +38,7 @@ namespace SMBLibrary
 
         public byte[] GetBytes()
         {
-            byte[] buffer = new byte[this.Length];
+            byte[] buffer = new byte[Length];
             LittleEndianWriter.WriteUInt64(buffer, 0, Timeout);
             LittleEndianWriter.WriteUInt32(buffer, 8, (uint)(Name.Length * 2));
             ByteWriter.WriteByte(buffer, 12, Convert.ToByte(TimeSpecified));

@@ -69,12 +69,12 @@ namespace Utilities
         public static string ReadNullTerminatedAnsiString(byte[] buffer, int offset)
         {
             StringBuilder builder = new StringBuilder();
-            char c = (char)ByteReader.ReadByte(buffer, offset);
+            char c = (char)ReadByte(buffer, offset);
             while (c != '\0')
             {
                 builder.Append(c);
                 offset++;
-                c = (char)ByteReader.ReadByte(buffer, offset);
+                c = (char)ReadByte(buffer, offset);
             }
             return builder.ToString();
         }

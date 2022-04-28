@@ -14,7 +14,7 @@ namespace SMBLibrary.NetBios
     {
         public SessionMessagePacket() : base()
         {
-            this.Type = SessionPacketTypeName.SessionMessage;
+            Type = SessionPacketTypeName.SessionMessage;
         }
 
         public SessionMessagePacket(byte[] buffer, int offset) : base(buffer, offset)

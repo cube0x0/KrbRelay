@@ -21,12 +21,12 @@ namespace Utilities
 
         public bool ContainsKey(TKey key)
         {
-            return (this.IndexOfKey(key) != -1);
+            return (IndexOfKey(key) != -1);
         }
 
         public int IndexOfKey(TKey key)
         {
-            for (int index = 0; index < this.Count; index++)
+            for (int index = 0; index < Count; index++)
             {
                 if (this[index].Key.Equals(key))
                 {
@@ -39,7 +39,7 @@ namespace Utilities
 
         public TValue ValueOf(TKey key)
         {
-            for (int index = 0; index < this.Count; index++)
+            for (int index = 0; index < Count; index++)
             {
                 if (this[index].Key.Equals(key))
                 {
@@ -52,7 +52,7 @@ namespace Utilities
 
         public void Add(TKey key, TValue value)
         {
-            this.Add(new KeyValuePair<TKey, TValue>(key, value));
+            Add(new KeyValuePair<TKey, TValue>(key, value));
         }
 
         public List<TKey> Keys

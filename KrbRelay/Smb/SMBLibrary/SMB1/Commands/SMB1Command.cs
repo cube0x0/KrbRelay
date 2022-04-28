@@ -398,7 +398,7 @@ namespace SMBLibrary.SMB1
                     }
                 case CommandName.SMB_COM_TRANSACTION2:
                     {
-                        if (wordCount * 2 == Transaction2InterimResponse.ParametersLength)
+                        if (wordCount * 2 == TransactionInterimResponse.ParametersLength)
                         {
                             return new Transaction2InterimResponse(buffer, offset);
                         }

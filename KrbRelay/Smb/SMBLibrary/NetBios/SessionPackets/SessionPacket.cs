@@ -41,7 +41,7 @@ namespace SMBLibrary.NetBios
 
         public virtual byte[] GetBytes()
         {
-            TrailerLength = this.Trailer.Length;
+            TrailerLength = Trailer.Length;
 
             byte flags = Convert.ToByte(TrailerLength >> 16);
 

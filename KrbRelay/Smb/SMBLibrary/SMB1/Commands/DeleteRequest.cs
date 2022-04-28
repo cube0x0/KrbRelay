@@ -34,14 +34,14 @@ namespace SMBLibrary.SMB1
 
         public DeleteRequest(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
         {
-            SearchAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
+            SearchAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(SMBParameters, 0);
 
-            BufferFormat = ByteReader.ReadByte(this.SMBData, 0);
+            BufferFormat = ByteReader.ReadByte(SMBData, 0);
             if (BufferFormat != SupportedBufferFormat)
             {
                 throw new InvalidDataException("Unsupported Buffer Format");
             }
-            FileName = SMB1Helper.ReadSMBString(this.SMBData, 1, isUnicode);
+            FileName = SMB1Helper.ReadSMBString(SMBData, 1, isUnicode);
         }
 
         public override byte[] GetBytes(bool isUnicode)

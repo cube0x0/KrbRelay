@@ -185,7 +185,7 @@ namespace SMBLibrary.Authentication.NTLM
 
             if ((message.NegotiateFlags & NegotiateFlags.Anonymous) > 0)
             {
-                if (this.EnableGuestLogin)
+                if (EnableGuestLogin)
                 {
                     authContext.IsGuest = true;
                     return NTStatus.STATUS_SUCCESS;
@@ -204,7 +204,7 @@ namespace SMBLibrary.Authentication.NTLM
             string password = m_GetUserPassword(message.UserName);
             if (password == null)
             {
-                if (this.EnableGuestLogin)
+                if (EnableGuestLogin)
                 {
                     authContext.IsGuest = true;
                     return NTStatus.STATUS_SUCCESS;

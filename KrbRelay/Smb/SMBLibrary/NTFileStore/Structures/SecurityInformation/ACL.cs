@@ -41,7 +41,7 @@ namespace SMBLibrary
             for (int index = 0; index < aceCount; index++)
             {
                 ACE ace = ACE.GetAce(buffer, offset);
-                this.Add(ace);
+                Add(ace);
                 offset += ace.Length;
             }
         }

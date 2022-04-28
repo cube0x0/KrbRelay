@@ -36,7 +36,7 @@ namespace SMBLibrary.Services
         public void Write(NDRWriter writer)
         {
             writer.BeginStructure();
-            writer.WriteUInt32((uint)this.Count);
+            writer.WriteUInt32((uint)Count);
             writer.WriteEmbeddedStructureFullPointer(Entries);
             writer.EndStructure();
         }

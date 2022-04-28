@@ -34,7 +34,7 @@ namespace SMBLibrary.RPC
 
         public void WriteBytes(byte[] buffer, int offset)
         {
-            ByteWriter.WriteByte(buffer, offset + 0, (byte)this.Count);
+            ByteWriter.WriteByte(buffer, offset + 0, (byte)Count);
             for (int index = 0; index < Entries.Count; index++)
             {
                 Entries[index].WriteBytes(buffer, offset + 1 + index * Version.Length);

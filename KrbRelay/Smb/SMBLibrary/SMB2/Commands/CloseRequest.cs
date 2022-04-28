@@ -46,7 +46,7 @@ namespace SMBLibrary.SMB2
         {
             get
             {
-                return ((this.Flags & CloseFlags.PostQueryAttributes) > 0);
+                return ((Flags & CloseFlags.PostQueryAttributes) > 0);
             }
         }
 

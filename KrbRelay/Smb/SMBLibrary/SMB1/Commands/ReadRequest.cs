@@ -29,19 +29,19 @@ namespace SMBLibrary.SMB1
 
         public ReadRequest(byte[] buffer, int offset) : base(buffer, offset, false)
         {
-            FID = LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
-            CountOfBytesToRead = LittleEndianConverter.ToUInt16(this.SMBParameters, 2);
-            ReadOffsetInBytes = LittleEndianConverter.ToUInt32(this.SMBParameters, 4);
-            CountOfBytesToRead = LittleEndianConverter.ToUInt16(this.SMBParameters, 8);
+            FID = LittleEndianConverter.ToUInt16(SMBParameters, 0);
+            CountOfBytesToRead = LittleEndianConverter.ToUInt16(SMBParameters, 2);
+            ReadOffsetInBytes = LittleEndianConverter.ToUInt32(SMBParameters, 4);
+            CountOfBytesToRead = LittleEndianConverter.ToUInt16(SMBParameters, 8);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            this.SMBParameters = new byte[ParametersLength];
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, FID);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 2, CountOfBytesToRead);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, 4, ReadOffsetInBytes);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 8, CountOfBytesToRead);
+            SMBParameters = new byte[ParametersLength];
+            LittleEndianWriter.WriteUInt16(SMBParameters, 0, FID);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 2, CountOfBytesToRead);
+            LittleEndianWriter.WriteUInt32(SMBParameters, 4, ReadOffsetInBytes);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 8, CountOfBytesToRead);
             return base.GetBytes(isUnicode);
         }
 

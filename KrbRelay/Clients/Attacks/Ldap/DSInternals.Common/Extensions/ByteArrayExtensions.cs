@@ -1,6 +1,6 @@
 ﻿namespace DSInternals.Common
 {
-    using DSInternals.Common.Properties;
+    using Properties;
     using System;
     using System.IO;
     using System.Security;

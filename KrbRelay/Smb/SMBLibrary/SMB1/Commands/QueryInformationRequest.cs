@@ -33,12 +33,12 @@ namespace SMBLibrary.SMB1
 
         public QueryInformationRequest(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
         {
-            BufferFormat = ByteReader.ReadByte(this.SMBData, 0);
+            BufferFormat = ByteReader.ReadByte(SMBData, 0);
             if (BufferFormat != SupportedBufferFormat)
             {
                 throw new InvalidDataException("Unsupported Buffer Format");
             }
-            FileName = SMB1Helper.ReadSMBString(this.SMBData, 1, isUnicode);
+            FileName = SMB1Helper.ReadSMBString(SMBData, 1, isUnicode);
         }
 
         public override byte[] GetBytes(bool isUnicode)
@@ -52,9 +52,9 @@ namespace SMBLibrary.SMB1
             {
                 length += FileName.Length + 1;
             }
-            this.SMBData = new byte[1 + length];
-            ByteWriter.WriteByte(this.SMBData, 0, BufferFormat);
-            SMB1Helper.WriteSMBString(this.SMBData, 1, isUnicode, FileName);
+            SMBData = new byte[1 + length];
+            ByteWriter.WriteByte(SMBData, 0, BufferFormat);
+            SMB1Helper.WriteSMBString(SMBData, 1, isUnicode, FileName);
 
             return base.GetBytes(isUnicode);
         }

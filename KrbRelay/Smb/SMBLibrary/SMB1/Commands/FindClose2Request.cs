@@ -18,7 +18,7 @@ namespace SMBLibrary.SMB1
 
         public FindClose2Request(byte[] buffer, int offset) : base(buffer, offset, false)
         {
-            SearchHandle = LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
+            SearchHandle = LittleEndianConverter.ToUInt16(SMBParameters, 0);
         }
 
         public override CommandName CommandName

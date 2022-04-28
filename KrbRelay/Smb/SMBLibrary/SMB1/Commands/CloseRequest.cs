@@ -31,15 +31,15 @@ namespace SMBLibrary.SMB1
 
         public CloseRequest(byte[] buffer, int offset) : base(buffer, offset, false)
         {
-            FID = LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
-            LastTimeModified = UTimeHelper.ReadNullableUTime(this.SMBParameters, 2);
+            FID = LittleEndianConverter.ToUInt16(SMBParameters, 0);
+            LastTimeModified = UTimeHelper.ReadNullableUTime(SMBParameters, 2);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            this.SMBParameters = new byte[ParametersLength];
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, FID);
-            UTimeHelper.WriteUTime(this.SMBParameters, 2, LastTimeModified);
+            SMBParameters = new byte[ParametersLength];
+            LittleEndianWriter.WriteUInt16(SMBParameters, 0, FID);
+            UTimeHelper.WriteUTime(SMBParameters, 2, LastTimeModified);
             return base.GetBytes(isUnicode);
         }
 

@@ -40,44 +40,44 @@ namespace KrbRelay.HiveParser
                 throw new NotSupportedException("Bad nk header");
 
             long startingOffset = hive.BaseStream.Position;
-            this.IsRootKey = (buf[2] == 0x2c) ? true : false;
+            IsRootKey = (buf[2] == 0x2c) ? true : false;
 
-            this.Timestamp = DateTime.FromFileTime(hive.ReadInt64());
-
-            hive.BaseStream.Position += 4;
-
-            this.ParentOffset = hive.ReadInt32();
-            this.SubkeysCount = hive.ReadInt32();
+            Timestamp = DateTime.FromFileTime(hive.ReadInt64());
 
             hive.BaseStream.Position += 4;
 
-            this.LFRecordOffset = hive.ReadInt32();
+            ParentOffset = hive.ReadInt32();
+            SubkeysCount = hive.ReadInt32();
 
             hive.BaseStream.Position += 4;
 
-            this.ValuesCount = hive.ReadInt32();
-            this.ValueListOffset = hive.ReadInt32();
-            this.SecurityKeyOffset = hive.ReadInt32();
-            this.ClassnameOffset = hive.ReadInt32();
+            LFRecordOffset = hive.ReadInt32();
+
+            hive.BaseStream.Position += 4;
+
+            ValuesCount = hive.ReadInt32();
+            ValueListOffset = hive.ReadInt32();
+            SecurityKeyOffset = hive.ReadInt32();
+            ClassnameOffset = hive.ReadInt32();
 
             hive.BaseStream.Position += (startingOffset + 68) - hive.BaseStream.Position;
 
-            this.NameLength = hive.ReadInt16();
-            this.ClassnameLength = hive.ReadInt16();
+            NameLength = hive.ReadInt16();
+            ClassnameLength = hive.ReadInt16();
 
-            buf = hive.ReadBytes(this.NameLength);
-            this.Name = System.Text.Encoding.UTF8.GetString(buf);
+            buf = hive.ReadBytes(NameLength);
+            Name = System.Text.Encoding.UTF8.GetString(buf);
 
-            hive.BaseStream.Position = this.ClassnameOffset + 4 + 4096;
-            this.ClassnameData = hive.ReadBytes(this.ClassnameLength);
+            hive.BaseStream.Position = ClassnameOffset + 4 + 4096;
+            ClassnameData = hive.ReadBytes(ClassnameLength);
         }
 
         private void ReadChildrenNodes(BinaryReader hive)
         {
-            this.ChildNodes = new List<NodeKey>();
-            if (this.LFRecordOffset != -1)
+            ChildNodes = new List<NodeKey>();
+            if (LFRecordOffset != -1)
             {
-                hive.BaseStream.Position = 4096 + this.LFRecordOffset + 4;
+                hive.BaseStream.Position = 4096 + LFRecordOffset + 4;
 
                 byte[] buf = hive.ReadBytes(2);
 
@@ -122,7 +122,7 @@ namespace KrbRelay.HiveParser
                 //byte[] check = hive.ReadBytes(4);
                 hive.BaseStream.Position = 4096 + newoffset + 4;
                 NodeKey nk = new NodeKey(hive) { ParentNodeKey = this };
-                this.ChildNodes.Add(nk);
+                ChildNodes.Add(nk);
             }
 
             hive.BaseStream.Position = topOfList + (count * 8);
@@ -130,24 +130,24 @@ namespace KrbRelay.HiveParser
 
         private void ReadChildValues(BinaryReader hive)
         {
-            this.ChildValues = new List<ValueKey>();
-            if (this.ValueListOffset != -1)
+            ChildValues = new List<ValueKey>();
+            if (ValueListOffset != -1)
             {
-                hive.BaseStream.Position = 4096 + this.ValueListOffset + 4;
+                hive.BaseStream.Position = 4096 + ValueListOffset + 4;
 
-                for (int i = 0; i < this.ValuesCount; i++)
+                for (int i = 0; i < ValuesCount; i++)
                 {
-                    hive.BaseStream.Position = 4096 + this.ValueListOffset + 4 + (i * 4);
+                    hive.BaseStream.Position = 4096 + ValueListOffset + 4 + (i * 4);
                     int offset = hive.ReadInt32();
                     hive.BaseStream.Position = 4096 + offset + 4;
-                    this.ChildValues.Add(new ValueKey(hive));
+                    ChildValues.Add(new ValueKey(hive));
                 }
             }
         }
 
         public byte[] getChildValues(string valueName)
         {
-            ValueKey targetData = this.ChildValues.Find(x => x.Name.Contains(valueName));
+            ValueKey targetData = ChildValues.Find(x => x.Name.Contains(valueName));
             return targetData.Data;
         }
     }

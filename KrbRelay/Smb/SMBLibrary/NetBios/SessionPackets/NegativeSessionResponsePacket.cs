@@ -18,18 +18,18 @@ namespace SMBLibrary.NetBios
 
         public NegativeSessionResponsePacket() : base()
         {
-            this.Type = SessionPacketTypeName.NegativeSessionResponse;
+            Type = SessionPacketTypeName.NegativeSessionResponse;
         }
 
         public NegativeSessionResponsePacket(byte[] buffer, int offset) : base(buffer, offset)
         {
-            ErrorCode = ByteReader.ReadByte(this.Trailer, offset + 0);
+            ErrorCode = ByteReader.ReadByte(Trailer, offset + 0);
         }
 
         public override byte[] GetBytes()
         {
-            this.Trailer = new byte[1];
-            this.Trailer[0] = ErrorCode;
+            Trailer = new byte[1];
+            Trailer[0] = ErrorCode;
 
             return base.GetBytes();
         }

@@ -21,17 +21,17 @@ namespace KrbRelay.Spoofing
 
         public HttpServer(string ip, int port, string service)
         {
-            this.listener = new TcpListener(IPAddress.Parse(ip), port);
+            listener = new TcpListener(IPAddress.Parse(ip), port);
             this.service = service;
         }
 
         public void Start()
         {
-            this.listener.Start();
+            listener.Start();
             var result = "Access denied";
             while (true)
             {
-                var client = this.listener.AcceptTcpClient();
+                var client = listener.AcceptTcpClient();
                 NetworkStream stream = client.GetStream();
                 var buffer = new byte[10240];
                 //var length = stream.Read(buffer, 0, buffer.Length);

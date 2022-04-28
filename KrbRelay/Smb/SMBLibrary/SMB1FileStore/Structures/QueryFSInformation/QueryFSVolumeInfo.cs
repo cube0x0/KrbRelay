@@ -41,7 +41,7 @@ namespace SMBLibrary.SMB1
         {
             VolumeLabelSize = (uint)(VolumeLabel.Length * 2);
 
-            byte[] buffer = new byte[this.Length];
+            byte[] buffer = new byte[Length];
             FileTimeHelper.WriteFileTime(buffer, 0, VolumeCreationTime);
             LittleEndianWriter.WriteUInt32(buffer, 8, SerialNumber);
             LittleEndianWriter.WriteUInt32(buffer, 12, VolumeLabelSize);

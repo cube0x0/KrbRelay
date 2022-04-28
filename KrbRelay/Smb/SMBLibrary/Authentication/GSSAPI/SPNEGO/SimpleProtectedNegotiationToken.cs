@@ -20,7 +20,7 @@ namespace SMBLibrary.Authentication.GSSAPI
         /// <param name="includeHeader">Prepend the generic GSSAPI header. Required for negTokenInit, optional for negTokenResp.</param>
         public byte[] GetBytes(bool includeHeader)
         {
-            byte[] tokenBytes = this.GetBytes();
+            byte[] tokenBytes = GetBytes();
             if (includeHeader)
             {
                 int objectIdentifierFieldSize = DerEncodingHelper.GetLengthFieldSize(SPNEGOIdentifier.Length);

@@ -61,7 +61,7 @@ namespace SMBLibrary
         {
             get
             {
-                int length = this.Length;
+                int length = Length;
                 int padding = (8 - (length % 8)) % 8;
                 return length + padding;
             }

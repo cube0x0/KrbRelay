@@ -33,34 +33,34 @@ namespace SMBLibrary.SMB1
 
         public TreeConnectAndXResponse(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
         {
-            OptionalSupport = (OptionalSupportFlags)LittleEndianConverter.ToUInt16(this.SMBParameters, 4);
+            OptionalSupport = (OptionalSupportFlags)LittleEndianConverter.ToUInt16(SMBParameters, 4);
 
             int dataOffset = 0;
-            string serviceString = ByteReader.ReadNullTerminatedAnsiString(this.SMBData, ref dataOffset);
-            NativeFileSystem = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            string serviceString = ByteReader.ReadNullTerminatedAnsiString(SMBData, ref dataOffset);
+            NativeFileSystem = SMB1Helper.ReadSMBString(SMBData, ref dataOffset, isUnicode);
 
             Service = ServiceNameHelper.GetServiceName(serviceString);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            this.SMBParameters = new byte[ParametersLength];
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 4, (ushort)OptionalSupport);
+            SMBParameters = new byte[ParametersLength];
+            LittleEndianWriter.WriteUInt16(SMBParameters, 4, (ushort)OptionalSupport);
 
             // Should be written as OEM string but it doesn't really matter
             string serviceString = ServiceNameHelper.GetServiceString(Service);
             if (isUnicode)
             {
-                this.SMBData = new byte[serviceString.Length + NativeFileSystem.Length * 2 + 3];
+                SMBData = new byte[serviceString.Length + NativeFileSystem.Length * 2 + 3];
             }
             else
             {
-                this.SMBData = new byte[serviceString.Length + NativeFileSystem.Length + 2];
+                SMBData = new byte[serviceString.Length + NativeFileSystem.Length + 2];
             }
 
             int offset = 0;
-            ByteWriter.WriteNullTerminatedAnsiString(this.SMBData, ref offset, serviceString);
-            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeFileSystem);
+            ByteWriter.WriteNullTerminatedAnsiString(SMBData, ref offset, serviceString);
+            SMB1Helper.WriteSMBString(SMBData, ref offset, isUnicode, NativeFileSystem);
 
             return base.GetBytes(isUnicode);
         }

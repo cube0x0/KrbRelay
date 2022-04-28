@@ -48,7 +48,7 @@ namespace SMBLibrary.RPC
             {
                 builder.Append((char)parser.ReadUInt16());
             }
-            this.Value = builder.ToString().TrimEnd('\0');
+            Value = builder.ToString().TrimEnd('\0');
         }
 
         public void Write(NDRWriter writer)

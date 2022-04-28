@@ -40,10 +40,10 @@ namespace SMBLibrary.SMB1
 
         public SessionSetupAndXResponseExtended(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
         {
-            Action = (SessionSetupAction)LittleEndianConverter.ToUInt16(this.SMBParameters, 4);
-            SecurityBlobLength = LittleEndianConverter.ToUInt16(this.SMBParameters, 6);
+            Action = (SessionSetupAction)LittleEndianConverter.ToUInt16(SMBParameters, 4);
+            SecurityBlobLength = LittleEndianConverter.ToUInt16(SMBParameters, 6);
 
-            SecurityBlob = ByteReader.ReadBytes(this.SMBData, 0, SecurityBlobLength);
+            SecurityBlob = ByteReader.ReadBytes(SMBData, 0, SecurityBlobLength);
 
             int dataOffset = SecurityBlob.Length;
             if (isUnicode)
@@ -53,22 +53,22 @@ namespace SMBLibrary.SMB1
                 int padding = (1 + SecurityBlobLength) % 2;
                 dataOffset += padding;
             }
-            NativeOS = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
-            if ((this.SMBData.Length - dataOffset) % 2 == 1)
+            NativeOS = SMB1Helper.ReadSMBString(SMBData, ref dataOffset, isUnicode);
+            if ((SMBData.Length - dataOffset) % 2 == 1)
             {
                 // Workaround for a single terminating null byte
-                this.SMBData = ByteUtils.Concatenate(this.SMBData, new byte[1]);
+                SMBData = ByteUtils.Concatenate(SMBData, new byte[1]);
             }
-            NativeLanMan = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            NativeLanMan = SMB1Helper.ReadSMBString(SMBData, ref dataOffset, isUnicode);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
             ushort securityBlobLength = (ushort)SecurityBlob.Length;
 
-            this.SMBParameters = new byte[ParametersLength];
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 4, (ushort)Action);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 6, securityBlobLength);
+            SMBParameters = new byte[ParametersLength];
+            LittleEndianWriter.WriteUInt16(SMBParameters, 4, (ushort)Action);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 6, securityBlobLength);
 
             int padding = 0;
             if (isUnicode)
@@ -76,17 +76,17 @@ namespace SMBLibrary.SMB1
                 // A Unicode string MUST be aligned to a 16-bit boundary with respect to the beginning of the SMB Header.
                 // Note: SMBData starts at an odd offset.
                 padding = (1 + securityBlobLength) % 2;
-                this.SMBData = new byte[SecurityBlob.Length + padding + NativeOS.Length * 2 + NativeLanMan.Length * 2 + 4];
+                SMBData = new byte[SecurityBlob.Length + padding + NativeOS.Length * 2 + NativeLanMan.Length * 2 + 4];
             }
             else
             {
-                this.SMBData = new byte[SecurityBlob.Length + NativeOS.Length + NativeLanMan.Length + 2];
+                SMBData = new byte[SecurityBlob.Length + NativeOS.Length + NativeLanMan.Length + 2];
             }
             int offset = 0;
-            ByteWriter.WriteBytes(this.SMBData, ref offset, SecurityBlob);
+            ByteWriter.WriteBytes(SMBData, ref offset, SecurityBlob);
             offset += padding;
-            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeOS);
-            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeLanMan);
+            SMB1Helper.WriteSMBString(SMBData, ref offset, isUnicode, NativeOS);
+            SMB1Helper.WriteSMBString(SMBData, ref offset, isUnicode, NativeLanMan);
 
             return base.GetBytes(isUnicode);
         }

@@ -46,20 +46,20 @@ namespace SMBLibrary.SMB1
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            this.SMBParameters = new byte[ParametersLength];
+            SMBParameters = new byte[ParametersLength];
             int parametersOffset = 4;
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, FID);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)FileAttrs);
-            UTimeHelper.WriteUTime(this.SMBParameters, ref parametersOffset, LastWriteTime);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, FileDataSize);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)AccessRights);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)ResourceType);
-            NMPipeStatus.WriteBytes(this.SMBParameters, ref parametersOffset);
-            OpenResults.WriteBytes(this.SMBParameters, ref parametersOffset);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, ServerFID);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, Reserved);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)MaximalAccessRights);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)GuestMaximalAccessRights);
+            LittleEndianWriter.WriteUInt16(SMBParameters, ref parametersOffset, FID);
+            LittleEndianWriter.WriteUInt16(SMBParameters, ref parametersOffset, (ushort)FileAttrs);
+            UTimeHelper.WriteUTime(SMBParameters, ref parametersOffset, LastWriteTime);
+            LittleEndianWriter.WriteUInt32(SMBParameters, ref parametersOffset, FileDataSize);
+            LittleEndianWriter.WriteUInt16(SMBParameters, ref parametersOffset, (ushort)AccessRights);
+            LittleEndianWriter.WriteUInt16(SMBParameters, ref parametersOffset, (ushort)ResourceType);
+            NMPipeStatus.WriteBytes(SMBParameters, ref parametersOffset);
+            OpenResults.WriteBytes(SMBParameters, ref parametersOffset);
+            LittleEndianWriter.WriteUInt32(SMBParameters, ref parametersOffset, ServerFID);
+            LittleEndianWriter.WriteUInt16(SMBParameters, ref parametersOffset, Reserved);
+            LittleEndianWriter.WriteUInt32(SMBParameters, ref parametersOffset, (uint)MaximalAccessRights);
+            LittleEndianWriter.WriteUInt32(SMBParameters, ref parametersOffset, (uint)GuestMaximalAccessRights);
             return base.GetBytes(isUnicode);
         }
 

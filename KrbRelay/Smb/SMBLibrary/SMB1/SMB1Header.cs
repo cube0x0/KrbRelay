@@ -95,17 +95,17 @@ namespace SMBLibrary.SMB1
         {
             get
             {
-                return (this.Flags2 & HeaderFlags2.ExtendedSecurity) > 0;
+                return (Flags2 & HeaderFlags2.ExtendedSecurity) > 0;
             }
             set
             {
                 if (value)
                 {
-                    this.Flags2 |= HeaderFlags2.ExtendedSecurity;
+                    Flags2 |= HeaderFlags2.ExtendedSecurity;
                 }
                 else
                 {
-                    this.Flags2 &= ~HeaderFlags2.ExtendedSecurity;
+                    Flags2 &= ~HeaderFlags2.ExtendedSecurity;
                 }
             }
         }
@@ -120,11 +120,11 @@ namespace SMBLibrary.SMB1
             {
                 if (value)
                 {
-                    this.Flags2 |= HeaderFlags2.Unicode;
+                    Flags2 |= HeaderFlags2.Unicode;
                 }
                 else
                 {
-                    this.Flags2 &= ~HeaderFlags2.Unicode;
+                    Flags2 &= ~HeaderFlags2.Unicode;
                 }
             }
         }

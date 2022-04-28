@@ -31,7 +31,7 @@ namespace KrbRelay.HiveParser
         public RegistryHive(BinaryReader reader)
         {
             reader.BaseStream.Position += 4132 - reader.BaseStream.Position;
-            this.RootKey = new NodeKey(reader);
+            RootKey = new NodeKey(reader);
         }
 
         public string Filepath { get; set; }

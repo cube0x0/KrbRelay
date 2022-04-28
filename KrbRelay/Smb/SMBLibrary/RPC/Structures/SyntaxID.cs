@@ -42,7 +42,7 @@ namespace SMBLibrary.RPC
         {
             if (obj is SyntaxID)
             {
-                return this.InterfaceUUID.Equals(((SyntaxID)obj).InterfaceUUID) && this.InterfaceVersion.Equals(((SyntaxID)obj).InterfaceVersion);
+                return InterfaceUUID.Equals(((SyntaxID)obj).InterfaceUUID) && InterfaceVersion.Equals(((SyntaxID)obj).InterfaceVersion);
             }
             return false;
         }

@@ -873,7 +873,7 @@ namespace KrbRelay
                 CoInitializeSecurity(IntPtr.Zero, svcs.Length, svcs,
                      IntPtr.Zero, AuthnLevel.RPC_C_AUTHN_LEVEL_DEFAULT,
                      ImpLevel.RPC_C_IMP_LEVEL_IMPERSONATE, IntPtr.Zero,
-                     Natives.EOLE_AUTHENTICATION_CAPABILITIES.EOAC_DYNAMIC_CLOAKING,
+                     EOLE_AUTHENTICATION_CAPABILITIES.EOAC_DYNAMIC_CLOAKING,
                      IntPtr.Zero);
             }
             finally

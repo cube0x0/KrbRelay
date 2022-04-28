@@ -30,19 +30,19 @@ namespace SMBLibrary.SMB1
 
         public SetInformation2Request(byte[] buffer, int offset) : base(buffer, offset, false)
         {
-            FID = LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
-            CreationDateTime = SMB1Helper.ReadNullableSMBDateTime(this.SMBParameters, 2);
-            LastAccessDateTime = SMB1Helper.ReadNullableSMBDateTime(this.SMBParameters, 6);
-            LastWriteDateTime = SMB1Helper.ReadNullableSMBDateTime(this.SMBParameters, 10);
+            FID = LittleEndianConverter.ToUInt16(SMBParameters, 0);
+            CreationDateTime = SMB1Helper.ReadNullableSMBDateTime(SMBParameters, 2);
+            LastAccessDateTime = SMB1Helper.ReadNullableSMBDateTime(SMBParameters, 6);
+            LastWriteDateTime = SMB1Helper.ReadNullableSMBDateTime(SMBParameters, 10);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            this.SMBParameters = new byte[ParametersLength];
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, FID);
-            SMB1Helper.WriteSMBDateTime(this.SMBParameters, 2, CreationDateTime);
-            SMB1Helper.WriteSMBDateTime(this.SMBParameters, 6, LastAccessDateTime);
-            SMB1Helper.WriteSMBDateTime(this.SMBParameters, 10, LastWriteDateTime);
+            SMBParameters = new byte[ParametersLength];
+            LittleEndianWriter.WriteUInt16(SMBParameters, 0, FID);
+            SMB1Helper.WriteSMBDateTime(SMBParameters, 2, CreationDateTime);
+            SMB1Helper.WriteSMBDateTime(SMBParameters, 6, LastAccessDateTime);
+            SMB1Helper.WriteSMBDateTime(SMBParameters, 10, LastWriteDateTime);
 
             return base.GetBytes(isUnicode);
         }

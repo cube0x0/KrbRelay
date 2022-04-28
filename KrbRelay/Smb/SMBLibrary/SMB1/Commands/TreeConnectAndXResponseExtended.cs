@@ -37,39 +37,39 @@ namespace SMBLibrary.SMB1
         public TreeConnectAndXResponseExtended(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
         {
             int parametersOffset = 4;
-            OptionalSupport = (OptionalSupportFlags)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
-            MaximalShareAccessRights = (AccessMask)LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);
-            GuestMaximalShareAccessRights = (AccessMask)LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);
+            OptionalSupport = (OptionalSupportFlags)LittleEndianReader.ReadUInt16(SMBParameters, ref parametersOffset);
+            MaximalShareAccessRights = (AccessMask)LittleEndianReader.ReadUInt32(SMBParameters, ref parametersOffset);
+            GuestMaximalShareAccessRights = (AccessMask)LittleEndianReader.ReadUInt32(SMBParameters, ref parametersOffset);
 
             int dataOffset = 0;
-            string serviceString = ByteReader.ReadNullTerminatedAnsiString(this.SMBData, ref dataOffset);
-            NativeFileSystem = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            string serviceString = ByteReader.ReadNullTerminatedAnsiString(SMBData, ref dataOffset);
+            NativeFileSystem = SMB1Helper.ReadSMBString(SMBData, ref dataOffset, isUnicode);
 
             Service = ServiceNameHelper.GetServiceName(serviceString);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            this.SMBParameters = new byte[ParametersLength];
+            SMBParameters = new byte[ParametersLength];
             int parametersOffset = 4;
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)OptionalSupport);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)MaximalShareAccessRights);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)GuestMaximalShareAccessRights);
+            LittleEndianWriter.WriteUInt16(SMBParameters, ref parametersOffset, (ushort)OptionalSupport);
+            LittleEndianWriter.WriteUInt32(SMBParameters, ref parametersOffset, (uint)MaximalShareAccessRights);
+            LittleEndianWriter.WriteUInt32(SMBParameters, ref parametersOffset, (uint)GuestMaximalShareAccessRights);
 
             // Should be written as OEM string but it doesn't really matter
             string serviceString = ServiceNameHelper.GetServiceString(Service);
             if (isUnicode)
             {
-                this.SMBData = new byte[serviceString.Length + NativeFileSystem.Length * 2 + 3];
+                SMBData = new byte[serviceString.Length + NativeFileSystem.Length * 2 + 3];
             }
             else
             {
-                this.SMBData = new byte[serviceString.Length + NativeFileSystem.Length + 2];
+                SMBData = new byte[serviceString.Length + NativeFileSystem.Length + 2];
             }
 
             int offset = 0;
-            ByteWriter.WriteNullTerminatedAnsiString(this.SMBData, ref offset, serviceString);
-            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeFileSystem);
+            ByteWriter.WriteNullTerminatedAnsiString(SMBData, ref offset, serviceString);
+            SMB1Helper.WriteSMBString(SMBData, ref offset, isUnicode, NativeFileSystem);
 
             return base.GetBytes(isUnicode);
         }

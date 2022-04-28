@@ -50,17 +50,17 @@ namespace SMBLibrary.SMB1
 
         public SessionSetupAndXRequest(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
         {
-            MaxBufferSize = LittleEndianConverter.ToUInt16(this.SMBParameters, 4);
-            MaxMpxCount = LittleEndianConverter.ToUInt16(this.SMBParameters, 6);
-            VcNumber = LittleEndianConverter.ToUInt16(this.SMBParameters, 8);
-            SessionKey = LittleEndianConverter.ToUInt32(this.SMBParameters, 10);
-            OEMPasswordLength = LittleEndianConverter.ToUInt16(this.SMBParameters, 14);
-            UnicodePasswordLength = LittleEndianConverter.ToUInt16(this.SMBParameters, 16);
-            Reserved = LittleEndianConverter.ToUInt32(this.SMBParameters, 18);
-            Capabilities = (Capabilities)LittleEndianConverter.ToUInt32(this.SMBParameters, 22);
+            MaxBufferSize = LittleEndianConverter.ToUInt16(SMBParameters, 4);
+            MaxMpxCount = LittleEndianConverter.ToUInt16(SMBParameters, 6);
+            VcNumber = LittleEndianConverter.ToUInt16(SMBParameters, 8);
+            SessionKey = LittleEndianConverter.ToUInt32(SMBParameters, 10);
+            OEMPasswordLength = LittleEndianConverter.ToUInt16(SMBParameters, 14);
+            UnicodePasswordLength = LittleEndianConverter.ToUInt16(SMBParameters, 16);
+            Reserved = LittleEndianConverter.ToUInt32(SMBParameters, 18);
+            Capabilities = (Capabilities)LittleEndianConverter.ToUInt32(SMBParameters, 22);
 
-            OEMPassword = ByteReader.ReadBytes(this.SMBData, 0, OEMPasswordLength);
-            UnicodePassword = ByteReader.ReadBytes(this.SMBData, OEMPasswordLength, UnicodePasswordLength);
+            OEMPassword = ByteReader.ReadBytes(SMBData, 0, OEMPasswordLength);
+            UnicodePassword = ByteReader.ReadBytes(SMBData, OEMPasswordLength, UnicodePasswordLength);
 
             int dataOffset = OEMPasswordLength + UnicodePasswordLength;
             if (isUnicode)
@@ -70,10 +70,10 @@ namespace SMBLibrary.SMB1
                 int padding = (1 + OEMPasswordLength + UnicodePasswordLength) % 2;
                 dataOffset += padding;
             }
-            AccountName = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
-            PrimaryDomain = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
-            NativeOS = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
-            NativeLanMan = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            AccountName = SMB1Helper.ReadSMBString(SMBData, ref dataOffset, isUnicode);
+            PrimaryDomain = SMB1Helper.ReadSMBString(SMBData, ref dataOffset, isUnicode);
+            NativeOS = SMB1Helper.ReadSMBString(SMBData, ref dataOffset, isUnicode);
+            NativeLanMan = SMB1Helper.ReadSMBString(SMBData, ref dataOffset, isUnicode);
         }
 
         public override byte[] GetBytes(bool isUnicode)
@@ -83,15 +83,15 @@ namespace SMBLibrary.SMB1
             OEMPasswordLength = (ushort)OEMPassword.Length;
             UnicodePasswordLength = (ushort)UnicodePassword.Length;
 
-            this.SMBParameters = new byte[ParametersLength];
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 4, MaxBufferSize);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 6, MaxMpxCount);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 8, VcNumber);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, 10, SessionKey);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 14, OEMPasswordLength);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 16, UnicodePasswordLength);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, 18, Reserved);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, 22, (uint)Capabilities);
+            SMBParameters = new byte[ParametersLength];
+            LittleEndianWriter.WriteUInt16(SMBParameters, 4, MaxBufferSize);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 6, MaxMpxCount);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 8, VcNumber);
+            LittleEndianWriter.WriteUInt32(SMBParameters, 10, SessionKey);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 14, OEMPasswordLength);
+            LittleEndianWriter.WriteUInt16(SMBParameters, 16, UnicodePasswordLength);
+            LittleEndianWriter.WriteUInt32(SMBParameters, 18, Reserved);
+            LittleEndianWriter.WriteUInt32(SMBParameters, 22, (uint)Capabilities);
 
             int padding = 0;
             if (isUnicode)
@@ -99,20 +99,20 @@ namespace SMBLibrary.SMB1
                 // A Unicode string MUST be aligned to a 16-bit boundary with respect to the beginning of the SMB Header.
                 // Note: SMBData starts at an odd offset.
                 padding = (1 + OEMPasswordLength + UnicodePasswordLength) % 2;
-                this.SMBData = new byte[OEMPassword.Length + UnicodePassword.Length + padding + (AccountName.Length + 1) * 2 + (PrimaryDomain.Length + 1) * 2 + (NativeOS.Length + 1) * 2 + (NativeLanMan.Length + 1) * 2];
+                SMBData = new byte[OEMPassword.Length + UnicodePassword.Length + padding + (AccountName.Length + 1) * 2 + (PrimaryDomain.Length + 1) * 2 + (NativeOS.Length + 1) * 2 + (NativeLanMan.Length + 1) * 2];
             }
             else
             {
-                this.SMBData = new byte[OEMPassword.Length + UnicodePassword.Length + AccountName.Length + 1 + PrimaryDomain.Length + 1 + NativeOS.Length + 1 + NativeLanMan.Length + 1];
+                SMBData = new byte[OEMPassword.Length + UnicodePassword.Length + AccountName.Length + 1 + PrimaryDomain.Length + 1 + NativeOS.Length + 1 + NativeLanMan.Length + 1];
             }
             int offset = 0;
-            ByteWriter.WriteBytes(this.SMBData, ref offset, OEMPassword);
-            ByteWriter.WriteBytes(this.SMBData, ref offset, UnicodePassword);
+            ByteWriter.WriteBytes(SMBData, ref offset, OEMPassword);
+            ByteWriter.WriteBytes(SMBData, ref offset, UnicodePassword);
             offset += padding;
-            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, AccountName);
-            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, PrimaryDomain);
-            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeOS);
-            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeLanMan);
+            SMB1Helper.WriteSMBString(SMBData, ref offset, isUnicode, AccountName);
+            SMB1Helper.WriteSMBString(SMBData, ref offset, isUnicode, PrimaryDomain);
+            SMB1Helper.WriteSMBString(SMBData, ref offset, isUnicode, NativeOS);
+            SMB1Helper.WriteSMBString(SMBData, ref offset, isUnicode, NativeLanMan);
 
             return base.GetBytes(isUnicode);
         }

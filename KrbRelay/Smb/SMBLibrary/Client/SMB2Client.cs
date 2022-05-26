@@ -230,20 +230,21 @@ namespace SMBLibrary.Client
 
             //send apReq
             SessionSetupRequest request = new SessionSetupRequest();
+            //request.SecurityMode = 0x0000;
             request.SecurityMode = SecurityMode.SigningEnabled;
             request.SecurityBuffer = ticket;
             TrySendCommand(request);
             SMB2Command response = WaitForCommand(request.MessageID);
-            
+
             //get apRep
             byte[] answer = response.GetBytes();
-            int pattern = KrbRelay.Helpers.PatternAt(answer, new byte[] { 0x6f, 0x81 }); //0x6f, 0x81, 0x87
-            ticket = answer.Skip(pattern).ToArray();
+            //int pattern = KrbRelay.Helpers.PatternAt(answer, new byte[] { 0x6f, 0x81 });
+            ticket = answer.Skip(72).ToArray();
 
             if (response != null)
             {
-                //response.Header.Signature
                 m_sessionID = response.Header.SessionID;
+
                 if (response.Header.Status == NTStatus.STATUS_SUCCESS)
                 {
                     m_isLoggedIn = (response.Header.Status == NTStatus.STATUS_SUCCESS);
@@ -259,12 +260,18 @@ namespace SMBLibrary.Client
                             m_encryptionKey = SMB2Cryptography.GenerateClientEncryptionKey(m_sessionKey, SMB2Dialect.SMB300, null);
                             m_decryptionKey = SMB2Cryptography.GenerateClientDecryptionKey(m_sessionKey, SMB2Dialect.SMB300, null);
                         }
-                        //success = true;
                     }
+                    //Console.WriteLine("m_sessionKey--");
+                    //Console.WriteLine(KrbRelay.Helpers.ByteArrayToString(m_sessionKey));
+
                     success = true;
                     return ticket;
                 }
-                if (response.Header.Status != NTStatus.STATUS_MORE_PROCESSING_REQUIRED)
+                else if (response.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED)
+                {
+                    return ticket;
+                }
+                else
                 {
                     throw new Win32Exception((int)response.Header.Status);
                 }

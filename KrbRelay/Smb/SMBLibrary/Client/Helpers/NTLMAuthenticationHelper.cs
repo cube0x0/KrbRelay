@@ -16,6 +16,66 @@ namespace SMBLibrary.Client
 {
     public class NTLMAuthenticationHelper
     {
+        public static byte[] GetNegotiateMessage(byte[] securityBlob, string domainName, AuthenticationMethod authenticationMethod)
+        {
+            bool useGSSAPI = false;
+            if (securityBlob.Length > 0)
+            {
+                SimpleProtectedNegotiationTokenInit inputToken = null;
+                try
+                {
+                    inputToken = SimpleProtectedNegotiationToken.ReadToken(securityBlob, 0, true) as SimpleProtectedNegotiationTokenInit;
+                }
+                catch
+                {
+                }
+
+                if (inputToken == null || !ContainsMechanism(inputToken, GSSProvider.NTLMSSPIdentifier))
+                {
+                    return null;
+                }
+                useGSSAPI = true;
+            }
+
+            NegotiateMessage negotiateMessage = new NegotiateMessage();
+            negotiateMessage.NegotiateFlags = NegotiateFlags.UnicodeEncoding |
+                                              NegotiateFlags.OEMEncoding |
+                                              NegotiateFlags.Sign |
+                                              NegotiateFlags.NTLMSessionSecurity |
+                                              NegotiateFlags.DomainNameSupplied |
+                                              NegotiateFlags.WorkstationNameSupplied |
+                                              NegotiateFlags.AlwaysSign |
+                                              NegotiateFlags.Version |
+                                              NegotiateFlags.Use128BitEncryption |
+                                              NegotiateFlags.KeyExchange |
+                                              NegotiateFlags.Use56BitEncryption;
+
+            if (authenticationMethod == AuthenticationMethod.NTLMv1)
+            {
+                negotiateMessage.NegotiateFlags |= NegotiateFlags.LanManagerSessionKey;
+            }
+            else
+            {
+                negotiateMessage.NegotiateFlags |= NegotiateFlags.ExtendedSessionSecurity;
+            }
+
+            negotiateMessage.Version = NTLMVersion.Server2003;
+            negotiateMessage.DomainName = domainName;
+            negotiateMessage.Workstation = Environment.MachineName;
+            if (useGSSAPI)
+            {
+                SimpleProtectedNegotiationTokenInit outputToken = new SimpleProtectedNegotiationTokenInit();
+                outputToken.MechanismTypeList = new List<byte[]>();
+                outputToken.MechanismTypeList.Add(GSSProvider.NTLMSSPIdentifier);
+                outputToken.MechanismToken = negotiateMessage.GetBytes();
+                return outputToken.GetBytes(true);
+            }
+            else
+            {
+                return negotiateMessage.GetBytes();
+            }
+        }
+        
         public static byte[] GetNegotiateMessage(byte[] securityBlob)
         {
             bool useGSSAPI = false;

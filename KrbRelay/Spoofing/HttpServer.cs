@@ -75,6 +75,7 @@ namespace KrbRelay.Spoofing
                 {
                     targetResp = "Negotiate";
                     //targetResp = "Kerberos";
+                    //targetResp = "NTLM";
                 }
 
                 //string status = "HTTP/1.0 200 OK";

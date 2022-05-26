@@ -28,6 +28,9 @@ namespace KrbRelay.Clients
                 message.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko");
                 result = httpClient.SendAsync(message).Result;
             }
+            //Console.WriteLine(result.StatusCode);
+            //Console.WriteLine(result.Headers);
+            //Console.WriteLine(result.Content);
 
             if (result.StatusCode != HttpStatusCode.Unauthorized)
             {
@@ -80,8 +83,22 @@ namespace KrbRelay.Clients
                     //Console.WriteLine(header.Key);
                     if (header.Key == "WWW-Authenticate")
                     {
-                        apRep1 = Convert.FromBase64String(header.Value.First().Replace("Negotiate ", ""));
-                        Console.WriteLine("[*] apRep1: {0}", Helpers.ByteArrayToString(apRep1));
+                        string headerValue = header.Value.First().Replace("Negotiate ", "").Trim();
+                        if (headerValue.Length < 10) {
+                            Console.WriteLine("[-] No WWW-Authenticate header returned, status code: {0}", result.StatusCode);
+                            Environment.Exit(0);
+                        }
+                        else if (Program.ntlm)
+                        {
+                            ntlm2 = Convert.FromBase64String(headerValue);
+                            Console.WriteLine("[*] ntlm2: {0}", Helpers.ByteArrayToString(ntlm2));
+                        }
+                        else
+                        {
+                            apRep1 = Convert.FromBase64String(headerValue);
+                            Console.WriteLine("[*] apRep1: {0}", Helpers.ByteArrayToString(apRep1));
+                        }
+                        return;
                     }
                 }
             }

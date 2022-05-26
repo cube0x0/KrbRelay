@@ -174,6 +174,18 @@ namespace KrbRelay
             out AcceptContextRetFlags pfContextAttr,
             [Out] SECURITY_INTEGER ptsExpiry
         );
+        [DllImport("Secur32.dll", CharSet = CharSet.Unicode)]
+        public static extern SecStatusCode AcceptSecurityContext(
+            [In] SecHandle phCredential,
+            [In] SecHandle phContext,
+            [In] SecurityBufferDescriptor pInput,
+            AcceptContextReqFlags fContextReq,
+            SecDataRep TargetDataRep,
+            [In, Out] SecHandle phNewContext,
+            [In, Out] IntPtr pOutput,
+            out AcceptContextRetFlags pfContextAttr,
+            [Out] SECURITY_INTEGER ptsExpiry
+        );
 
         [DllImport("secur32.DLL", CharSet = CharSet.Unicode)]
         public static extern IntPtr InitSecurityInterface();

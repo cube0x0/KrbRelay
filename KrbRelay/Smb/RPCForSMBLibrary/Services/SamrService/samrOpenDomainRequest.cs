@@ -10,7 +10,7 @@ public class samrOpenDomainRequest : IRPCRequest
 {
     public SamprHandle SamprHandle;
     public AccessMask DesiredAccess;
-    public SID DomainId;
+    public SMBLibrary.SID DomainId;
 
     public samrOpenDomainRequest()
     {

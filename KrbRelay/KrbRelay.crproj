@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project baseDir="C:\Users\dsc\Desktop\NtlmRelay2\KrbRelay\bin\Release" outputDir="confused" xmlns="http://confuser.codeplex.com">
+<packer id="compressor" />
+<module path="C:\Users\dsc\Desktop\NtlmRelay2\KrbRelay\bin\Release\KrbRelay.exe" />
+</project>

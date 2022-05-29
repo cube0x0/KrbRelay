@@ -143,7 +143,7 @@ ce0e0be8-cf56-4577-9577-34cc96ac087c # RPC_C_IMP_LEVEL_IMPERSONATE
 
 ## Error codes
 
-Doesn't work the first time? try again then check these error codes, and if you are going to open an Issue, please paste the full output.
+Doesn't work the first time? try again then check these error codes, and if you are going to open an Issue, please paste the full output and input.
 
 #### Firewall blocking the OXID resolver
 
@@ -155,21 +155,14 @@ System.Runtime.InteropServices.COMException (0x800706BA): The RPC server is unav
 ```
 System.Runtime.InteropServices.COMException (0x80080004): Bad path to object (Exception from HRESULT: 0x80080004 (CO_E_BAD_PATH))
 ```
+or
+```
+System.Runtime.InteropServices.COMException (0x80070422): The service cannot be started, either because it is disabled or because it has no enabled devices associated with it. (Exception from HRESULT: 0x80070422)
+```
 #### Kerberos Issues (Authentication type not recognized), Will work after reboot/clock sync
 
 ```
 System.Runtime.InteropServices.COMException (0x800706D3): The authentication service is unknown.
-```
-
-#### Parsing Error, valid apRep tickets starts with 0x6f
-
-```
-[*] apRep1: fe534d4240000100160000c00100010001000000000000000100000000000000000000000000000035000000006c0000000000000000000000000000000000000900000048006000605e06092a864886f71201020203007e4f304da003020105a10302011ea411180f32303232303230373134303935325aa5050203045ad0a603020121a90b1b094854422e4c4f43414caa153013a003020101a10c300a1b0877696e3230313624
-[*] AcceptSecurityContext: SEC_I_CONTINUE_NEEDED
-[*] fContextReq: Delegate, MutualAuth, UseDceStyle, Connection
-System.UnauthorizedAccessException: Access is denied.
-
-Access is denied.
 ```
 
 #### A valid apReq starts with 0x60, check your environment and parameters
